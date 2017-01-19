@@ -9,7 +9,6 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
@@ -70,10 +69,13 @@ public class Layer1ApiMarkersDemo implements
     
     private IndicatorColorInterface indicatorColorInterface;
     
-    private Map<String, String> addedIndicators = new HashMap<>();
+    private Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
+    private Map<String, String> indicatorsUserNameToFullName = new HashMap<>();
     
     private Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
 
+    private Map<String, Double> pipsMap = new ConcurrentHashMap<>();
+    
     private DataStructureInterface dataStructureInterface;
     
     private BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_4BYTE_ABGR);
@@ -105,17 +107,17 @@ public class Layer1ApiMarkersDemo implements
     
     @Override
     public void finish() {
-        synchronized (addedIndicators) {
-            for (Entry<String, String> entry: addedIndicators.entrySet()) {
-                provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(entry.getKey(), entry.getValue(), false));
+        synchronized (indicatorsFullNameToUserName) {
+            for (String userName: indicatorsFullNameToUserName.values()) {
+                provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo.class, userName, false));
             }
         }
         invalidateInterfaceMap.clear();
     }
     
-    private Layer1ApiUserMessageModifyIndicator getUserMessageAdd(String indicatorName, String userReadableIndicatorName,
+    private Layer1ApiUserMessageModifyIndicator getUserMessageAdd(String userName,
             IndicatorLineStyle lineStyle, boolean isAddWidget) {
-        return new Layer1ApiUserMessageModifyIndicator(indicatorName, userReadableIndicatorName, true,
+        return new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo.class, userName, true,
                 new IndicatorColorScheme() {
                     @Override
                     public ColorDescription[] getColors() {
@@ -144,13 +146,11 @@ public class Layer1ApiMarkersDemo implements
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {
                 provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(dataStructureInterface -> this.dataStructureInterface = dataStructureInterface));
-                addIndicator(INDICATOR_NAME_TRADE, INDICATOR_NAME_TRADE);
-                addIndicator(INDICATOR_NAME_CIRCLES, INDICATOR_NAME_CIRCLES);
+                addIndicator(INDICATOR_NAME_TRADE);
+                addIndicator(INDICATOR_NAME_CIRCLES);
             }
         }
     }
-
-    private Map<String, Double> pipsMap = new ConcurrentHashMap<>();
     
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
@@ -174,7 +174,9 @@ public class Layer1ApiMarkersDemo implements
     public void calculateValuesInRange(String indicatorName, String alias, long t0, long intervalWidth, int intervalsNumber,
             CalculatedResultListener listener) {
      
-        switch (indicatorName) {
+        String userName = indicatorsFullNameToUserName.get(indicatorName);
+        
+        switch (userName) {
         case INDICATOR_NAME_TRADE: {
             ArrayList<TreeResponseInterval> intervalResponse = dataStructureInterface.get(t0, intervalWidth, intervalsNumber, alias,
                     new StandardEvents[] {StandardEvents.TRADE});
@@ -238,10 +240,11 @@ public class Layer1ApiMarkersDemo implements
     @Override
     public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String indicatorAlias, long time,
             Consumer<Object> listener, InvalidateInterface invalidateInterface) {
+        String userName = indicatorsFullNameToUserName.get(indicatorName);
         
-        invalidateInterfaceMap.put(indicatorName, invalidateInterface);
+        invalidateInterfaceMap.put(userName, invalidateInterface);
         
-        switch (indicatorName) {
+        switch (userName) {
         case INDICATOR_NAME_TRADE:
             return new OnlineValueCalculatorAdapter() {
                 @Override
@@ -300,7 +303,7 @@ public class Layer1ApiMarkersDemo implements
     }
     
     @Override
-    public StrategyPanel[] getCustomGuiFor(String alias) {
+    public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
         StrategyPanel panel = new StrategyPanel("Markers demo", new GridBagLayout());
         
         panel.setLayout(new GridBagLayout());
@@ -330,23 +333,24 @@ public class Layer1ApiMarkersDemo implements
         return new StrategyPanel[] {panel};
     }
 
-    public void addIndicator(String fullName, String userName) {
+    public void addIndicator(String userName) {
         Layer1ApiUserMessageModifyIndicator message = null;
-        switch (fullName) {
+        switch (userName) {
         case INDICATOR_NAME_TRADE:
-            message = getUserMessageAdd(fullName, userName, IndicatorLineStyle.SHORT_DASHES_WIDE_LEFT_NARROW_RIGHT, true);
+            message = getUserMessageAdd(userName, IndicatorLineStyle.SHORT_DASHES_WIDE_LEFT_NARROW_RIGHT, true);
             break;
         case INDICATOR_NAME_CIRCLES:
-            message = getUserMessageAdd(fullName, userName, IndicatorLineStyle.NONE, true);
+            message = getUserMessageAdd(userName, IndicatorLineStyle.NONE, true);
             break;
         default:
-            Log.warn("Unknwon name for marker indicator: " + fullName);
+            Log.warn("Unknwon name for marker indicator: " + userName);
             break;
         }
         
         if (message != null) {
-            synchronized (addedIndicators) {
-                addedIndicators.put(message.fullName, message.userName);
+            synchronized (indicatorsFullNameToUserName) {
+                indicatorsFullNameToUserName.put(message.fullName, message.userName);
+                indicatorsUserNameToFullName.put(message.userName, message.fullName);
             }
             provider.sendUserMessage(message);
         }

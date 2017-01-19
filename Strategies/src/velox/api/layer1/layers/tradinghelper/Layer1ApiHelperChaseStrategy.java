@@ -49,7 +49,7 @@ public class Layer1ApiHelperChaseStrategy extends Layer1ApiHelperStrategyAbstrac
     }
     
     @Override
-    public StrategyPanel[] getCustomGuiFor(String alias) {
+    public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
         synchronized (locker) {
             HelperChaseStrategySettings settings = getSettingsFor(alias);
             

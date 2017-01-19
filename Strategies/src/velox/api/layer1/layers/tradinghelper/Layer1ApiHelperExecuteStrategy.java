@@ -42,7 +42,7 @@ public class Layer1ApiHelperExecuteStrategy extends Layer1ApiHelperStrategyAbstr
     }
     
     @Override
-    public StrategyPanel[] getCustomGuiFor(String alias) {
+    public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
         synchronized (locker) {
             HelperExecuteStrategySettings settings = getSettingsFor(alias);
             

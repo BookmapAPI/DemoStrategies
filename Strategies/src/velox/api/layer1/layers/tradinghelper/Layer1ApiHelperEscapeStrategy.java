@@ -61,7 +61,7 @@ public class Layer1ApiHelperEscapeStrategy extends Layer1ApiHelperStrategyAbstra
     }
     
     @Override
-    public StrategyPanel[] getCustomGuiFor(String alias) {
+    public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
         synchronized (locker) {
             HelperEscapeStrategySettings settings = getSettingsFor(alias);
             

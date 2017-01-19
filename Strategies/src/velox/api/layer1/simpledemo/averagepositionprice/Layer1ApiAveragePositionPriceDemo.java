@@ -61,13 +61,13 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     }
     
     private static final String INDICATOR_NAME = "Average Price";
-    private static final String FULL_INDICATOR_NAME = "demo." + INDICATOR_NAME;
     
     private Layer1ApiProvider provider;
     
     private Map<String, Double> pipsMap = new ConcurrentHashMap<>();
     
     private Map<String, Map<String, Boolean>> aliasToBuyInfo = new ConcurrentHashMap<>();
+    private Map<String, Map<String, String>> aliasToOrderAliasInfo = new ConcurrentHashMap<>();
     
     private DataStructureInterface dataStructureInterface;
     
@@ -128,14 +128,19 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
         return ((a > 0 && b < 0) || (a < 0 && b > 0));
     }
     
-    private void updateState(CurrentState state, OrderUpdatesExecutionsAggregationEvent aggregationEvent, Map<String, Boolean> orderIdToIsBuy) {
+    private void updateState(String alias, CurrentState state, OrderUpdatesExecutionsAggregationEvent aggregationEvent, Map<String, Boolean> orderIdToIsBuy,
+            Map<String, String> orderIdToAlias) {
         for (Object object: aggregationEvent.orderUpdates) {
             if (object instanceof OrderUpdatedEvent) {
                 OrderUpdatedEvent event = (OrderUpdatedEvent) object;
                 orderIdToIsBuy.put(event.orderInfoUpdate.orderId, event.orderInfoUpdate.isBuy);
+                orderIdToAlias.put(event.orderInfoUpdate.orderId, event.orderInfoUpdate.instrumentAlias);
             } else if (object instanceof OrderExecutedEvent) {
                 OrderExecutedEvent event = (OrderExecutedEvent) object;
-                updateState(state, event.executionInfo, orderIdToIsBuy);
+                String orderAlias = orderIdToAlias.get(event.executionInfo.orderId);
+                if (alias.equals(orderAlias)) {
+                    updateState(state, event.executionInfo, orderIdToIsBuy);
+                }
             } else {
                 throw new IllegalArgumentException("Unknown event: " + object);
             }
@@ -157,16 +162,19 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
         }
         
         Map<String, Boolean> orderIdToIsBuy = new HashMap<>();
-        aliasToBuyInfo.put(alias, orderIdToIsBuy);
+        Map<String, String> orderIdToAlias = new HashMap<>();
         
         CurrentState state = new CurrentState(pips);
-        updateState(state, getOrderEvent(intervalResponse.get(0)), orderIdToIsBuy);
+        updateState(alias, state, getOrderEvent(intervalResponse.get(0)), orderIdToIsBuy, orderIdToAlias);
         
         for (int i = 1; i <= intervalsNumber; ++i) {
-            updateState(state, getOrderEvent(intervalResponse.get(i)), orderIdToIsBuy);
+            updateState(alias, state, getOrderEvent(intervalResponse.get(i)), orderIdToIsBuy, orderIdToAlias);
             
             listener.provideResponse(state.getLineY());
         }
+        
+        aliasToBuyInfo.put(alias, orderIdToIsBuy);
+        aliasToOrderAliasInfo.put(alias, orderIdToAlias);
         
         listener.setCompleted();
         
@@ -186,21 +194,31 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
         if (!aliasToBuyInfo.containsKey(alias)) {
             aliasToBuyInfo.put(alias, new HashMap<>());
         }
+        
+        if (!aliasToOrderAliasInfo.containsKey(alias)) {
+            aliasToOrderAliasInfo.put(alias, new HashMap<>());
+        }
+        
         Map<String, Boolean> orderIdToIsBuy = aliasToBuyInfo.get(alias);
+        Map<String, String> orderIdToAlias = aliasToOrderAliasInfo.get(alias);
         
         CurrentState state = new CurrentState(pips);
-        updateState(state, getOrderEvent(treeResponse), orderIdToIsBuy);
+        updateState(alias, state, getOrderEvent(treeResponse), orderIdToIsBuy, orderIdToAlias);
         
         return new OnlineValueCalculatorAdapter() {
             @Override
             public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
                 orderIdToIsBuy.put(orderInfoUpdate.orderId, orderInfoUpdate.isBuy);
+                orderIdToAlias.put(orderInfoUpdate.orderId, orderInfoUpdate.instrumentAlias);
             }
             
             @Override
             public void onOrderExecuted(ExecutionInfo executionInfo) {
-                updateState(state, executionInfo, orderIdToIsBuy);
-                listener.accept(state.getLineY());
+                String orderAlias = orderIdToAlias.get(executionInfo.orderId);
+                if (alias.equals(orderAlias)) {
+                    updateState(state, executionInfo, orderIdToIsBuy);
+                    listener.accept(state.getLineY());
+                }
             }
         };
     }
@@ -208,7 +226,6 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
         pipsMap.put(alias, instrumentInfo.pips);
-        provider.sendUserMessage(getUserMessageAdd());
     }
 
     @Override
@@ -226,11 +243,11 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
 
     @Override
     public void finish() {
-        provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(FULL_INDICATOR_NAME, INDICATOR_NAME, false));
+        provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo.class, INDICATOR_NAME, false));
     }
     
     private Layer1ApiUserMessageModifyIndicator getUserMessageAdd() {
-        return new Layer1ApiUserMessageModifyIndicator(FULL_INDICATOR_NAME, INDICATOR_NAME, true,
+        return new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo.class, INDICATOR_NAME, true,
                 new IndicatorColorScheme() {
                     @Override
                     public ColorDescription[] getColors() {

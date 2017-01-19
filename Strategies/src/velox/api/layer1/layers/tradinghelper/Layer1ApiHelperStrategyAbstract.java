@@ -103,13 +103,13 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
     }
     
     @Override
-    public StrategyPanel[] getCustomGuiFor(String alias) {
+    public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
         return new StrategyPanel[0];
     }
 
     @Override
     public void finish() {
-        onUserMessage(new Layer1ApiUserMessageModifyIndicator(strategyName, userReadableStrategyName, false));
+        onUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiHelperStrategyAbstract.class, userReadableStrategyName, false));
     }
     
     @Override
@@ -148,7 +148,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
         if (data instanceof UserMessageLayersChainCreatedTargeted) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {
-                onUserMessage(new Layer1ApiUserMessageModifyIndicator(strategyName, userReadableStrategyName, true,
+                onUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiHelperStrategyAbstract.class, userReadableStrategyName, true,
                         null, null, null, null, null, null, null, null, null, GraphType.NONE, false, null, null, null, null));
             }
         } else if (data instanceof UserMessageRewindBase) {

@@ -265,6 +265,6 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
                         return new ColorIntervalResponse(new String[] {INDICATOR_NAME}, new double[] {});
                     }
                 }, null, Color.white, Color.black, null,
-                null, null, null, null, GraphType.PRIMARY, false, false, null, this, null);
+                null, null, null, null, GraphType.PRIMARY, true, false, null, this, null);
     }
 }

@@ -33,7 +33,6 @@ import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator;
 import velox.api.layer1.messages.indicators.DataStructureInterface.StandardEvents;
 import velox.api.layer1.messages.indicators.DataStructureInterface.TreeResponseInterval;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
-import velox.api.layer1.simpledemo.markers.Layer1ApiMarkersDemo;
 
 @Layer1Attachable
 @Layer1StrategyName("Average Price")
@@ -243,16 +242,16 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
 
     @Override
     public void finish() {
-        provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo.class, INDICATOR_NAME, false));
+        provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiAveragePositionPriceDemo.class, INDICATOR_NAME, false));
     }
     
     private Layer1ApiUserMessageModifyIndicator getUserMessageAdd() {
-        return new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo.class, INDICATOR_NAME, true,
+        return new Layer1ApiUserMessageModifyIndicator(Layer1ApiAveragePositionPriceDemo.class, INDICATOR_NAME, true,
                 new IndicatorColorScheme() {
                     @Override
                     public ColorDescription[] getColors() {
                         return new ColorDescription[] {
-                                new ColorDescription(Layer1ApiMarkersDemo.class, INDICATOR_NAME, Color.blue, true),
+                                new ColorDescription(Layer1ApiAveragePositionPriceDemo.class, INDICATOR_NAME, Color.blue, true),
                         };
                     }
                     

@@ -3,6 +3,9 @@ The project should help you get started with Bookmap Layer 1 API
 
 API changes
 
+### 24.01.2017: IndicatorDisplayLogic.setTooltipFormatter renamed to setValuesFormatter
+Method name did not fully match what it actually did before. Just rename it in your code - functionality is unchanged.
+
 ### 13.01.2017: Strategies naming changed
 Earlier to generate indicator you would provide fullName and userName to message, and fullName would be used by system to identify your indicator (like online indicator caclulations).
 Now Layer1ApiUserMessageModifyIndicator constructor accepts owner class name and userName (that will be used to show indicator name in different places). Full name is generated as combination of those, and will

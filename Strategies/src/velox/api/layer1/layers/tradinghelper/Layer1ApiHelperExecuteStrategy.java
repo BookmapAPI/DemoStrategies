@@ -117,7 +117,7 @@ public class Layer1ApiHelperExecuteStrategy extends Layer1ApiHelperStrategyAbstr
     
     @Override
     protected void doActionForAlias(String alias) {
-        if (!getSettingsFor(alias).isEnabled()) {
+        if (!getSettingsFor(alias).isEnabled() || !isWorking) {
             return;
         }
         

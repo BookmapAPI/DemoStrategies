@@ -75,6 +75,8 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
     
     private final Class<?> settingsClass;
     
+    protected volatile boolean isWorking = false;
+    
     private InvalidateIsEnabledCallback invalidateIsEnabledCallback;
     
     public Layer1ApiHelperStrategyAbstract(Layer1ApiProvider provider, String userReadableStrategyName, String strategyName, Class<?> settingsClass) {
@@ -109,7 +111,13 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
 
     @Override
     public void finish() {
+        isWorking = false;
         onUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiHelperStrategyAbstract.class, userReadableStrategyName, false));
+        synchronized (locker) {
+            orderBookMap.clear();
+            aliasToOrdersMap.clear();
+            lastRequestMap.clear();
+        }
     }
     
     @Override
@@ -148,6 +156,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
         if (data instanceof UserMessageLayersChainCreatedTargeted) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {
+                isWorking = true;
                 onUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiHelperStrategyAbstract.class, userReadableStrategyName, true,
                         null, null, null, null, null, null, null, null, null, GraphType.NONE, false, null, null, null, null));
             }
@@ -175,7 +184,6 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
 
     @Override
     public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
-        //TODO: we should see if we need to apply action to this order
         synchronized (locker) {
             Map<String, Combination<Integer, Boolean>> ordersMap = aliasToOrdersMap.get(orderInfoUpdate.instrumentAlias);
             if (ordersMap == null) {

@@ -28,8 +28,10 @@ import velox.api.layer1.layers.strategies.interfaces.OnlineValueCalculatorAdapte
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 import velox.api.layer1.messages.indicators.DataStructureInterface;
 import velox.api.layer1.messages.indicators.IndicatorColorScheme;
+import velox.api.layer1.messages.indicators.IndicatorDisplayLogic;
 import velox.api.layer1.messages.indicators.Layer1ApiDataInterfaceRequestMessage;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator;
+import velox.api.layer1.messages.indicators.ValuesFormatter;
 import velox.api.layer1.messages.indicators.DataStructureInterface.StandardEvents;
 import velox.api.layer1.messages.indicators.DataStructureInterface.TreeResponseInterval;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
@@ -93,7 +95,8 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     
     private void updateState(CurrentState state, ExecutionInfo executionInfo, Map<String, Boolean> orderIdToIsBuy) {
         Boolean isBuy = orderIdToIsBuy.get(executionInfo.orderId);
-        if (isBuy != null) {
+        
+        if (isBuy != null && executionInfo.size != 0) {
             
             int positionDelta = executionInfo.size;
             if (!isBuy) {
@@ -264,7 +267,17 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
                     public ColorIntervalResponse getColorIntervalsList(double valueFrom, double valueTo) {
                         return new ColorIntervalResponse(new String[] {INDICATOR_NAME}, new double[] {});
                     }
-                }, null, Color.white, Color.black, null,
+                }, null, Color.white, Color.black, new IndicatorDisplayLogic().setValuesFormatter(new ValuesFormatter() {
+                    @Override
+                    public String formatWidget(double value) {
+                        return Double.isNaN(value) ? "" : String.format("%.2f", value);
+                    }
+                    
+                    @Override
+                    public String formatTooltip(double value, double minValue, double maxValue, int pixelsCount) {
+                        return String.format("%.2f", value);
+                    }
+                }),
                 null, null, null, null, GraphType.PRIMARY, true, false, null, this, null);
     }
 }

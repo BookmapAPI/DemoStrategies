@@ -1,7 +1,12 @@
 # DemoStrategies
 The project should help you get started with Bookmap Layer 1 API
 
-API changes
+## Getting started
+A short environment setup guide is available here
+[Getting started + overview.pdf](Doc/Getting started + overview.pdf)
+Also after you install Bookmap javadoc will be available in C:\Program Files (x86)\Bookmap\lib\bm-l1api-javadoc.jar (or C:\Program Files\Bookmap\lib\bm-l1api-javadoc.jar for x64 version).
+
+## API changes
 
 ### 17.02.2017: Manual price range calculations
 Added Layer1PriceAxisRangeCalculatable interface that can be used to control price range (Y axis range) and price lables for strategy indicators. Added PriceRangeCalculationHelper helper class for standart "good numbers" implementation.

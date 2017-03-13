@@ -3,6 +3,9 @@ The project should help you get started with Bookmap Layer 1 API
 
 API changes
 
+### 17.02.2017: Manual price range calculations
+Added Layer1PriceAxisRangeCalculatable interface that can be used to control price range (Y axis range) and price lables for strategy indicators. Added PriceRangeCalculationHelper helper class for standart "good numbers" implementation.
+
 ### 24.01.2017: IndicatorDisplayLogic.setTooltipFormatter renamed to setValuesFormatter
 Method name did not fully match what it actually did before. Just rename it in your code - functionality is unchanged.
 

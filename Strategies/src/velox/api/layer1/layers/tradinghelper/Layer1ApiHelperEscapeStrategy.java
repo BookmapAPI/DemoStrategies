@@ -95,7 +95,8 @@ public class Layer1ApiHelperEscapeStrategy extends Layer1ApiHelperStrategyAbstra
             panel1.add(lbl8);
             panel1.add(lbl9);
             
-            panel1.setMinimumSize(new Dimension(panel1.getMinimumSize().width, 175));
+            panel1.setMinimumSize(new Dimension(panel1.getMinimumSize().width, 160));
+            panel1.setPreferredSize(new Dimension(panel1.getPreferredSize().width, 160));
             
             StrategyPanel panel2 = new StrategyPanel("Action");
             panel2.setLayout(new GridBagLayout());

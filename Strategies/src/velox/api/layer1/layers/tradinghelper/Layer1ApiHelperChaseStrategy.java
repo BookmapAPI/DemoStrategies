@@ -77,7 +77,8 @@ public class Layer1ApiHelperChaseStrategy extends Layer1ApiHelperStrategyAbstrac
             panel.add(rbChaseBest);
             panel.add(rbChaseLast);
             
-            panel.setMinimumSize(new Dimension(panel.getMinimumSize().width, 105));
+            panel.setMinimumSize(new Dimension(panel.getMinimumSize().width, 100));
+            panel.setPreferredSize(new Dimension(panel.getPreferredSize().width, 100));
             
             lastPanels = new StrategyPanel[] {panel, getSettingsPanel(alias, getSettingsFor(alias).isEnabled())};
             return lastPanels;

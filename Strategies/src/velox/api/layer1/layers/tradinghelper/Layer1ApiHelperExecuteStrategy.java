@@ -78,6 +78,7 @@ public class Layer1ApiHelperExecuteStrategy extends Layer1ApiHelperStrategyAbstr
             panel.add(lbl6);
             
             panel.setMinimumSize(new Dimension(panel.getMinimumSize().width, 155));
+            panel.setPreferredSize(new Dimension(panel.getPreferredSize().width, 155));
             
             lastPanels = new StrategyPanel[] {panel, getSettingsPanel(alias, getSettingsFor(alias).isEnabled())};
             return lastPanels;

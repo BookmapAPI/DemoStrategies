@@ -41,8 +41,8 @@ public class FeedRecorder implements Layer1CustomPanelsGetter, Layer1ApiDataAdap
     private JCheckBox recordOrders = new JCheckBox("Record orders", true);
 
     public FeedRecorder(Layer1ApiProvider provider) throws IOException {
-        File depthRecordsFile = new File(System.getProperty("user.dir"), "FeedRecorder_demo_depth.txt");
-        File ordersRecordsFile = new File(System.getProperty("user.dir"), "FeedRecorder_demo_orders.txt");
+        File depthRecordsFile = new File(System.getProperty("user.dir"), "FeedRecorder_demo_depth-" + System.currentTimeMillis() + ".txt");
+        File ordersRecordsFile = new File(System.getProperty("user.dir"), "FeedRecorder_demo_orders-"  + System.currentTimeMillis() + ".txt");
         recorder = new SpecificFormatRecorder(System.currentTimeMillis(), depthRecordsFile, ordersRecordsFile,
                 provider.getSource());
         // register listener to get data

@@ -6,7 +6,7 @@ import velox.api.layer1.annotations.Layer1Injectable;
 import velox.api.layer1.annotations.Layer1StrategyDateLicensed;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.data.OrderInfo;
-import velox.api.layer1.data.OrderInfoTemplate;
+import velox.api.layer1.data.OrderInfoBuilder;
 import velox.api.layer1.data.OrderInfoUpdate;
 import velox.api.layer1.data.OrderSendParameters;
 import velox.api.layer1.data.OrderStatus;
@@ -60,9 +60,9 @@ public class LargeOrdersFilter extends Layer1ApiInjectorRelay implements Layer1A
                         false, currentTime);
                 OrderInfoUpdate orderInfoUpdate1 = new OrderInfoUpdate(orderInfo1);
 
-                OrderInfoTemplate orderInfoUpdate2Template = orderInfoUpdate1.toTemplate();
+                OrderInfoBuilder orderInfoUpdate2Template = orderInfoUpdate1.toBuilder();
                 orderInfoUpdate2Template.setStatus(OrderStatus.REJECTED);
-                OrderInfoUpdate orderInfoUpdate2 = orderInfoUpdate2Template.toOrderInfoUpdate();
+                OrderInfoUpdate orderInfoUpdate2 = orderInfoUpdate2Template.build();
                 
                 inject(() -> {
                     super.onOrderUpdated(orderInfoUpdate1);

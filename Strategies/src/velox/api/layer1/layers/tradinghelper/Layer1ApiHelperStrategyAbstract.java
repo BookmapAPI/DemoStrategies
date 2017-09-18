@@ -321,6 +321,6 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
     
     @Override
     public String getDescription() {
-        return "<b>Beta feature. Not enabled for use in live trading mode.</b><br/><a href='http://bookmap.com/strategies' style=\"color: #FFFFFF\">Click here</a> to learn more on our website";
+        return "<a href='http://bookmap.com/strategies' style=\"color: #FFFFFF\">Click here</a> to learn more on our website";
     }
 }

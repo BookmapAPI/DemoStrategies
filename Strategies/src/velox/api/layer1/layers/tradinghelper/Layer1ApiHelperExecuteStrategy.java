@@ -50,7 +50,7 @@ public class Layer1ApiHelperExecuteStrategy extends Layer1ApiHelperStrategyAbstr
             panel.setLayout(new FlowLayout());
             
             JLabel lbl1 = new JLabel("If the total size of");
-            JLabel lbl2 = new JLabel("price levels at my order’s side");
+            JLabel lbl2 = new JLabel("price levels at my order's side");
             JLabel lbl3 = new JLabel("is more than");
             JLabel lbl3_1 = new JLabel("% of the opposite side");
             JLabel lbl4 = new JLabel("move my order");

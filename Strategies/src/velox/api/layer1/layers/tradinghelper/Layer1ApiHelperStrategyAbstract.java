@@ -158,7 +158,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
             if (message.targetClass == getClass()) {
                 isWorking = true;
                 onUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiHelperStrategyAbstract.class, userReadableStrategyName, true,
-                        null, null, null, null, null, null, null, null, null, GraphType.NONE, false, null, null, null, null));
+                        null, null, null, null, null, null, null, null, null, null, GraphType.NONE, false, null, null, null, null));
             }
         } else if (data instanceof UserMessageRewindBase) {
             UserMessageRewindBase message = (UserMessageRewindBase) data;
@@ -212,7 +212,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
         ((NumberFormatter) tfield.getFormatter()).setAllowsInvalid(false);
     }
     
-    protected int getTopLevelsSum(TreeMap<Integer, Integer> map, int levelsNumber, boolean isBid) {
+    protected int getTopLevelsSum(TreeMap<Integer, Long> map, int levelsNumber, boolean isBid) {
         if (map.isEmpty()) {
             return 0;
         }
@@ -222,7 +222,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
         int topPrice = map.firstKey();
         for (int i = 0; i < levelsNumber; i++) {
             int price = topPrice + i * (isBid ? -1 : 1);
-            result += map.getOrDefault(price, 0);
+            result += map.getOrDefault(price, 0L);
         }
                 
         return result;
@@ -321,6 +321,6 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
     
     @Override
     public String getDescription() {
-        return "<a href='http://bookmap.com/strategies' style=\"color: #FFFFFF\">Click here</a> to learn more on our website";
+        return "<a href='https://www.bookmap.com/api/v1/redirect/strategies' style=\"color: #FFFFFF\">Click here</a> to learn more on our website";
     }
 }

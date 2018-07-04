@@ -1,6 +1,9 @@
 package velox.api.layer1.simpledemo.averagepositionprice;
 
 import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,6 +14,7 @@ import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiInstrumentListener;
 import velox.api.layer1.Layer1ApiProvider;
+import velox.api.layer1.Layer1CustomPanelsGetter;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
@@ -23,24 +27,34 @@ import velox.api.layer1.datastructure.events.OrderUpdatedEvent;
 import velox.api.layer1.datastructure.events.OrderUpdatesExecutionsAggregationEvent;
 import velox.api.layer1.layers.strategies.interfaces.CalculatedResultListener;
 import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
+import velox.api.layer1.layers.strategies.interfaces.Layer1IndicatorColorInterface;
 import velox.api.layer1.layers.strategies.interfaces.OnlineCalculatable;
 import velox.api.layer1.layers.strategies.interfaces.OnlineValueCalculatorAdapter;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 import velox.api.layer1.messages.indicators.DataStructureInterface;
+import velox.api.layer1.messages.indicators.IndicatorColorInterface;
 import velox.api.layer1.messages.indicators.IndicatorColorScheme;
 import velox.api.layer1.messages.indicators.IndicatorDisplayLogic;
 import velox.api.layer1.messages.indicators.Layer1ApiDataInterfaceRequestMessage;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator;
+import velox.api.layer1.messages.indicators.SettingsAccess;
 import velox.api.layer1.messages.indicators.ValuesFormatter;
+import velox.api.layer1.settings.Layer1ConfigSettingsInterface;
 import velox.api.layer1.messages.indicators.DataStructureInterface.StandardEvents;
 import velox.api.layer1.messages.indicators.DataStructureInterface.TreeResponseInterval;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
+import velox.colors.ColorsChangedListener;
+import velox.gui.StrategyPanel;
+import velox.gui.colors.ColorsConfigItem;
 
 @Layer1Attachable
 @Layer1StrategyName("Average Price")
 public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     Layer1ApiAdminAdapter,
-    Layer1ApiInstrumentListener, OnlineCalculatable {
+    Layer1ApiInstrumentListener, OnlineCalculatable,
+    Layer1CustomPanelsGetter,
+    Layer1ConfigSettingsInterface,
+    Layer1IndicatorColorInterface {
     
     private static class CurrentState {
         private final double pips;
@@ -62,6 +76,8 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     }
     
     private static final String INDICATOR_NAME = "Average Price";
+    private static final String LINE_COLOR_NAME = "Line color";
+    private static final Color LINE_COLOR_DEFAULT = Color.BLUE;
     
     private Layer1ApiProvider provider;
     
@@ -71,6 +87,14 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     private Map<String, Map<String, String>> aliasToOrderAliasInfo = new ConcurrentHashMap<>();
     
     private DataStructureInterface dataStructureInterface;
+    
+    private Map<String, AveragePositionPriceDemoSettings> settingsMap = new HashMap<>();
+    
+    private SettingsAccess settingsAccess;
+    
+    private Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
+    
+    private Object locker = new Object();
     
     public Layer1ApiAveragePositionPriceDemo(Layer1ApiProvider provider) {
         this.provider = provider;
@@ -147,8 +171,53 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
                 throw new IllegalArgumentException("Unknown event: " + object);
             }
         }
+    }
+    
+    @Override
+    public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
+        StrategyPanel panel = new StrategyPanel("Colors", new GridBagLayout());
+        
+        panel.setLayout(new GridBagLayout());
+        GridBagConstraints gbConst;
+        
+        IndicatorColorInterface indicatorColorInterface = new IndicatorColorInterface() {
+            @Override
+            public void set(String name, Color color) {
+                setColor(alias, name, color);
+            }
+            
+            @Override
+            public Color getOrDefault(String name, Color defaultValue) {
+                Color color = getSettingsFor(alias).getColor(name);
+                return color == null ? defaultValue : color;
+            }
+            
+            @Override
+            public void addColorChangeListener(ColorsChangedListener listener) {
+            }
+        };
+        
+        ColorsConfigItem configItemLines = new ColorsConfigItem(LINE_COLOR_NAME, LINE_COLOR_NAME, true,
+                LINE_COLOR_DEFAULT, indicatorColorInterface, new ColorsChangedListener() {
+                    @Override
+                    public void onColorsChanged() {
+                        InvalidateInterface invalidaInterface = invalidateInterfaceMap.get(INDICATOR_NAME);
+                        if (invalidaInterface != null) {
+                            invalidaInterface.invalidate();
+                        }
+                    }
+                });
         
         
+        gbConst = new GridBagConstraints();
+        gbConst.gridx = 0;
+        gbConst.gridy = 0;
+        gbConst.weightx = 1;
+        gbConst.insets = new Insets(5, 5, 5, 5);
+        gbConst.fill = GridBagConstraints.HORIZONTAL;
+        panel.add(configItemLines, gbConst);
+        
+        return new StrategyPanel[] {panel};
     }
     
     @Override
@@ -187,6 +256,8 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
             Consumer<Object> listener, InvalidateInterface invalidateInterface) {
         
         TreeResponseInterval treeResponse = dataStructureInterface.get(time, alias, new StandardEvents[] {StandardEvents.ORDER});
+        
+        invalidateInterfaceMap.put(INDICATOR_NAME, invalidateInterface);
         
         Double pips = pipsMap.get(alias);
         if (pips == null) {
@@ -232,7 +303,6 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
 
     @Override
     public void onInstrumentRemoved(String alias) {
-        pipsMap.remove(alias);
     }
     
     @Override
@@ -254,20 +324,20 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
                     @Override
                     public ColorDescription[] getColors() {
                         return new ColorDescription[] {
-                                new ColorDescription(Layer1ApiAveragePositionPriceDemo.class, INDICATOR_NAME, Color.blue, true),
+                                new ColorDescription(Layer1ApiAveragePositionPriceDemo.class, LINE_COLOR_NAME, LINE_COLOR_DEFAULT, false),
                         };
                     }
                     
                     @Override
                     public String getColorFor(Double value) {
-                        return INDICATOR_NAME;
+                        return LINE_COLOR_NAME;
                     }
 
                     @Override
                     public ColorIntervalResponse getColorIntervalsList(double valueFrom, double valueTo) {
-                        return new ColorIntervalResponse(new String[] {INDICATOR_NAME}, new double[] {});
+                        return new ColorIntervalResponse(new String[] {LINE_COLOR_NAME}, new double[] {});
                     }
-                }, null, Color.white, Color.black, new IndicatorDisplayLogic().setValuesFormatter(new ValuesFormatter() {
+                }, Layer1ApiAveragePositionPriceDemo.this, null, Color.white, Color.black, new IndicatorDisplayLogic().setValuesFormatter(new ValuesFormatter() {
                     @Override
                     public String formatWidget(double value) {
                         return Double.isNaN(value) ? "" : String.format("%.2f", value);
@@ -279,5 +349,57 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
                     }
                 }),
                 null, null, null, null, GraphType.PRIMARY, true, false, null, this, null);
+    }
+    
+    private AveragePositionPriceDemoSettings getSettingsFor(String alias) {
+        synchronized (locker) {
+            AveragePositionPriceDemoSettings settings = settingsMap.get(alias);
+            if (settings == null) {
+                settings = (AveragePositionPriceDemoSettings) settingsAccess.getSettings(alias, INDICATOR_NAME, AveragePositionPriceDemoSettings.class);
+                settingsMap.put(alias, settings);
+            }
+            return settings;
+        }
+    }
+    
+    protected void settingsChanged(String settingsAlias, AveragePositionPriceDemoSettings settingsObject) {
+        synchronized (locker) {
+            settingsAccess.setSettings(settingsAlias, INDICATOR_NAME, settingsObject, settingsObject.getClass());
+        }
+    }
+    
+    @Override
+    public void setColor(String alias, String name, Color color) {
+        AveragePositionPriceDemoSettings settings = getSettingsFor(alias);
+        settings.setColor(name, color);
+        settingsChanged(alias, settings);
+    }
+
+    @Override
+    public Color getColor(String alias, String name) {
+        Color color = getSettingsFor(alias).getColor(name);
+        if (color == null) {
+            switch (name) {
+            case LINE_COLOR_NAME:
+                color = LINE_COLOR_DEFAULT;
+                break;
+            default:
+                Log.warn("Layer1ApiAveragePositionPriceDemo: unknown color name " + name);
+                color = Color.WHITE;
+                break;
+            }
+        }
+        
+        return color;
+    }
+
+    @Override
+    public void addColorChangeListener(ColorsChangedListener listener) {
+        // every one of our colors is modified only from one place
+    }
+    
+    @Override
+    public void acceptSettingsInterface(SettingsAccess settingsAccess) {
+        this.settingsAccess = settingsAccess;
     }
 }

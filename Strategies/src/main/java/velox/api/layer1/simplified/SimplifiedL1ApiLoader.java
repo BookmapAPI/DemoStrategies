@@ -248,7 +248,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                     points.add(newPoint);
                 }
             }
-        }      
+        }
     }
     
     private class IndicatorGeneratorImplementation extends IndicatorImplementation {
@@ -313,7 +313,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                                 listener.accept(event.indicatorValue);
                             }
                         }
-                    }                    
+                    }
                 }
             };
         }
@@ -322,7 +322,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         public void addPoint(double value) {
             wrapper.generatorMessage.generator.getGeneratedEventsConsumer().accept(new CustomGeneratedEventAliased(
                     new CustomEvent(wrapper.getGeneratorTime(), generatorIndicatorId, value), alias));
-        }      
+        }
     }
     
     private class InstanceWrapper implements Api {
@@ -559,23 +559,23 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 .builder(simpleStrategyClass, userReadableIndicatorName)
                 .setIsAdd(isAdd)
                 .setIndicatorColorScheme(new IndicatorColorScheme() {
-                    private final String DEFAULT_COLOR = "default-" + indicatorAlias;
+                    private final String defaultColor = "default-" + indicatorAlias;
                     
                     @Override
                     public ColorDescription[] getColors() {
                         return new ColorDescription[] {
-                                new ColorDescription(simpleStrategyClass, DEFAULT_COLOR, Color.RED, false)
+                                new ColorDescription(simpleStrategyClass, defaultColor, Color.RED, false)
                         };
                     }
                     
                     @Override
                     public ColorIntervalResponse getColorIntervalsList(double valueFrom, double valueTo) {
-                        return new ColorIntervalResponse(new String[] {DEFAULT_COLOR}, new double[] {});
+                        return new ColorIntervalResponse(new String[] {defaultColor}, new double[] {});
                     }
                     
                     @Override
                     public String getColorFor(Double value) {
-                        return DEFAULT_COLOR;
+                        return defaultColor;
                     }
                 })
                 .setGraphType(graphType)

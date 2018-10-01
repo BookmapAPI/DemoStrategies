@@ -15,8 +15,8 @@ import velox.api.layer1.simplified.TradeDataListener;
 @Layer1SimpleAttachable
 @Layer1StrategyName("Last trade without historical data")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
-public class LastTradeDemoNoHistory implements CustomModule, TradeDataListener 
-{    
+public class LastTradeDemoNoHistory implements CustomModule, TradeDataListener
+{
     private Indicator lastTradeIndicator;
 
     @Override

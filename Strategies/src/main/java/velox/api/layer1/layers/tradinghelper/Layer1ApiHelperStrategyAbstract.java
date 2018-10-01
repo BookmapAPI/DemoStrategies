@@ -27,7 +27,6 @@ import velox.api.layer1.annotations.Layer1TradingStrategy;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.config.beans.HelperStrategySettings;
-import velox.api.layer1.data.AccountInfo;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.OrderInfoUpdate;
 import velox.api.layer1.data.OrderStatus;
@@ -175,11 +174,6 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
                 aliasToOrdersMap.forEach((alias, orderMap) -> orderMap.clear());
             }
         }
-    }
-
-    @Override
-    public int selectAccount(AccountInfo[] accounts) {
-        return 0;
     }
 
     @Override

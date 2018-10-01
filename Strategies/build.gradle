@@ -1,0 +1,15 @@
+apply plugin: 'java'
+
+dependencies {
+    if (findProperty('is_built_from_main_bookmap_project')) {
+        compile fileTree(dir: "${main_libs}", include: ['*.jar'])
+        compile project(':Level1Api')
+    } else {
+        compile files('C:/Program Files/Bookmap/lib/bm-l1api.jar')
+        compile files('C:/Program Files/Bookmap/lib/bm-l1api-javadoc.jar')
+    }
+}
+
+jar {
+    archiveName 'bm-strategies.jar'
+}

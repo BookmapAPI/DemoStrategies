@@ -584,6 +584,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         
         Layer1ApiUserMessageModifyIndicator message = Layer1ApiUserMessageModifyIndicator
                 .builder(simpleStrategyClass, userReadableIndicatorName)
+                .extendFullName(indicatorAlias)
                 .setIsAdd(isAdd)
                 .setIndicatorColorScheme(new IndicatorColorScheme() {
                     private final String defaultColor = "default-" + indicatorAlias;

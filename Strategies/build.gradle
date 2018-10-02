@@ -1,5 +1,9 @@
 apply plugin: 'java'
 
+repositories {
+    mavenCentral()
+}
+
 dependencies {
     if (findProperty('is_built_from_main_bookmap_project')) {
         compile fileTree(dir: "${main_libs}", include: ['*.jar'])
@@ -7,6 +11,8 @@ dependencies {
     } else {
         compile files('C:/Program Files/Bookmap/lib/bm-l1api.jar')
         compile files('C:/Program Files/Bookmap/lib/bm-l1api-javadoc.jar')
+
+        compileOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
     }
 }
 

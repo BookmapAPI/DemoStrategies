@@ -594,8 +594,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         return message;
     }
     
-    private Layer1ApiUserMessageAddStrategyUpdateGenerator getGeneratorMessage(boolean isAdd, String alias, InstanceWrapper listener) {
-        return new Layer1ApiUserMessageAddStrategyUpdateGenerator(simpleStrategyClass, alias, isAdd, true, new StrategyUpdateGenerator() {
+    private Layer1ApiUserMessageAddStrategyUpdateGenerator getGeneratorMessage(boolean isAdd, String targetAlias, InstanceWrapper listener) {
+        return new Layer1ApiUserMessageAddStrategyUpdateGenerator(simpleStrategyClass, targetAlias, isAdd, true, new StrategyUpdateGenerator() {
             private boolean isRealtime = false;
             
             private Consumer<CustomGeneratedEventAliased> consumer;
@@ -630,7 +630,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             
             @Override
             public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-                listener.onTrade(price, size, tradeInfo, true);
+            	if (targetAlias.equals(alias)) {
+            		listener.onTrade(price, size, tradeInfo, true);
+            	}
             }
             
             @Override
@@ -639,7 +641,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             
             @Override
             public void onDepth(String alias, boolean isBid, int price, int size) {
-                listener.onDepth(isBid, price, size, true);
+            	if (targetAlias.equals(alias)) {
+            		listener.onDepth(isBid, price, size, true);
+            	}
             }
             
             @Override

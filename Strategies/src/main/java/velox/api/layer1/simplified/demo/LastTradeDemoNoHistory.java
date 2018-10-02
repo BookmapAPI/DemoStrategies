@@ -1,5 +1,7 @@
 package velox.api.layer1.simplified.demo;
 
+import java.awt.Color;
+
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1SimpleAttachable;
@@ -22,7 +24,7 @@ public class LastTradeDemoNoHistory implements CustomModule, TradeDataListener
     @Override
     public void initialize(InstrumentInfo info, Api api) {
         lastTradeIndicator = api.registerIndicator("Last trade, no history",
-                GraphType.PRIMARY);
+                GraphType.PRIMARY, Color.GREEN);
     }
 
     @Override

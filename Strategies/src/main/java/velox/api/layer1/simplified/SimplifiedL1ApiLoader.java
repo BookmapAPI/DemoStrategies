@@ -151,26 +151,28 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         protected final String alias;
         protected final String name;
         protected final GraphType graphType;
+        protected final Color defaultColor;
         protected final double initialValue;
         protected final InstanceWrapper wrapper;
 
-        public IndicatorImplementation(String alias, String name, GraphType graphType, double initialValue, InstanceWrapper wrapper) {
+        public IndicatorImplementation(String alias, String name, GraphType graphType, Color defaultColor, double initialValue, InstanceWrapper wrapper) {
             super();
             this.alias = alias;
             this.name = name;
             this.graphType = graphType;
+            this.defaultColor = defaultColor;
             this.initialValue = initialValue;
             this.wrapper = wrapper;
         }
 
         public void register() {
-            Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, alias, true, this);
+            Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, defaultColor, alias, true, this);
             provider.sendUserMessage(message);
         }
         
         @Override
         public void remove() {
-            Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, alias, false, this);
+            Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, defaultColor, alias, false, this);
             provider.sendUserMessage(message);
         }
     }
@@ -179,8 +181,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         
         private List<Pair<Long, Double>> points = new ArrayList<>();
 
-        public IndicatorBasicImplementation(String alias, String name, GraphType graphType, double initialValue, InstanceWrapper wrapper) {
-            super(alias, name, graphType, initialValue, wrapper);
+        public IndicatorBasicImplementation(String alias, String name, GraphType graphType, Color defaultColor, double initialValue, InstanceWrapper wrapper) {
+            super(alias, name, graphType, defaultColor, initialValue, wrapper);
         }
 
         @Override
@@ -264,8 +266,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
 
         private final int generatorIndicatorId;
 
-        public IndicatorGeneratorImplementation(String alias, String name, GraphType graphType, InstanceWrapper wrapper, int generatorIndicatorId, double initialValue) {
-            super(alias, name, graphType, initialValue, wrapper);
+        public IndicatorGeneratorImplementation(String alias, String name, GraphType graphType, Color defaultColor, InstanceWrapper wrapper, int generatorIndicatorId, double initialValue) {
+            super(alias, name, graphType, defaultColor, initialValue, wrapper);
             this.generatorIndicatorId = generatorIndicatorId;
         }
         
@@ -403,15 +405,17 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         }
 
         @Override
-        public Indicator registerIndicator(String name, GraphType graphType, double initialValue) {
+        public Indicator registerIndicator(String name, GraphType graphType, Color defaultColor, double initialValue) {
             
             if (!initializing) {
                 throw new IllegalStateException("Registering indicators is only allowed inside CustomModule#initialize");
             }
+            
+            defaultColors.put(new ImmutablePair<String, String>(alias, name), defaultColor);
 
             IndicatorImplementation indicatorImplementation = mode == Mode.GENERATORS
-                    ? new IndicatorGeneratorImplementation(alias, name, graphType, this, generatorIndicatorId++, initialValue)
-                    : new IndicatorBasicImplementation(alias, name, graphType, initialValue, this);
+                    ? new IndicatorGeneratorImplementation(alias, name, graphType, defaultColor, this, generatorIndicatorId++, initialValue)
+                    : new IndicatorBasicImplementation(alias, name, graphType, defaultColor, initialValue, this);
             indicatorImplementation.register();
             indicators.add(indicatorImplementation);
             return indicatorImplementation;
@@ -461,7 +465,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     private Map<String, InstrumentInfo> instruments = new ConcurrentHashMap<>();
     private Map<String, OrderBook> orderBooks = new ConcurrentHashMap<>();
     
+    // TODO: replace with settings
     private HashSet<String> enabledAliases = new HashSet<>();
+    
+    private HashMap<Pair<String, String>, Color> defaultColors = new HashMap<>();
+    // TODO: replace with settings
+    private HashMap<Pair<String, String>, Color> colors = new HashMap<>();
     
     public SimplifiedL1ApiLoader(Layer1ApiProvider provider, Class<T> clazz) {
         super(provider);
@@ -483,14 +492,13 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
 
     @Override
     public void setColor(String alias, String name, Color color) {
-        // TODO Save color to settings
-        
+        colors.put(new ImmutablePair<String, String>(alias, name), color);
     }
 
     @Override
     public Color getColor(String alias, String name) {
-        // Return proper color
-        return Color.RED;
+        return colors.computeIfAbsent(new ImmutablePair<String, String>(alias, name),
+                k -> defaultColors.get(k));
     }
 
     @Override
@@ -580,32 +588,33 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     }
     
     private Layer1ApiUserMessageModifyIndicator getUserMessageModify(String userReadableIndicatorName, GraphType graphType,
-            String indicatorAlias, boolean isAdd, OnlineCalculatable onlineCalculatable) {
+            Color defaultColor, String indicatorAlias, boolean isAdd, OnlineCalculatable onlineCalculatable) {
         
         Layer1ApiUserMessageModifyIndicator message = Layer1ApiUserMessageModifyIndicator
                 .builder(simpleStrategyClass, userReadableIndicatorName)
                 .extendFullName(indicatorAlias)
                 .setIsAdd(isAdd)
                 .setIndicatorColorScheme(new IndicatorColorScheme() {
-                    private final String defaultColor = "default-" + indicatorAlias;
+                    private final String defaultColorName = userReadableIndicatorName;
                     
                     @Override
                     public ColorDescription[] getColors() {
                         return new ColorDescription[] {
-                                new ColorDescription(simpleStrategyClass, defaultColor, Color.RED, false)
+                                new ColorDescription(simpleStrategyClass, defaultColorName, defaultColor, false)
                         };
                     }
                     
                     @Override
                     public ColorIntervalResponse getColorIntervalsList(double valueFrom, double valueTo) {
-                        return new ColorIntervalResponse(new String[] {defaultColor}, new double[] {});
+                        return new ColorIntervalResponse(new String[] {defaultColorName}, new double[] {});
                     }
                     
                     @Override
                     public String getColorFor(Double value) {
-                        return defaultColor;
+                        return defaultColorName;
                     }
                 })
+                .setColorInterface(this)
                 .setGraphType(graphType)
                 .setIsSupportWidget(true)
                 .setIsShowColorSettings(false)

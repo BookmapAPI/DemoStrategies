@@ -1,5 +1,7 @@
 package velox.api.layer1.simplified.demo;
 
+import java.awt.Color;
+
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1SimpleAttachable;
@@ -24,8 +26,8 @@ public class LastTradeDemoWithHistoryData implements
 
     @Override
     public void initialize(InstrumentInfo info, Api api) {
-        lastTradeIndicator = api.registerIndicator(
-                "Last trade, with historical", GraphType.PRIMARY);
+        lastTradeIndicator = api.registerIndicator("Last trade, with historical",
+                GraphType.PRIMARY, Color.YELLOW);
     }
 
     @Override

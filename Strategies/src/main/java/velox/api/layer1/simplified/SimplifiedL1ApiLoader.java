@@ -63,6 +63,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     Layer1ConfigSettingsInterface,
     Layer1IndicatorColorInterface,
     Layer1ApiInstrumentSpecificEnabledStateProvider {
+	
+	private enum Mode {
+		LIVE,
+		GENERATORS,
+		MIXED;
+	}
     
     private static class CustomEvent implements CustomGeneratedEvent {
         private static final long serialVersionUID = 1L;
@@ -146,13 +152,15 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         protected final String name;
         protected final GraphType graphType;
         protected final double initialValue;
+        protected final InstanceWrapper wrapper;
 
-        public IndicatorImplementation(String alias, String name, GraphType graphType, double initialValue) {
+        public IndicatorImplementation(String alias, String name, GraphType graphType, double initialValue, InstanceWrapper wrapper) {
             super();
             this.alias = alias;
             this.name = name;
             this.graphType = graphType;
             this.initialValue = initialValue;
+            this.wrapper = wrapper;
         }
 
         public void register() {
@@ -171,8 +179,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         
         private List<Pair<Long, Double>> points = new ArrayList<>();
 
-        public IndicatorBasicImplementation(String alias, String name, GraphType graphType, double initialValue) {
-            super(alias, name, graphType, initialValue);
+        public IndicatorBasicImplementation(String alias, String name, GraphType graphType, double initialValue, InstanceWrapper wrapper) {
+            super(alias, name, graphType, initialValue, wrapper);
         }
 
         @Override
@@ -235,7 +243,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         public void addPoint(double value) {
             synchronized (points) {
 
-                long time = getCurrentTime();
+                long time = mode == Mode.MIXED && !wrapper.isRealtime ?  wrapper.generatorTime : getCurrentTime();
                 int lastIndex = points.size() - 1;
                 Pair<Long, Double> lastPoint = lastIndex > 0 ? points.get(lastIndex) : null;
                 long lastListItemTime = lastPoint == null ? 0 : lastPoint.getKey();
@@ -251,14 +259,13 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         }
     }
     
+    // It's questionable if we need separate implementation for generator-only mode
     private class IndicatorGeneratorImplementation extends IndicatorImplementation {
 
-        private final InstanceWrapper wrapper;
         private final int generatorIndicatorId;
 
         public IndicatorGeneratorImplementation(String alias, String name, GraphType graphType, InstanceWrapper wrapper, int generatorIndicatorId, double initialValue) {
-            super(alias, name, graphType, initialValue);
-            this.wrapper = wrapper;
+            super(alias, name, graphType, initialValue, wrapper);
             this.generatorIndicatorId = generatorIndicatorId;
         }
         
@@ -328,16 +335,18 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     private class InstanceWrapper implements Api {
         private final CustomModule instance;
         private final String alias;
-        private final boolean generatorMode;
         
         private List<Indicator> indicators = new ArrayList<>();
         
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
+        private final List<HistoricalModeListener> historicalModeListeners = new ArrayList<>();
         
         private boolean initializing;
         
         private long generatorTime = 0;
+        private boolean isRealtime = false;
+        
         private int generatorIndicatorId = 0;
         
         private Layer1ApiUserMessageAddStrategyUpdateGenerator generatorMessage;
@@ -349,7 +358,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             } catch (InstantiationException | IllegalAccessException e) {
                 throw new IllegalStateException("Failed to create instance", e);
             }
-            generatorMode = instance instanceof HistoricalDataListener;
+            
         }
 
         public void start() {
@@ -359,7 +368,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             
             addListener(instance);
             
-            if (generatorMode) {
+            // Store data up to current time when adding generator
+            if (mode == Mode.GENERATORS || mode == Mode.MIXED) {
                 generatorMessage = getGeneratorMessage(true, alias, this);
                 provider.sendUserMessage(generatorMessage);
             } else {
@@ -381,12 +391,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         }
 
         public void addListener(Object simplifiedListener) {
-            // Probably best to separate
             if (simplifiedListener instanceof DepthDataListener) {
                 depthDataListeners.add((DepthDataListener) simplifiedListener);
             }
             if (simplifiedListener instanceof TradeDataListener) {
                 tradeDataListeners.add((TradeDataListener) simplifiedListener);
+            }
+            if (simplifiedListener instanceof HistoricalModeListener) {
+            	historicalModeListeners.add((HistoricalModeListener)simplifiedListener);
             }
         }
 
@@ -397,16 +409,16 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 throw new IllegalStateException("Registering indicators is only allowed inside CustomModule#initialize");
             }
 
-            IndicatorImplementation indicatorImplementation = generatorMode
+            IndicatorImplementation indicatorImplementation = mode == Mode.GENERATORS
                     ? new IndicatorGeneratorImplementation(alias, name, graphType, this, generatorIndicatorId++, initialValue)
-                    : new IndicatorBasicImplementation(alias, name, graphType, initialValue);
+                    : new IndicatorBasicImplementation(alias, name, graphType, initialValue, this);
             indicatorImplementation.register();
             indicators.add(indicatorImplementation);
             return indicatorImplementation;
         }
 
         public void onDepth(boolean isBid, int price, int size, boolean fromGenerator) {
-            if (generatorMode == fromGenerator) {
+            if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
                 for (DepthDataListener listener : depthDataListeners) {
                     listener.onDepth(isBid, price, size);
                 }
@@ -414,7 +426,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         }
 
         public void onTrade(double price, int size, TradeInfo tradeInfo, boolean fromGenerator) {
-            if (generatorMode == fromGenerator) {
+        	if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
                 for (TradeDataListener listener : tradeDataListeners) {
                     listener.onTrade(price, size, tradeInfo);
                 }
@@ -428,6 +440,13 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         public long getGeneratorTime() {
             return generatorTime;
         }
+
+		public void onRealtimeStart() {
+			isRealtime = true;
+			for (HistoricalModeListener listener : historicalModeListeners) {
+				listener.onRealtimeStart();
+			}
+		}
     }
     
     private final Layer1ApiRequestCurrentTimeEvents requestCurrentTimeEventsMessage = new Layer1ApiRequestCurrentTimeEvents(true, 0,
@@ -437,6 +456,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     private Class<T> simpleStrategyClass;
     private Map<String, InstanceWrapper> instanceWrappers = new ConcurrentHashMap<>();
     
+    private final Mode mode;
+    
     private Map<String, InstrumentInfo> instruments = new ConcurrentHashMap<>();
     private Map<String, OrderBook> orderBooks = new ConcurrentHashMap<>();
     
@@ -445,6 +466,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     public SimplifiedL1ApiLoader(Layer1ApiProvider provider, Class<T> clazz) {
         super(provider);
         this.simpleStrategyClass = clazz;
+        
+        mode = HistoricalModeListener.class.isAssignableFrom(clazz) ? Mode.MIXED
+        		: HistoricalDataListener.class.isAssignableFrom(clazz) ? Mode.GENERATORS
+    			: Mode.LIVE;
     }
     
     @Override
@@ -541,14 +566,16 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 
             }
         } else if (data instanceof UserMessageRewindBase) {
-            Map<String, InstrumentInfo> instrumentsCopy = new HashMap<>(instruments);
-            instrumentsCopy.keySet().forEach(this::removeInstrument);
-            UserMessageRewindBase rewindMessage = (UserMessageRewindBase) data;
-            for (Entry<String, OrderBook> entry: rewindMessage.aliasToOrderBooksMap.entrySet()) {
-                String alias = entry.getKey();
-                OrderBook orderBook = new OrderBook(entry.getValue());
-                addInstrument(alias, instrumentsCopy.get(alias), orderBook);
-            }
+        	if (mode == Mode.LIVE || mode == Mode.MIXED) {
+	            Map<String, InstrumentInfo> instrumentsCopy = new HashMap<>(instruments);
+	            instrumentsCopy.keySet().forEach(this::removeInstrument);
+	            UserMessageRewindBase rewindMessage = (UserMessageRewindBase) data;
+	            for (Entry<String, OrderBook> entry: rewindMessage.aliasToOrderBooksMap.entrySet()) {
+	                String alias = entry.getKey();
+	                OrderBook orderBook = new OrderBook(entry.getValue());
+	                addInstrument(alias, instrumentsCopy.get(alias), orderBook);
+	            }
+        	}
         }
     }
     
@@ -630,8 +657,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             
             @Override
             public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-            	if (targetAlias.equals(alias)) {
-            		listener.onTrade(price, size, tradeInfo, true);
+            	if (mode == Mode.GENERATORS || !isRealtime) {
+	            	if (targetAlias.equals(alias)) {
+	            		listener.onTrade(price, size, tradeInfo, true);
+	            	}
             	}
             }
             
@@ -641,8 +670,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             
             @Override
             public void onDepth(String alias, boolean isBid, int price, int size) {
-            	if (targetAlias.equals(alias)) {
-            		listener.onDepth(isBid, price, size, true);
+            	if (mode == Mode.GENERATORS || !isRealtime) {
+	            	if (targetAlias.equals(alias)) {
+	            		listener.onDepth(isBid, price, size, true);
+	            	}
             	}
             }
             
@@ -671,10 +702,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             public void setTime(long time) {
                 listener.setGeneratorTime(time);
                 
-                if (!isRealtime && time == getCurrentTime()) {
+                if (!isRealtime && time >= getCurrentTime()) {
                     // This does not work yet (probably will work in live)
                     isRealtime = true;
-                    Log.warn("Live");
+                    listener.onRealtimeStart();
                 }
             }
         }, new GeneratedEventInfo[] {new GeneratedEventInfo(CustomEvent.class, CustomAggregationEvent.class, CUSTOM_TRADE_EVENTS_AGGREGATOR)});

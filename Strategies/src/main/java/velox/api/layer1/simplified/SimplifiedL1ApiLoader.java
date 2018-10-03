@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -155,6 +156,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         protected final double initialValue;
         protected final InstanceWrapper wrapper;
 
+        protected AtomicReference<InvalidateInterface> invalidateInterface = new AtomicReference<>();
+
         public IndicatorImplementation(String alias, String name, GraphType graphType, Color defaultColor, double initialValue, InstanceWrapper wrapper) {
             super();
             this.alias = alias;
@@ -175,6 +178,13 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, defaultColor, alias, false, this);
             provider.sendUserMessage(message);
         }
+
+		public void invalidateOnlineCalculator() {
+			InvalidateInterface interfaceToInvalidate = invalidateInterface.getAndSet(null);
+			if (interfaceToInvalidate != null) {
+				interfaceToInvalidate.invalidate();
+			}
+		}
     }
 
     private class IndicatorBasicImplementation extends IndicatorImplementation {
@@ -213,6 +223,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         @Override
         public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String indicatorAlias,
                 long time, Consumer<Object> listener, InvalidateInterface invalidateInterface) {
+        	this.invalidateInterface.set(invalidateInterface);
             return new OnlineValueCalculatorAdapter() {
                 
                 @Override
@@ -338,7 +349,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         private final CustomModule instance;
         private final String alias;
         
-        private List<Indicator> indicators = new ArrayList<>();
+        private List<IndicatorImplementation> indicators = new ArrayList<>();
         
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
@@ -449,6 +460,13 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
 			isRealtime = true;
 			for (HistoricalModeListener listener : historicalModeListeners) {
 				listener.onRealtimeStart();
+			}
+			invalidateOnlineCalculators();
+		}
+		
+		public void invalidateOnlineCalculators() {
+			for (IndicatorImplementation indicator : indicators) {
+				indicator.invalidateOnlineCalculator();
 			}
 		}
     }

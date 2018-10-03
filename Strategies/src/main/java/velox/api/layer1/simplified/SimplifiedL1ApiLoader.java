@@ -354,6 +354,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
         private final List<HistoricalModeListener> historicalModeListeners = new ArrayList<>();
+        private final List<MultiInstrumentListener> multiInstrumentListeners = new ArrayList<>();
         
         private boolean initializing;
         
@@ -361,6 +362,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         private boolean isRealtime = false;
         
         private int generatorIndicatorId = 0;
+
+        private String currentAlias;
         
         private Layer1ApiUserMessageAddStrategyUpdateGenerator generatorMessage;
         
@@ -376,7 +379,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
 
         public void start() {
             initializing = true;
-            instance.initialize(instruments.get(alias), this);
+            instance.initialize(alias, instruments.get(alias), this);
             initializing = false;
             
             addListener(instance);
@@ -388,10 +391,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             } else {
                 OrderBook orderBook = orderBooks.get(alias);
                 for (Entry<Integer, Long> entry : orderBook.getBidMap().entrySet()) {
-                    onDepth(true, entry.getKey(), entry.getValue().intValue(), false);
+                    onDepth(alias, true, entry.getKey(), entry.getValue().intValue(), false);
                 }
                 for (Entry<Integer, Long> entry : orderBook.getAskMap().entrySet()) {
-                    onDepth(false, entry.getKey(), entry.getValue().intValue(), false);
+                    onDepth(alias, false, entry.getKey(), entry.getValue().intValue(), false);
                 }
             }
         }
@@ -413,6 +416,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             if (simplifiedListener instanceof HistoricalModeListener) {
                 historicalModeListeners.add((HistoricalModeListener)simplifiedListener);
             }
+            if (simplifiedListener instanceof MultiInstrumentListener) {
+                multiInstrumentListeners.add((MultiInstrumentListener)simplifiedListener);
+            }
         }
 
         @Override
@@ -432,18 +438,50 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             return indicatorImplementation;
         }
 
-        public void onDepth(boolean isBid, int price, int size, boolean fromGenerator) {
+        public void onDepth(String alias, boolean isBid, int price, int size, boolean fromGenerator) {
             if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
-                for (DepthDataListener listener : depthDataListeners) {
-                    listener.onDepth(isBid, price, size);
+                if (multiInstrument || this.alias.equals(alias)) {
+                    setCurrentAlias(alias);
+                    for (DepthDataListener listener : depthDataListeners) {
+                        listener.onDepth(isBid, price, size);
+                    }
                 }
             }
         }
 
-        public void onTrade(double price, int size, TradeInfo tradeInfo, boolean fromGenerator) {
+        public void onTrade(String alias, double price, int size, TradeInfo tradeInfo, boolean fromGenerator) {
             if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
-                for (TradeDataListener listener : tradeDataListeners) {
-                    listener.onTrade(price, size, tradeInfo);
+                if (multiInstrument || this.alias.equals(alias)) {
+                    setCurrentAlias(alias);
+                    for (TradeDataListener listener : tradeDataListeners) {
+                        listener.onTrade(price, size, tradeInfo);
+                    }
+                }
+            }
+        }
+        
+        private void setCurrentAlias(String currentAlias) {
+            if (!currentAlias.equals(this.currentAlias)) {
+                this.currentAlias = currentAlias;
+                for (MultiInstrumentListener listener : multiInstrumentListeners) {
+                    listener.onCurrentInstrument(currentAlias);
+                }
+            }
+        }
+        
+        public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
+            if (multiInstrument) {
+                setCurrentAlias(alias);
+                for (MultiInstrumentListener listener : multiInstrumentListeners) {
+                    listener.onInstrumentAdded(instrumentInfo);
+                }
+            }
+        }
+
+        public void onInstrumentRemoved(String alias) {
+            if (multiInstrument) {
+                for (MultiInstrumentListener listener : multiInstrumentListeners) {
+                    listener.onInstrumentRemoved();
                 }
             }
         }
@@ -479,6 +517,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     private Map<String, InstanceWrapper> instanceWrappers = new ConcurrentHashMap<>();
     
     private final Mode mode;
+    private final boolean multiInstrument;
     
     private Map<String, InstrumentInfo> instruments = new ConcurrentHashMap<>();
     private Map<String, OrderBook> orderBooks = new ConcurrentHashMap<>();
@@ -497,6 +536,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         mode = HistoricalModeListener.class.isAssignableFrom(clazz) ? Mode.MIXED
                 : HistoricalDataListener.class.isAssignableFrom(clazz) ? Mode.GENERATORS
                 : Mode.LIVE;
+        multiInstrument = MultiInstrumentListener.class.isAssignableFrom(clazz);
     }
     
     @Override
@@ -686,9 +726,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             @Override
             public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
                 if (mode == Mode.GENERATORS || !isRealtime) {
-                    if (targetAlias.equals(alias)) {
-                        listener.onTrade(price, size, tradeInfo, true);
-                    }
+                    listener.onTrade(alias, price, size, tradeInfo, true);
                 }
             }
             
@@ -699,9 +737,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             @Override
             public void onDepth(String alias, boolean isBid, int price, int size) {
                 if (mode == Mode.GENERATORS || !isRealtime) {
-                    if (targetAlias.equals(alias)) {
-                        listener.onDepth(isBid, price, size, true);
-                    }
+                    listener.onDepth(alias, isBid, price, size, true);
                 }
             }
             
@@ -744,6 +780,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         super.onInstrumentAdded(alias, instrumentInfo);
         
         addInstrument(alias, instrumentInfo, new OrderBook());
+        
+        if (multiInstrument) {
+            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+                instanceWrapper.onInstrumentAdded(alias, instrumentInfo);
+            }
+        }
     }
 
     private void addInstrument(String alias, InstrumentInfo instrumentInfo, OrderBook orderBook) {
@@ -760,6 +802,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     public void onInstrumentRemoved(String alias) {
         super.onInstrumentRemoved(alias);
         removeInstrument(alias);
+        
+        if (multiInstrument) {
+            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+                instanceWrapper.onInstrumentRemoved(alias);
+            }
+        }
     }
 
     private void removeInstrument(String alias) {
@@ -779,18 +827,30 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             orderBook.onUpdate(isBid, price, size);
         }
         
-        InstanceWrapper instanceWrapper = instanceWrappers.get(alias);
-        if (instanceWrapper != null) {
-            instanceWrapper.onDepth(isBid, price, size, false);
+        if (multiInstrument) {
+            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+                instanceWrapper.onDepth(alias, isBid, price, size, false);
+            }
+        } else {
+            InstanceWrapper instanceWrapper = instanceWrappers.get(alias);
+            if (instanceWrapper != null) {
+                instanceWrapper.onDepth(alias, isBid, price, size, false);
+            }
         }
     }
     
     @Override
     public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
 
-        InstanceWrapper instanceWrapper = instanceWrappers.get(alias);
-        if (instanceWrapper != null) {
-            instanceWrapper.onTrade(price, size, tradeInfo, false);
+        if (multiInstrument) {
+            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+                instanceWrapper.onTrade(alias, price, size, tradeInfo, false);
+            }
+        } else {
+            InstanceWrapper instanceWrapper = instanceWrappers.get(alias);
+            if (instanceWrapper != null) {
+                instanceWrapper.onTrade(alias, price, size, tradeInfo, false);
+            }
         }
     }
 }

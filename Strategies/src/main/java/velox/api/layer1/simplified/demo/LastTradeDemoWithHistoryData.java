@@ -25,7 +25,7 @@ public class LastTradeDemoWithHistoryData implements
     private Indicator lastTradeIndicator;
 
     @Override
-    public void initialize(InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api) {
         lastTradeIndicator = api.registerIndicator("Last trade, with historical",
                 GraphType.PRIMARY, Color.YELLOW);
     }

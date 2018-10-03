@@ -64,12 +64,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     Layer1ConfigSettingsInterface,
     Layer1IndicatorColorInterface,
     Layer1ApiInstrumentSpecificEnabledStateProvider {
-	
-	private enum Mode {
-		LIVE,
-		GENERATORS,
-		MIXED;
-	}
+    
+    private enum Mode {
+        LIVE,
+        GENERATORS,
+        MIXED;
+    }
     
     private static class CustomEvent implements CustomGeneratedEvent {
         private static final long serialVersionUID = 1L;
@@ -179,12 +179,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             provider.sendUserMessage(message);
         }
 
-		public void invalidateOnlineCalculator() {
-			InvalidateInterface interfaceToInvalidate = invalidateInterface.getAndSet(null);
-			if (interfaceToInvalidate != null) {
-				interfaceToInvalidate.invalidate();
-			}
-		}
+        public void invalidateOnlineCalculator() {
+            InvalidateInterface interfaceToInvalidate = invalidateInterface.getAndSet(null);
+            if (interfaceToInvalidate != null) {
+                interfaceToInvalidate.invalidate();
+            }
+        }
     }
 
     private class IndicatorBasicImplementation extends IndicatorImplementation {
@@ -223,7 +223,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         @Override
         public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String indicatorAlias,
                 long time, Consumer<Object> listener, InvalidateInterface invalidateInterface) {
-        	this.invalidateInterface.set(invalidateInterface);
+            this.invalidateInterface.set(invalidateInterface);
             return new OnlineValueCalculatorAdapter() {
                 
                 @Override
@@ -411,7 +411,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 tradeDataListeners.add((TradeDataListener) simplifiedListener);
             }
             if (simplifiedListener instanceof HistoricalModeListener) {
-            	historicalModeListeners.add((HistoricalModeListener)simplifiedListener);
+                historicalModeListeners.add((HistoricalModeListener)simplifiedListener);
             }
         }
 
@@ -441,7 +441,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         }
 
         public void onTrade(double price, int size, TradeInfo tradeInfo, boolean fromGenerator) {
-        	if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
+            if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
                 for (TradeDataListener listener : tradeDataListeners) {
                     listener.onTrade(price, size, tradeInfo);
                 }
@@ -456,19 +456,19 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             return generatorTime;
         }
 
-		public void onRealtimeStart() {
-			isRealtime = true;
-			for (HistoricalModeListener listener : historicalModeListeners) {
-				listener.onRealtimeStart();
-			}
-			invalidateOnlineCalculators();
-		}
-		
-		public void invalidateOnlineCalculators() {
-			for (IndicatorImplementation indicator : indicators) {
-				indicator.invalidateOnlineCalculator();
-			}
-		}
+        public void onRealtimeStart() {
+            isRealtime = true;
+            for (HistoricalModeListener listener : historicalModeListeners) {
+                listener.onRealtimeStart();
+            }
+            invalidateOnlineCalculators();
+        }
+        
+        public void invalidateOnlineCalculators() {
+            for (IndicatorImplementation indicator : indicators) {
+                indicator.invalidateOnlineCalculator();
+            }
+        }
     }
     
     private final Layer1ApiRequestCurrentTimeEvents requestCurrentTimeEventsMessage = new Layer1ApiRequestCurrentTimeEvents(true, 0,
@@ -495,8 +495,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         this.simpleStrategyClass = clazz;
         
         mode = HistoricalModeListener.class.isAssignableFrom(clazz) ? Mode.MIXED
-        		: HistoricalDataListener.class.isAssignableFrom(clazz) ? Mode.GENERATORS
-    			: Mode.LIVE;
+                : HistoricalDataListener.class.isAssignableFrom(clazz) ? Mode.GENERATORS
+                : Mode.LIVE;
     }
     
     @Override
@@ -592,16 +592,16 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 
             }
         } else if (data instanceof UserMessageRewindBase) {
-        	if (mode == Mode.LIVE || mode == Mode.MIXED) {
-	            Map<String, InstrumentInfo> instrumentsCopy = new HashMap<>(instruments);
-	            instrumentsCopy.keySet().forEach(this::removeInstrument);
-	            UserMessageRewindBase rewindMessage = (UserMessageRewindBase) data;
-	            for (Entry<String, OrderBook> entry: rewindMessage.aliasToOrderBooksMap.entrySet()) {
-	                String alias = entry.getKey();
-	                OrderBook orderBook = new OrderBook(entry.getValue());
-	                addInstrument(alias, instrumentsCopy.get(alias), orderBook);
-	            }
-        	}
+            if (mode == Mode.LIVE || mode == Mode.MIXED) {
+                Map<String, InstrumentInfo> instrumentsCopy = new HashMap<>(instruments);
+                instrumentsCopy.keySet().forEach(this::removeInstrument);
+                UserMessageRewindBase rewindMessage = (UserMessageRewindBase) data;
+                for (Entry<String, OrderBook> entry: rewindMessage.aliasToOrderBooksMap.entrySet()) {
+                    String alias = entry.getKey();
+                    OrderBook orderBook = new OrderBook(entry.getValue());
+                    addInstrument(alias, instrumentsCopy.get(alias), orderBook);
+                }
+            }
         }
     }
     
@@ -685,11 +685,11 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             
             @Override
             public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-            	if (mode == Mode.GENERATORS || !isRealtime) {
-	            	if (targetAlias.equals(alias)) {
-	            		listener.onTrade(price, size, tradeInfo, true);
-	            	}
-            	}
+                if (mode == Mode.GENERATORS || !isRealtime) {
+                    if (targetAlias.equals(alias)) {
+                        listener.onTrade(price, size, tradeInfo, true);
+                    }
+                }
             }
             
             @Override
@@ -698,11 +698,11 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             
             @Override
             public void onDepth(String alias, boolean isBid, int price, int size) {
-            	if (mode == Mode.GENERATORS || !isRealtime) {
-	            	if (targetAlias.equals(alias)) {
-	            		listener.onDepth(isBid, price, size, true);
-	            	}
-            	}
+                if (mode == Mode.GENERATORS || !isRealtime) {
+                    if (targetAlias.equals(alias)) {
+                        listener.onDepth(isBid, price, size, true);
+                    }
+                }
             }
             
             @Override

@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -38,6 +39,7 @@ import velox.api.layer1.layers.strategies.interfaces.Layer1IndicatorColorInterfa
 import velox.api.layer1.layers.strategies.interfaces.OnlineCalculatable;
 import velox.api.layer1.layers.strategies.interfaces.OnlineValueCalculatorAdapter;
 import velox.api.layer1.layers.utils.OrderBook;
+import velox.api.layer1.messages.CurrentTimeUserMessage;
 import velox.api.layer1.messages.GeneratedEventInfo;
 import velox.api.layer1.messages.Layer1ApiRequestCurrentTimeEvents;
 import velox.api.layer1.messages.Layer1ApiUserMessageAddStrategyUpdateGenerator;
@@ -256,7 +258,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         public void addPoint(double value) {
             synchronized (points) {
 
-                long time = mode == Mode.MIXED && !wrapper.isRealtime ?  wrapper.generatorTime : getCurrentTime();
+                long time = mode == Mode.MIXED && !wrapper.isRealtime ?  wrapper.getTime() : getCurrentTime();
                 int lastIndex = points.size() - 1;
                 Pair<Long, Double> lastPoint = lastIndex > 0 ? points.get(lastIndex) : null;
                 long lastListItemTime = lastPoint == null ? 0 : lastPoint.getKey();
@@ -341,7 +343,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         @Override
         public void addPoint(double value) {
             wrapper.generatorMessage.generator.getGeneratedEventsConsumer().accept(new CustomGeneratedEventAliased(
-                    new CustomEvent(wrapper.getGeneratorTime(), generatorIndicatorId, value), alias));
+                    new CustomEvent(wrapper.getTime(), generatorIndicatorId, value), alias));
         }
     }
     
@@ -353,12 +355,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
+        private final List<BarDataListener> barDataListeners = new ArrayList<>();
         private final List<HistoricalModeListener> historicalModeListeners = new ArrayList<>();
         private final List<MultiInstrumentListener> multiInstrumentListeners = new ArrayList<>();
         
         private boolean initializing;
         
-        private long generatorTime = 0;
+        /** Generator time while generator is active, last time message otherwise */
+        private long time = 0;
         private boolean isRealtime = false;
         
         private int generatorIndicatorId = 0;
@@ -366,6 +370,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         private String currentAlias;
         
         private Layer1ApiUserMessageAddStrategyUpdateGenerator generatorMessage;
+        
+        private long barPeriod = -1;
+        private Map<String, Bar> currentBars = new HashMap<>();
         
         public InstanceWrapper(String alias) {
             this.alias = alias;
@@ -413,6 +420,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             if (simplifiedListener instanceof TradeDataListener) {
                 tradeDataListeners.add((TradeDataListener) simplifiedListener);
             }
+            if (simplifiedListener instanceof BarDataListener) {
+                barPeriod = ((BarDataListener) instance).getBarPeriod();
+                barDataListeners.add((BarDataListener) instance);
+            }
             if (simplifiedListener instanceof HistoricalModeListener) {
                 historicalModeListeners.add((HistoricalModeListener)simplifiedListener);
             }
@@ -453,6 +464,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
+                    
+                    Bar currentBar = currentBars.get(alias);
+                    if (currentBar == null) {
+                        currentBar = new Bar();
+                        currentBars.put(alias, currentBar);
+                    }
+                    currentBar.addTrade(tradeInfo.isBidAggressor, size, price);
+                    
                     for (TradeDataListener listener : tradeDataListeners) {
                         listener.onTrade(price, size, tradeInfo);
                     }
@@ -486,12 +505,49 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             }
         }
 
-        public void setGeneratorTime(long time) {
-            this.generatorTime = time;
+        public void setTime(long newTime, boolean fromGenerator) {
+            boolean isValid = mode == Mode.LIVE ? !fromGenerator
+                    : mode == Mode.GENERATORS ? fromGenerator
+                    : /* mode == Mode.MIXED ? */ isRealtime != fromGenerator;
+            if (!isValid) {
+                return;
+            }
+            
+            if (barPeriod != -1 && time != 0) {
+                // Loop is only needed for generators since gaps can be large
+                // Technically, also needed for realtime after sleep, but in that case there is no data there
+                while (time - time % barPeriod + barPeriod <= newTime) {
+                    time += barPeriod;
+                    time -= time % barPeriod;
+                    
+                    Map<String, OrderBook> orderBooksMap = multiInstrument 
+                            ? orderBooks
+                            : Collections.singletonMap(alias, orderBooks.get(alias));
+                    for (Entry<String, OrderBook> entry : orderBooksMap.entrySet()) {
+                        String alias = entry.getKey();
+                        OrderBook orderBook = entry.getValue();
+                        
+                        Bar bar = currentBars.get(alias);
+                        if (bar != null) {
+                            Bar nextBar = new Bar(bar);
+                            nextBar.startNext();
+                            currentBars.put(alias, nextBar);
+                        } else {
+                            bar = new Bar();
+                        }
+                        
+                        for (BarDataListener listener : barDataListeners) {
+                            listener.onBar(orderBook, bar);
+                        }
+                    }
+                }
+            }
+
+            this.time = newTime;
         }
         
-        public long getGeneratorTime() {
-            return generatorTime;
+        public long getTime() {
+            return time;
         }
 
         public void onRealtimeStart() {
@@ -520,6 +576,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     private final boolean multiInstrument;
     
     private Map<String, InstrumentInfo> instruments = new ConcurrentHashMap<>();
+    /** Order books for all currently added instruments */
     private Map<String, OrderBook> orderBooks = new ConcurrentHashMap<>();
     
     // TODO: replace with settings
@@ -642,6 +699,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                     addInstrument(alias, instrumentsCopy.get(alias), orderBook);
                 }
             }
+        } else if (data instanceof CurrentTimeUserMessage) {
+            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+                instanceWrapper.setTime(getCurrentTime(), false);
+            }
         }
     }
     
@@ -763,13 +824,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             }
             
             @Override
-            public void setTime(long time) {
-                listener.setGeneratorTime(time);
-                
-                if (!isRealtime && time >= getCurrentTime()) {
+            public void setTime(long time) {                
+                if (mode == Mode.MIXED && !isRealtime && time >= getCurrentTime()) {
                     // This does not work yet (probably will work in live)
                     isRealtime = true;
                     listener.onRealtimeStart();
+                }
+                if (!isRealtime) {
+                    listener.setTime(time, true);
                 }
             }
         }, new GeneratedEventInfo[] {new GeneratedEventInfo(CustomEvent.class, CustomAggregationEvent.class, CUSTOM_TRADE_EVENTS_AGGREGATOR)});

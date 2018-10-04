@@ -566,7 +566,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     }
     
     private final Layer1ApiRequestCurrentTimeEvents requestCurrentTimeEventsMessage = new Layer1ApiRequestCurrentTimeEvents(true, 0,
-            TimeUnit.MILLISECONDS.toNanos(100));
+            TimeUnit.MILLISECONDS.toNanos(50));
     
     private DataStructureInterface dataStructureInterface;
     private Class<T> simpleStrategyClass;

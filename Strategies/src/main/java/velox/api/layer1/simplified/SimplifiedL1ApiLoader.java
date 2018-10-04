@@ -257,11 +257,16 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         @Override
         public void addPoint(double value) {
             synchronized (points) {
-
+                
                 long time = mode == Mode.MIXED && !wrapper.isRealtime ?  wrapper.getTime() : getCurrentTime();
+                
+                if (time == 0) {
+                    throw new IllegalStateException("time == 0");
+                }
+                
                 int lastIndex = points.size() - 1;
                 Pair<Long, Double> lastPoint = lastIndex > 0 ? points.get(lastIndex) : null;
-                long lastListItemTime = lastPoint == null ? 0 : lastPoint.getKey();
+                long lastListItemTime = lastPoint == null ? -1 : lastPoint.getKey();
                 
                 ImmutablePair<Long, Double> newPoint = new ImmutablePair<Long, Double>(time, value);
                 
@@ -357,6 +362,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
         private final List<BarDataListener> barDataListeners = new ArrayList<>();
+        private final List<BboListener> bboDataListeners = new ArrayList<>();
         private final List<HistoricalModeListener> historicalModeListeners = new ArrayList<>();
         private final List<MultiInstrumentListener> multiInstrumentListeners = new ArrayList<>();
         
@@ -376,6 +382,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         private Map<String, Bar> currentBars = new HashMap<>();
         
         private long timeNotificationInterval = -1;
+        
+        private Map<String, OrderBook> submittedOrderBooks = new HashMap<>();
         
         public InstanceWrapper(String alias) {
             this.alias = alias;
@@ -439,6 +447,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 barInterval = ((BarDataListener) instance).getBarInterval();
                 barDataListeners.add((BarDataListener) instance);
             }
+            if (simplifiedListener instanceof BboListener) {
+                bboDataListeners.add((BboListener) instance);
+            }
 
             if (simplifiedListener instanceof HistoricalModeListener) {
                 historicalModeListeners.add((HistoricalModeListener)simplifiedListener);
@@ -469,6 +480,31 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
+                    
+                    if (!bboDataListeners.isEmpty()) {
+                        OrderBook submittedOrderBook = submittedOrderBooks.get(alias);
+                        if (submittedOrderBook == null) {
+                            submittedOrderBook = new OrderBook();
+                            submittedOrderBooks.put(alias, submittedOrderBook);
+                        }
+                        submittedOrderBook.onUpdate(isBid, price, size);
+                        int bestPriceOnSameSide = isBid 
+                                ? submittedOrderBook.getBestBidPriceOrNone() 
+                                : submittedOrderBook.getBestAskPriceOrNone();
+                        if (price == bestPriceOnSameSide) {
+
+                            Entry<Integer, Long> firstBidEntry = submittedOrderBook.getBidMap().firstEntry();
+                            Entry<Integer, Long> firstAskEntry = submittedOrderBook.getAskMap().firstEntry();
+
+                            if (firstBidEntry != null && firstAskEntry != null) {
+                                for (BboListener listener : bboDataListeners) {
+                                    listener.onBbo(firstBidEntry.getKey(), firstBidEntry.getValue().intValue(),
+                                            firstAskEntry.getKey(), firstAskEntry.getValue().intValue());
+                                }
+                            }
+                        }
+                    }
+                    
                     invokeCurrentTimeListeners();
                     for (DepthDataListener listener : depthDataListeners) {
                         listener.onDepth(isBid, price, size);

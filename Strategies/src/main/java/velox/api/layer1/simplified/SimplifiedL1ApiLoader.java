@@ -26,6 +26,8 @@ import velox.api.layer1.data.ExecutionInfo;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.MarketMode;
 import velox.api.layer1.data.OrderInfoUpdate;
+import velox.api.layer1.data.OrderSendParameters;
+import velox.api.layer1.data.OrderUpdateParameters;
 import velox.api.layer1.data.StatusInfo;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.layers.Layer1ApiInjectorRelay;
@@ -734,6 +736,16 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             for (IndicatorImplementation indicator : indicators) {
                 indicator.invalidateOnlineCalculator();
             }
+        }
+
+        @Override
+        public void sendOrder(OrderSendParameters orderSendParameters) {
+            SimplifiedL1ApiLoader.this.sendOrder(orderSendParameters);
+        }
+
+        @Override
+        public void updateOrder(OrderUpdateParameters orderUpdateParameters) {
+            SimplifiedL1ApiLoader.this.updateOrder(orderUpdateParameters);
         }
     }
     

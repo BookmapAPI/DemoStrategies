@@ -2,6 +2,8 @@ package velox.api.layer1.simplified;
 
 import java.awt.Color;
 
+import velox.api.layer1.data.OrderSendParameters;
+import velox.api.layer1.data.OrderUpdateParameters;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
 
 public interface Api {
@@ -10,4 +12,21 @@ public interface Api {
     }
 
     Indicator registerIndicator(String name, GraphType graphType, Color defaultColor, double initialValue);
+    
+
+    /**
+     * Submit order with specified parameters
+     *
+     * @param orderSendParameters
+     *            parameters
+     */
+    void sendOrder(OrderSendParameters orderSendParameters);
+
+    /**
+     * Update order according to parameters
+     *
+     * @param orderUpdateParameters
+     *            parameters
+     */
+    void updateOrder(OrderUpdateParameters orderUpdateParameters);
 }

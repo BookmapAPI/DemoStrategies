@@ -421,7 +421,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 tradeDataListeners.add((TradeDataListener) simplifiedListener);
             }
             if (simplifiedListener instanceof BarDataListener) {
-                barPeriod = ((BarDataListener) instance).getBarPeriod();
+                barInterval = ((BarDataListener) instance).getBarInterval();
                 barDataListeners.add((BarDataListener) instance);
             }
             if (simplifiedListener instanceof HistoricalModeListener) {

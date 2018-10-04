@@ -60,7 +60,7 @@ public class BarDemoWithHistoryData implements
     }
 
     @Override
-    public long getBarPeriod() {
+    public long getBarInterval() {
         return Intervals.INTERVAL_15_SECONDS;
     }
 }

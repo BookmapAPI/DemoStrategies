@@ -14,6 +14,7 @@ import velox.api.layer1.simplified.Bar;
 import velox.api.layer1.simplified.BarDataListener;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.Intervals;
 
 @Layer1SimpleAttachable
 @Layer1StrategyName("Mid price from bars")
@@ -35,6 +36,6 @@ public class BarMidPriceNoHistory implements
 
     @Override
     public long getBarPeriod() {
-        return Bar.INTERVAL_15_SECONDS;
+        return Intervals.INTERVAL_15_SECONDS;
     }
 }

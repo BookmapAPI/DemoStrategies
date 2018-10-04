@@ -3,21 +3,6 @@ package velox.api.layer1.simplified;
 import java.util.concurrent.TimeUnit;
 
 public class Bar {
-    
-    public static final long INTERVAL_1_SECONDS = TimeUnit.SECONDS.toNanos(1);
-    public static final long INTERVAL_2_SECONDS = TimeUnit.SECONDS.toNanos(2);
-    public static final long INTERVAL_5_SECONDS = TimeUnit.SECONDS.toNanos(5);
-    public static final long INTERVAL_10_SECONDS = TimeUnit.SECONDS.toNanos(10);
-    public static final long INTERVAL_15_SECONDS = TimeUnit.SECONDS.toNanos(15);
-    public static final long INTERVAL_20_SECONDS = TimeUnit.SECONDS.toNanos(20);
-    public static final long INTERVAL_30_SECONDS = TimeUnit.SECONDS.toNanos(30);
-    public static final long INTERVAL_1_MINUTE = TimeUnit.MINUTES.toNanos(1);
-    public static final long INTERVAL_2_MINUTES = TimeUnit.MINUTES.toNanos(2);
-    public static final long INTERVAL_5_MINUTES = TimeUnit.MINUTES.toNanos(5);
-    public static final long INTERVAL_10_MINUTES = TimeUnit.MINUTES.toNanos(10);
-    public static final long INTERVAL_15_MINUTES = TimeUnit.MINUTES.toNanos(15);
-    public static final long INTERVAL_20_MINUTES = TimeUnit.MINUTES.toNanos(20);
-    public static final long INTERVAL_30_MINUTES = TimeUnit.MINUTES.toNanos(30);
 
     private double open;
     private double close;

@@ -15,6 +15,7 @@ import velox.api.layer1.simplified.BarDataListener;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.HistoricalDataListener;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.Intervals;
 
 @Layer1SimpleAttachable
 @Layer1StrategyName("VWAP from bars")
@@ -60,6 +61,6 @@ public class BarDemoWithHistoryData implements
 
     @Override
     public long getBarPeriod() {
-        return Bar.INTERVAL_15_SECONDS;
+        return Intervals.INTERVAL_15_SECONDS;
     }
 }

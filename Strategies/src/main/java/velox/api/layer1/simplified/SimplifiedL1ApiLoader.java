@@ -29,7 +29,6 @@ import velox.api.layer1.data.OrderInfoUpdate;
 import velox.api.layer1.data.StatusInfo;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.layers.Layer1ApiInjectorRelay;
-import velox.api.layer1.layers.Layer1ApiRelay;
 import velox.api.layer1.layers.strategies.interfaces.CalculatedResultListener;
 import velox.api.layer1.layers.strategies.interfaces.CustomEventAggregatble;
 import velox.api.layer1.layers.strategies.interfaces.CustomGeneratedEvent;
@@ -363,6 +362,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
         private final List<BarDataListener> barDataListeners = new ArrayList<>();
         private final List<BboListener> bboDataListeners = new ArrayList<>();
+        private final List<OrdersListener> ordersListeners = new ArrayList<>();
+        private final List<PositionListener> statusListeners = new ArrayList<>();
+        private final List<BalanceListener> balanceListeners = new ArrayList<>();
         private final List<HistoricalModeListener> historicalModeListeners = new ArrayList<>();
         private final List<MultiInstrumentListener> multiInstrumentListeners = new ArrayList<>();
         
@@ -407,19 +409,39 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 generatorMessage = getGeneratorMessage(true, alias, this);
                 provider.sendUserMessage(generatorMessage);
             } else {
-                Map<String, OrderBook> orderBooksToSend = multiInstrument 
-                        ? orderBooks
-                        : Collections.singletonMap(alias, orderBooks.get(alias)) ;
-                for (Entry<String, OrderBook> bookEntry : orderBooksToSend.entrySet()) {
-                    String alias = bookEntry.getKey();
-                    OrderBook orderBook = bookEntry.getValue();
-                    for (Entry<Integer, Long> entry : orderBook.getBidMap().entrySet()) {
-                        onDepth(alias, true, entry.getKey(), entry.getValue().intValue(), false);
-                    }
-                    for (Entry<Integer, Long> entry : orderBook.getAskMap().entrySet()) {
-                        onDepth(alias, false, entry.getKey(), entry.getValue().intValue(), false);
-                    }
+                sendSnapshots();
+            }
+        }
+
+        private void sendSnapshots() {
+            Map<String, OrderBook> orderBooksToSend = multiInstrument 
+                    ? orderBooks
+                    : Collections.singletonMap(alias, orderBooks.get(alias)) ;
+            for (Entry<String, OrderBook> bookEntry : orderBooksToSend.entrySet()) {
+                String alias = bookEntry.getKey();
+                OrderBook orderBook = bookEntry.getValue();
+                for (Entry<Integer, Long> entry : orderBook.getBidMap().entrySet()) {
+                    onDepth(alias, true, entry.getKey(), entry.getValue().intValue(), false);
                 }
+                for (Entry<Integer, Long> entry : orderBook.getAskMap().entrySet()) {
+                    onDepth(alias, false, entry.getKey(), entry.getValue().intValue(), false);
+                }
+            }
+
+            // Orders filtering requires iterating anyway
+            for (Entry<String, OrderInfoUpdate> entry : orders.entrySet()) {
+                onOrderUpdated(entry.getValue(), false);
+            }
+            
+            Map<String, StatusInfo> statusesToSend = multiInstrument ? statuses 
+                    : statuses.containsKey(alias) ? Collections.singletonMap(alias, statuses.get(alias))
+                    : Collections.emptyMap();
+            for (Entry<String, StatusInfo> entry : statusesToSend.entrySet()) {
+                onStatus(entry.getValue(), false);
+            }
+            
+            if (balance != null) {
+                onBalance(balance, false);
             }
         }
 
@@ -450,6 +472,16 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             if (simplifiedListener instanceof BboListener) {
                 bboDataListeners.add((BboListener) instance);
             }
+            
+            if (simplifiedListener instanceof OrdersListener) {
+                ordersListeners.add((OrdersListener) instance);
+            }
+            if (simplifiedListener instanceof PositionListener) {
+                statusListeners.add((PositionListener) instance);
+            }
+            if (simplifiedListener instanceof BalanceListener) {
+                balanceListeners.add((BalanceListener) instance);
+            }
 
             if (simplifiedListener instanceof HistoricalModeListener) {
                 historicalModeListeners.add((HistoricalModeListener)simplifiedListener);
@@ -477,7 +509,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
 
         public void onDepth(String alias, boolean isBid, int price, int size, boolean fromGenerator) {
-            if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
+            if (eventShouldBePublished(fromGenerator)) {
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
                     
@@ -514,7 +546,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
 
         public void onTrade(String alias, double price, int size, TradeInfo tradeInfo, boolean fromGenerator) {
-            if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
+            if (eventShouldBePublished(fromGenerator)) {
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
                     
@@ -531,6 +563,63 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                     }
                 }
             }
+        }
+        
+        public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate, boolean fromGenerator) {
+            if (eventShouldBePublished(fromGenerator)) {
+                if (multiInstrument || this.alias.equals(alias)) {
+                    setCurrentAlias(alias);
+                    
+                    invokeCurrentTimeListeners();
+                    for (OrdersListener listener : ordersListeners) {
+                        listener.onOrderUpdated(orderInfoUpdate);
+                    }
+                }
+            }
+        }
+        
+        public void onOrderExecuted(ExecutionInfo executionInfo, boolean fromGenerator) {
+            if (eventShouldBePublished(fromGenerator)) {
+                if (multiInstrument || this.alias.equals(alias)) {
+                    setCurrentAlias(alias);
+                    
+                    invokeCurrentTimeListeners();
+                    for (OrdersListener listener : ordersListeners) {
+                        listener.onOrderExecuted(executionInfo);
+                    }
+                }
+            }
+            
+        }
+        
+        public void onStatus(StatusInfo statusInfo, boolean fromGenerator) {
+            if (eventShouldBePublished(fromGenerator)) {
+                if (multiInstrument || this.alias.equals(alias)) {
+                    setCurrentAlias(alias);
+                    
+                    invokeCurrentTimeListeners();
+                    for (PositionListener listener : statusListeners) {
+                        listener.onPositionUpdate(statusInfo);
+                    }
+                }
+            }
+        }
+
+        public void onBalance(BalanceInfo balanceInfo, boolean fromGenerator) {
+            if (eventShouldBePublished(fromGenerator)) {
+                if (multiInstrument || this.alias.equals(alias)) {
+                    setCurrentAlias(alias);
+                    
+                    invokeCurrentTimeListeners();
+                    for (BalanceListener listener : balanceListeners) {
+                        listener.onBalance(balance);
+                    }
+                }
+            }
+        }
+        
+        private boolean eventShouldBePublished(boolean fromGenerator) {
+            return fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED;
         }
         
         private void invokeCurrentTimeListeners() {
@@ -661,6 +750,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     private Map<String, InstrumentInfo> instruments = new ConcurrentHashMap<>();
     /** Order books for all currently added instruments */
     private Map<String, OrderBook> orderBooks = new ConcurrentHashMap<>();
+    /** All known orders, key is order ID */
+    private Map<String, OrderInfoUpdate> orders = new ConcurrentHashMap<>();
+    private Map<String, StatusInfo> statuses = new ConcurrentHashMap<>();
+    private BalanceInfo balance;
     
     // TODO: replace with settings
     private HashSet<String> enabledAliases = new HashSet<>();
@@ -855,18 +948,30 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             
             @Override
             public void onStatus(StatusInfo statusInfo) {
+                if (mode == Mode.GENERATORS || !isRealtime) {
+                    listener.onStatus(statusInfo, true);;
+                }
             }
             
             @Override
             public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
+                if (mode == Mode.GENERATORS || !isRealtime) {
+                    listener.onOrderUpdated(orderInfoUpdate, true);
+                }
             }
             
             @Override
             public void onOrderExecuted(ExecutionInfo executionInfo) {
+                if (mode == Mode.GENERATORS || !isRealtime) {
+                    listener.onOrderExecuted(executionInfo, true);
+                }
             }
             
             @Override
             public void onBalance(BalanceInfo balanceInfo) {
+                if (mode == Mode.GENERATORS || !isRealtime) {
+                    listener.onBalance(balanceInfo, true);
+                }
             }
             
             @Override
@@ -988,7 +1093,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     
     @Override
     public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-
+        super.onTrade(alias, price, size, tradeInfo);
+        
         if (multiInstrument) {
             for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
                 instanceWrapper.onTrade(alias, price, size, tradeInfo, false);
@@ -998,6 +1104,69 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             if (instanceWrapper != null) {
                 instanceWrapper.onTrade(alias, price, size, tradeInfo, false);
             }
+        }
+    }
+    
+    @Override
+    public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
+        super.onOrderUpdated(orderInfoUpdate);
+        
+        orders.put(orderInfoUpdate.orderId, orderInfoUpdate);
+        if (multiInstrument) {
+            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+                instanceWrapper.onOrderUpdated(orderInfoUpdate, false);
+            }
+        } else {
+            InstanceWrapper instanceWrapper = instanceWrappers.get(orderInfoUpdate.instrumentAlias);
+            if (instanceWrapper != null) {
+                instanceWrapper.onOrderUpdated(orderInfoUpdate, false);
+            }
+        }
+    }
+    
+    @Override
+    public void onOrderExecuted(ExecutionInfo executionInfo) {
+        super.onOrderExecuted(executionInfo);
+        
+        if (multiInstrument) {
+            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+                instanceWrapper.onOrderExecuted(executionInfo, false);
+            }
+        } else {
+            String alias = orders.get(executionInfo.orderId).instrumentAlias;
+            InstanceWrapper instanceWrapper = instanceWrappers.get(alias);
+            if (instanceWrapper != null) {
+                instanceWrapper.onOrderExecuted(executionInfo, false);
+            }
+        }
+    }
+    
+    @Override
+    public void onStatus(StatusInfo statusInfo) {
+        super.onStatus(statusInfo);
+        
+        statuses.put(statusInfo.instrumentAlias, statusInfo);
+        
+        if (multiInstrument) {
+            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+                instanceWrapper.onStatus(statusInfo, false);
+            }
+        } else {
+            InstanceWrapper instanceWrapper = instanceWrappers.get(statusInfo.instrumentAlias);
+            if (instanceWrapper != null) {
+                instanceWrapper.onStatus(statusInfo, false);
+            }
+        }
+    }
+    
+    @Override
+    public void onBalance(BalanceInfo balanceInfo) {
+        super.onBalance(balanceInfo);
+        
+        this.balance = balanceInfo;
+
+        for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
+            instanceWrapper.onBalance(balanceInfo, false);
         }
     }
 }

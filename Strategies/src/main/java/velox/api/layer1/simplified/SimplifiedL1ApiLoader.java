@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -353,6 +352,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         
         private List<IndicatorImplementation> indicators = new ArrayList<>();
         
+        private final List<TimeListener> timeListeners = new ArrayList<>();
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
         private final List<BarDataListener> barDataListeners = new ArrayList<>();
@@ -371,8 +371,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         
         private Layer1ApiUserMessageAddStrategyUpdateGenerator generatorMessage;
         
-        private long barPeriod = -1;
+        private long barInterval = -1;
         private Map<String, Bar> currentBars = new HashMap<>();
+        
+        private long timeNotificationInterval = -1;
         
         public InstanceWrapper(String alias) {
             this.alias = alias;
@@ -414,6 +416,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
         }
 
         public void addListener(Object simplifiedListener) {
+            
+            if (simplifiedListener instanceof TimeListener) {
+                timeNotificationInterval = ((TimeListener) simplifiedListener).getTimeNotificationInterval();
+                timeListeners.add((TimeListener) simplifiedListener);
+            }
+            
             if (simplifiedListener instanceof DepthDataListener) {
                 depthDataListeners.add((DepthDataListener) simplifiedListener);
             }
@@ -424,6 +432,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 barInterval = ((BarDataListener) instance).getBarInterval();
                 barDataListeners.add((BarDataListener) instance);
             }
+
             if (simplifiedListener instanceof HistoricalModeListener) {
                 historicalModeListeners.add((HistoricalModeListener)simplifiedListener);
             }
@@ -453,6 +462,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             if (fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED) {
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
+                    invokeCurrentTimeListeners();
                     for (DepthDataListener listener : depthDataListeners) {
                         listener.onDepth(isBid, price, size);
                     }
@@ -472,6 +482,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                     }
                     currentBar.addTrade(tradeInfo.isBidAggressor, size, price);
                     
+                    invokeCurrentTimeListeners();
                     for (TradeDataListener listener : tradeDataListeners) {
                         listener.onTrade(price, size, tradeInfo);
                     }
@@ -479,6 +490,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
             }
         }
         
+        private void invokeCurrentTimeListeners() {
+            for (TimeListener listener : timeListeners) {
+                listener.onTimestamp(time);
+            }
+        }
+
         private void setCurrentAlias(String currentAlias) {
             if (!currentAlias.equals(this.currentAlias)) {
                 this.currentAlias = currentAlias;
@@ -513,37 +530,60 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 return;
             }
             
-            if (barPeriod != -1 && time != 0) {
+            if (time != 0) {
                 // Loop is only needed for generators since gaps can be large
                 // Technically, also needed for realtime after sleep, but in that case there is no data there
-                while (time - time % barPeriod + barPeriod <= newTime) {
-                    time += barPeriod;
-                    time -= time % barPeriod;
-                    
-                    Map<String, OrderBook> orderBooksMap = multiInstrument 
-                            ? orderBooks
-                            : Collections.singletonMap(alias, orderBooks.get(alias));
-                    for (Entry<String, OrderBook> entry : orderBooksMap.entrySet()) {
-                        String alias = entry.getKey();
-                        OrderBook orderBook = entry.getValue();
-                        
-                        Bar bar = currentBars.get(alias);
-                        if (bar != null) {
-                            Bar nextBar = new Bar(bar);
-                            nextBar.startNext();
-                            currentBars.put(alias, nextBar);
-                        } else {
-                            bar = new Bar();
+
+                while (getNextKeyTime(barInterval)<= newTime 
+                        || getNextKeyTime(timeNotificationInterval) <= newTime) {
+
+                    long barKeyTime = getNextKeyTime(barInterval);
+                    long notificationKeyTime = getNextKeyTime(timeNotificationInterval);
+
+                    if (barKeyTime <= notificationKeyTime) {
+                        time = barKeyTime;
+                        Map<String, OrderBook> orderBooksMap = multiInstrument 
+                                ? orderBooks
+                                : Collections.singletonMap(alias, orderBooks.get(alias));
+                        for (Entry<String, OrderBook> entry : orderBooksMap.entrySet()) {
+                            String alias = entry.getKey();
+                            OrderBook orderBook = entry.getValue();
+                            
+                            Bar bar = currentBars.get(alias);
+                            if (bar != null) {
+                                Bar nextBar = new Bar(bar);
+                                nextBar.startNext();
+                                currentBars.put(alias, nextBar);
+                            } else {
+                                bar = new Bar();
+                            }
+                            
+                            invokeCurrentTimeListeners();
+                            for (BarDataListener listener : barDataListeners) {
+                                listener.onBar(orderBook, bar);
+                            }
                         }
-                        
-                        for (BarDataListener listener : barDataListeners) {
-                            listener.onBar(orderBook, bar);
-                        }
+                    } else {
+                        time = notificationKeyTime;
+                        invokeCurrentTimeListeners();
                     }
                 }
             }
 
             this.time = newTime;
+        }
+
+        private long getNextKeyTime(long interval) {
+            if (interval <= 0) {
+                return Long.MAX_VALUE;
+            } else {
+                long remainder = time % interval;
+                if (remainder == 0) {
+                    return time + interval;
+                } else {
+                    return time + interval - remainder;
+                }
+            }
         }
         
         public long getTime() {

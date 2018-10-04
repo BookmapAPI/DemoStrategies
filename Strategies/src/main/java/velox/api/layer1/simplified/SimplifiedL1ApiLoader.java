@@ -28,6 +28,7 @@ import velox.api.layer1.data.MarketMode;
 import velox.api.layer1.data.OrderInfoUpdate;
 import velox.api.layer1.data.StatusInfo;
 import velox.api.layer1.data.TradeInfo;
+import velox.api.layer1.layers.Layer1ApiInjectorRelay;
 import velox.api.layer1.layers.Layer1ApiRelay;
 import velox.api.layer1.layers.strategies.interfaces.CalculatedResultListener;
 import velox.api.layer1.layers.strategies.interfaces.CustomEventAggregatble;
@@ -59,7 +60,7 @@ import velox.api.layer1.settings.Layer1ConfigSettingsInterface;
 import velox.colors.ColorsChangedListener;
 import velox.gui.StrategyPanel;
 
-public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRelay implements
+public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInjectorRelay implements
     Layer1ApiFinishable,
     Layer1CustomPanelsGetter,
     Layer1ConfigSettingsInterface,
@@ -398,12 +399,18 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
                 generatorMessage = getGeneratorMessage(true, alias, this);
                 provider.sendUserMessage(generatorMessage);
             } else {
-                OrderBook orderBook = orderBooks.get(alias);
-                for (Entry<Integer, Long> entry : orderBook.getBidMap().entrySet()) {
-                    onDepth(alias, true, entry.getKey(), entry.getValue().intValue(), false);
-                }
-                for (Entry<Integer, Long> entry : orderBook.getAskMap().entrySet()) {
-                    onDepth(alias, false, entry.getKey(), entry.getValue().intValue(), false);
+                Map<String, OrderBook> orderBooksToSend = multiInstrument 
+                        ? orderBooks
+                        : Collections.singletonMap(alias, orderBooks.get(alias)) ;
+                for (Entry<String, OrderBook> bookEntry : orderBooksToSend.entrySet()) {
+                    String alias = bookEntry.getKey();
+                    OrderBook orderBook = bookEntry.getValue();
+                    for (Entry<Integer, Long> entry : orderBook.getBidMap().entrySet()) {
+                        onDepth(alias, true, entry.getKey(), entry.getValue().intValue(), false);
+                    }
+                    for (Entry<Integer, Long> entry : orderBook.getAskMap().entrySet()) {
+                        onDepth(alias, false, entry.getKey(), entry.getValue().intValue(), false);
+                    }
                 }
             }
         }
@@ -675,13 +682,15 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiRela
     @Override
     public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
         Log.warn("Enabled for " + alias + " " + isEnabled);
-        if (isEnabled) {
-            startForInstrument(alias);
-            enabledAliases.add(alias);
-        } else {
-            stopForInstrument(alias);
-            enabledAliases.remove(alias);
-        }
+        inject(() -> {
+            if (isEnabled) {
+                startForInstrument(alias);
+                enabledAliases.add(alias);
+            } else {
+                stopForInstrument(alias);
+                enabledAliases.remove(alias);
+            }
+        });
     }
 
     private void startForInstrument(String alias) {

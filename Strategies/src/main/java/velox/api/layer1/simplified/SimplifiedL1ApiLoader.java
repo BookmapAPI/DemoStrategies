@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -823,15 +824,24 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     @Override
     public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
         Log.warn("Enabled for " + alias + " " + isEnabled);
+        CountDownLatch latch = new CountDownLatch(1);
         inject(() -> {
             if (isEnabled) {
-                startForInstrument(alias);
+                if (instruments.containsKey(alias)) {
+                    startForInstrument(alias);
+                }
                 enabledAliases.add(alias);
             } else {
                 stopForInstrument(alias);
                 enabledAliases.remove(alias);
             }
+            latch.countDown();
         });
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void startForInstrument(String alias) {

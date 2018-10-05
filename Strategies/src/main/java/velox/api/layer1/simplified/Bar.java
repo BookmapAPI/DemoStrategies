@@ -1,7 +1,5 @@
 package velox.api.layer1.simplified;
 
-import java.util.concurrent.TimeUnit;
-
 public class Bar {
 
     private double open;

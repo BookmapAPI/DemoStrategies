@@ -417,7 +417,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
 
         private void sendSnapshots() {
-            Map<String, OrderBook> orderBooksToSend = multiInstrument 
+            Map<String, OrderBook> orderBooksToSend = multiInstrument
                     ? orderBooks
                     : Collections.singletonMap(alias, orderBooks.get(alias)) ;
             for (Entry<String, OrderBook> bookEntry : orderBooksToSend.entrySet()) {
@@ -436,7 +436,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 onOrderUpdated(entry.getValue(), false);
             }
             
-            Map<String, StatusInfo> statusesToSend = multiInstrument ? statuses 
+            Map<String, StatusInfo> statusesToSend = multiInstrument ? statuses
                     : statuses.containsKey(alias) ? Collections.singletonMap(alias, statuses.get(alias))
                     : Collections.emptyMap();
             for (Entry<String, StatusInfo> entry : statusesToSend.entrySet()) {
@@ -523,8 +523,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                             submittedOrderBooks.put(alias, submittedOrderBook);
                         }
                         submittedOrderBook.onUpdate(isBid, price, size);
-                        int bestPriceOnSameSide = isBid 
-                                ? submittedOrderBook.getBestBidPriceOrNone() 
+                        int bestPriceOnSameSide = isBid
+                                ? submittedOrderBook.getBestBidPriceOrNone()
                                 : submittedOrderBook.getBestAskPriceOrNone();
                         if (price == bestPriceOnSameSide) {
 
@@ -669,7 +669,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 // Loop is only needed for generators since gaps can be large
                 // Technically, also needed for realtime after sleep, but in that case there is no data there
 
-                while (getNextKeyTime(barInterval)<= newTime 
+                while (getNextKeyTime(barInterval)<= newTime
                         || getNextKeyTime(timeNotificationInterval) <= newTime) {
 
                     long barKeyTime = getNextKeyTime(barInterval);
@@ -677,7 +677,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
 
                     if (barKeyTime <= notificationKeyTime) {
                         time = barKeyTime;
-                        Map<String, OrderBook> orderBooksMap = multiInstrument 
+                        Map<String, OrderBook> orderBooksMap = multiInstrument
                                 ? orderBooks
                                 : Collections.singletonMap(alias, orderBooks.get(alias));
                         for (Entry<String, OrderBook> entry : orderBooksMap.entrySet()) {
@@ -1036,7 +1036,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             }
             
             @Override
-            public void setTime(long time) {                
+            public void setTime(long time) {
                 if (mode == Mode.MIXED && !isRealtime && time >= getCurrentTime()) {
                     // This does not work yet (probably will work in live)
                     isRealtime = true;

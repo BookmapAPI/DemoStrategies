@@ -15,7 +15,6 @@ import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.
 import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.BalanceListener;
 import velox.api.layer1.simplified.CustomModule;
-import velox.api.layer1.simplified.HistoricalDataListener;
 import velox.api.layer1.simplified.Indicator;
 import velox.api.layer1.simplified.OrdersListener;
 import velox.api.layer1.simplified.PositionListener;

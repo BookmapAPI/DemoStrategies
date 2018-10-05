@@ -19,7 +19,7 @@ import velox.api.layer1.simplified.Intervals;
 @Layer1SimpleAttachable
 @Layer1StrategyName("Mid price from bars")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
-public class BarMidPriceNoHistory implements 
+public class BarMidPriceNoHistory implements
     CustomModule, BarDataListener {
 
     private Indicator midPrice;

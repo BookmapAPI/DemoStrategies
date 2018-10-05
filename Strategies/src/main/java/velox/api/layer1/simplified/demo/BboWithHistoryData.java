@@ -20,7 +20,7 @@ import velox.api.layer1.simplified.Indicator;
 @Layer1SimpleAttachable
 @Layer1StrategyName("BBO: with history")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
-public class BboWithHistoryData implements 
+public class BboWithHistoryData implements
     CustomModule, BboListener, HistoricalDataListener {
 
     private Indicator bidPriceIndicator;

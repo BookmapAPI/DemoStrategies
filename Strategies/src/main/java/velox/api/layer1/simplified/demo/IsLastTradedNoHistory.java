@@ -22,7 +22,7 @@ import velox.api.layer1.simplified.TradeDataListener;
 @Layer1SimpleAttachable
 @Layer1StrategyName("Is last trade: live")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
-public class IsLastTradedNoHistory implements 
+public class IsLastTradedNoHistory implements
     CustomModule, TradeDataListener, MultiInstrumentListener
 {
     private String outputInstrumetnAlias;

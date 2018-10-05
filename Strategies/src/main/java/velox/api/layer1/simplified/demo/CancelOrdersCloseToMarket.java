@@ -1,6 +1,5 @@
 package velox.api.layer1.simplified.demo;
 
-import java.nio.channels.Pipe;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -26,7 +25,7 @@ import velox.api.layer1.simplified.OrdersListener;
 @Layer1TradingStrategy
 @Layer1StrategyName("Cancel orders near BBO")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
-public class CancelOrdersCloseToMarket implements 
+public class CancelOrdersCloseToMarket implements
     CustomModule, OrdersListener, BboListener{
     
     private static final int CANCEL_DISTANCE = 3;

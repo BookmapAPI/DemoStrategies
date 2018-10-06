@@ -419,7 +419,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         private void sendSnapshots() {
             Map<String, OrderBook> orderBooksToSend = multiInstrument
                     ? orderBooks
-                    : Collections.singletonMap(alias, orderBooks.get(alias)) ;
+                    : Collections.singletonMap(alias, orderBooks.get(alias));
             for (Entry<String, OrderBook> bookEntry : orderBooksToSend.entrySet()) {
                 String alias = bookEntry.getKey();
                 OrderBook orderBook = bookEntry.getValue();
@@ -540,7 +540,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                         }
                     }
                     
-                    invokeCurrentTimeListeners();
+                    invokeCurrentTimeListeners(fromGenerator, true);
                     for (DepthDataListener listener : depthDataListeners) {
                         listener.onDepth(isBid, price, size);
                     }
@@ -560,7 +560,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                     }
                     currentBar.addTrade(tradeInfo.isBidAggressor, size, price);
                     
-                    invokeCurrentTimeListeners();
+                    invokeCurrentTimeListeners(fromGenerator, true);
                     for (TradeDataListener listener : tradeDataListeners) {
                         listener.onTrade(price, size, tradeInfo);
                     }
@@ -573,7 +573,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
                     
-                    invokeCurrentTimeListeners();
+                    invokeCurrentTimeListeners(fromGenerator, true);
                     for (OrdersListener listener : ordersListeners) {
                         listener.onOrderUpdated(orderInfoUpdate);
                     }
@@ -586,7 +586,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
                     
-                    invokeCurrentTimeListeners();
+                    invokeCurrentTimeListeners(fromGenerator, true);
                     for (OrdersListener listener : ordersListeners) {
                         listener.onOrderExecuted(executionInfo);
                     }
@@ -600,7 +600,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
                     
-                    invokeCurrentTimeListeners();
+                    invokeCurrentTimeListeners(fromGenerator, true);
                     for (PositionListener listener : statusListeners) {
                         listener.onPositionUpdate(statusInfo);
                     }
@@ -613,7 +613,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
                     
-                    invokeCurrentTimeListeners();
+                    invokeCurrentTimeListeners(fromGenerator, true);
                     for (BalanceListener listener : balanceListeners) {
                         listener.onBalance(balance);
                     }
@@ -625,7 +625,10 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             return fromGenerator ? mode == Mode.MIXED || mode == Mode.GENERATORS : mode == Mode.LIVE || mode == Mode.MIXED;
         }
         
-        private void invokeCurrentTimeListeners() {
+        private void invokeCurrentTimeListeners(boolean fromGenerator, boolean setTime) {
+            if (setTime && !fromGenerator) {
+                setTime(getCurrentTime(), fromGenerator);
+            }
             for (TimeListener listener : timeListeners) {
                 listener.onTimestamp(time);
             }
@@ -693,14 +696,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                                 bar = new Bar();
                             }
                             
-                            invokeCurrentTimeListeners();
+                            invokeCurrentTimeListeners(fromGenerator, false);
                             for (BarDataListener listener : barDataListeners) {
                                 listener.onBar(orderBook, bar);
                             }
                         }
                     } else {
                         time = notificationKeyTime;
-                        invokeCurrentTimeListeners();
+                        invokeCurrentTimeListeners(fromGenerator, false);
                     }
                 }
             }
@@ -1016,6 +1019,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             
             @Override
             public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
+                if (mode == Mode.GENERATORS || !isRealtime) {
+                    listener.onInstrumentAdded(alias, instrumentInfo);
+                }
             }
             
             @Override

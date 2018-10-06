@@ -15,12 +15,18 @@ import velox.api.layer1.simplified.Indicator;
 import velox.api.layer1.simplified.TradeDataListener;
 
 @Layer1SimpleAttachable
-@Layer1StrategyName("Last trade: live")
+@Layer1StrategyName("2_Last trade: live")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
-public class LastTradeDemoNoHistory implements CustomModule, TradeDataListener
+public class LastTradeDemoNoHistory2 implements CustomModule, TradeDataListener
 {
     private Indicator lastTradeIndicator;
 
+    @Parameter(name = "Price shift", step = 1.0)
+    Double priceShift = 2.0;
+    
+    @Parameter(name = "Sample text", step = 0.0)
+    String any = "Any";
+    
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api) {
         lastTradeIndicator = api.registerIndicator("Last trade, no history",
@@ -29,6 +35,8 @@ public class LastTradeDemoNoHistory implements CustomModule, TradeDataListener
 
     @Override
     public void onTrade(double price, int size, TradeInfo tradeInfo) {
-        lastTradeIndicator.addPoint(price + 2);
+        lastTradeIndicator.addPoint(price);
     }
+
+    
 }

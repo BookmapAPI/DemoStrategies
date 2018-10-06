@@ -417,6 +417,13 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
 
         private void sendSnapshots() {
+            Map<String, InstrumentInfo> instrumentInfosToSend = multiInstrument
+                    ? instruments
+                    : Collections.singletonMap(alias, instruments.get(alias));
+            for (Entry<String, InstrumentInfo> entry : instrumentInfosToSend.entrySet()) {
+                onInstrumentAdded(entry.getKey(), entry.getValue(), false);
+            }
+            
             Map<String, OrderBook> orderBooksToSend = multiInstrument
                     ? orderBooks
                     : Collections.singletonMap(alias, orderBooks.get(alias));
@@ -643,19 +650,27 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             }
         }
         
-        public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
-            if (multiInstrument) {
-                setCurrentAlias(alias);
-                for (MultiInstrumentListener listener : multiInstrumentListeners) {
-                    listener.onInstrumentAdded(instrumentInfo);
+        public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo, boolean fromGenerator) {
+            if (eventShouldBePublished(fromGenerator)) {
+                if (multiInstrument) {
+                    setCurrentAlias(alias);
+                    
+                    invokeCurrentTimeListeners(fromGenerator, true);
+                    for (MultiInstrumentListener listener : multiInstrumentListeners) {
+                        listener.onInstrumentAdded(instrumentInfo);
+                    }
                 }
             }
         }
 
-        public void onInstrumentRemoved(String alias) {
-            if (multiInstrument) {
-                for (MultiInstrumentListener listener : multiInstrumentListeners) {
-                    listener.onInstrumentRemoved();
+        public void onInstrumentRemoved(String alias, boolean fromGenerator) {
+            if (eventShouldBePublished(fromGenerator)) {
+                if (multiInstrument) {
+                    
+                    invokeCurrentTimeListeners(fromGenerator, true);
+                    for (MultiInstrumentListener listener : multiInstrumentListeners) {
+                        listener.onInstrumentRemoved();
+                    }
                 }
             }
         }
@@ -959,8 +974,6 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             
             private Consumer<CustomGeneratedEventAliased> consumer;
             
-            private Map<String, Double> aliasToCurrentValue = new HashMap<>();
-            
             @Override
             public void setGeneratedEventsConsumer(Consumer<CustomGeneratedEventAliased> consumer) {
                 this.consumer = consumer;
@@ -1020,13 +1033,15 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             @Override
             public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
                 if (mode == Mode.GENERATORS || !isRealtime) {
-                    listener.onInstrumentAdded(alias, instrumentInfo);
+                    listener.onInstrumentAdded(alias, instrumentInfo, true);
                 }
             }
             
             @Override
             public void onInstrumentRemoved(String alias) {
-                aliasToCurrentValue.remove(alias);
+                if (mode == Mode.GENERATORS || !isRealtime) {
+                    listener.onInstrumentRemoved(alias, true);
+                }
             }
 
             @Override
@@ -1063,14 +1078,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         
         if (multiInstrument) {
             for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
-                instanceWrapper.onInstrumentAdded(alias, instrumentInfo);
+                instanceWrapper.onInstrumentAdded(alias, instrumentInfo, false);
             }
         }
     }
 
     private void addInstrument(String alias, InstrumentInfo instrumentInfo, OrderBook orderBook) {
+
         instruments.put(alias, instrumentInfo);
-        
         orderBooks.put(alias, orderBook);
         
         if (enabledAliases.contains(alias)) {
@@ -1085,7 +1100,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         
         if (multiInstrument) {
             for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
-                instanceWrapper.onInstrumentRemoved(alias);
+                instanceWrapper.onInstrumentRemoved(alias, false);
             }
         }
     }
@@ -1095,6 +1110,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         if (enabledAliases.contains(alias)) {
             stopForInstrument(alias);
         }
+        instruments.remove(alias);
         orderBooks.remove(alias);
     }
     

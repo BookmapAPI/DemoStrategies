@@ -7,5 +7,4 @@ public interface MultiInstrumentListener {
     void onCurrentInstrument(String alias);
 
     void onInstrumentAdded(InstrumentInfo info);
-    void onInstrumentRemoved();
 }

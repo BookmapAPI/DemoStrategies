@@ -662,18 +662,6 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             }
         }
 
-        public void onInstrumentRemoved(String alias, boolean fromGenerator) {
-            if (eventShouldBePublished(fromGenerator)) {
-                if (multiInstrument) {
-                    
-                    invokeCurrentTimeListeners(fromGenerator, true);
-                    for (MultiInstrumentListener listener : multiInstrumentListeners) {
-                        listener.onInstrumentRemoved();
-                    }
-                }
-            }
-        }
-
         public void setTime(long newTime, boolean fromGenerator) {
             boolean isValid = mode == Mode.LIVE ? !fromGenerator
                     : mode == Mode.GENERATORS ? fromGenerator
@@ -1038,9 +1026,6 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             
             @Override
             public void onInstrumentRemoved(String alias) {
-                if (mode == Mode.GENERATORS || !isRealtime) {
-                    listener.onInstrumentRemoved(alias, true);
-                }
             }
 
             @Override
@@ -1096,12 +1081,6 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     public void onInstrumentRemoved(String alias) {
         super.onInstrumentRemoved(alias);
         removeInstrument(alias);
-        
-        if (multiInstrument) {
-            for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
-                instanceWrapper.onInstrumentRemoved(alias, false);
-            }
-        }
     }
 
     private void removeInstrument(String alias) {

@@ -59,10 +59,4 @@ public class IsLastTradedNoHistory implements
         Log.info("[IsLastTradedNoHistory] indicator for " + outputInstrumetnAlias + " received onAdded for "
                 + currentInstrumentAlias + " info " + info);
     }
-    
-    @Override
-    public void onInstrumentRemoved() {
-        Log.info("[IsLastTradedNoHistory] indicator for " + outputInstrumetnAlias + " received onRemoved for "
-                + currentInstrumentAlias);
-    }
 }

@@ -6,12 +6,42 @@ import velox.api.layer1.data.OrderSendParameters;
 import velox.api.layer1.data.OrderUpdateParameters;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
 
+/**
+ * Allows communicating back to Bookmap.
+ */
 public interface Api {
-    default Indicator registerIndicator(String name, GraphType graphType, Color defaultColor) {
-        return registerIndicator(name, graphType, defaultColor, Double.NaN);
+    /**
+     * Similar to {@link #registerIndicator(String, GraphType, Color, double)},
+     * assumes initialValue = NaN (no line until first update)
+     *
+     * @param name
+     *            user-friendly name for an indicator. <b>Must be unique within
+     *            alias.</b>
+     * @param graphType
+     *            where to draw the indicator (bottom panel or main chart)
+     * @param color
+     *            color to use for indicator
+     * @return indicator object that can be used to manipulate the line
+     */
+    default Indicator registerIndicator(String name, GraphType graphType, Color color) {
+        return registerIndicator(name, graphType, color, Double.NaN);
     }
 
-    Indicator registerIndicator(String name, GraphType graphType, Color defaultColor, double initialValue);
+    /**
+     * Register an indicator (line).
+     *
+     * @param name
+     *            user-friendly name for an indicator. <b>Must be unique within
+     *            alias.</b>
+     * @param graphType
+     *            where to draw the indicator (bottom panel or main chart)
+     * @param color
+     *            color to use for indicator
+     * @param initialValue
+     *            initial value of the indicator. NaN means "no visible line".
+     * @return indicator object that can be used to manipulate the line
+     */
+    Indicator registerIndicator(String name, GraphType graphType, Color color, double initialValue);
     
 
     /**

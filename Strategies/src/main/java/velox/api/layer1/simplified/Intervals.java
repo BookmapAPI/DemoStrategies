@@ -30,4 +30,7 @@ public class Intervals {
     public static final long INTERVAL_15_MINUTES = TimeUnit.MINUTES.toNanos(15);
     public static final long INTERVAL_20_MINUTES = TimeUnit.MINUTES.toNanos(20);
     public static final long INTERVAL_30_MINUTES = TimeUnit.MINUTES.toNanos(30);
+    
+    /** Smallest interval allowed */
+    public static final long MIN_INTERVAL = INTERVAL_50_MILLISECONDS;
 }

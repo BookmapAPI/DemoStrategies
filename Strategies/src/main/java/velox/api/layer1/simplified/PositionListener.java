@@ -4,7 +4,8 @@ import velox.api.layer1.data.StatusInfo;
 
 /**
  * Provides position info. Currently only works in realtime
- * ({@link HistoricalDataListener} should <b>not</b> be implemented)
+ * ({@link HistoricalDataListener} should <b>not</b> be implemented if you want
+ * this to work)
  */
 public interface PositionListener {
     /**

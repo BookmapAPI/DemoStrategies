@@ -1,5 +1,6 @@
 package velox.api.layer1.simplified;
 
+/** Single OHLC bar */
 public class Bar {
 
     private double open;

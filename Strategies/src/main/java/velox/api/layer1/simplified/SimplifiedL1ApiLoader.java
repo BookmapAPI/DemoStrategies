@@ -831,20 +831,29 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
         Log.warn("Enabled for " + alias + " " + isEnabled);
         CountDownLatch latch = new CountDownLatch(1);
+        AtomicReference<Exception> exception = new AtomicReference<Exception>();
         inject(() -> {
-            if (isEnabled) {
-                if (instruments.containsKey(alias)) {
-                    startForInstrument(alias);
+            try {
+                if (isEnabled) {
+                    if (instruments.containsKey(alias)) {
+                        startForInstrument(alias);
+                    }
+                    enabledAliases.add(alias);
+                } else {
+                    stopForInstrument(alias);
+                    enabledAliases.remove(alias);
                 }
-                enabledAliases.add(alias);
-            } else {
-                stopForInstrument(alias);
-                enabledAliases.remove(alias);
+            } catch (Exception e) {
+                exception.set(e);
+            } finally {
+                latch.countDown();
             }
-            latch.countDown();
         });
         try {
             latch.await();
+            if (exception.get() != null) {
+                throw new RuntimeException("Error while changing checkbox state", exception.get());
+            }
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }

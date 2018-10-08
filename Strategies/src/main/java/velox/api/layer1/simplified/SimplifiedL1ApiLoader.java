@@ -176,8 +176,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, defaultColor, alias, true, this);
             provider.sendUserMessage(message);
         }
-        
-        @Override
+
         public void remove() {
             Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, defaultColor, alias, false, this);
             provider.sendUserMessage(message);
@@ -457,7 +456,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
 
         public void stop() {
             instance.stop();
-            indicators.forEach(Indicator::remove);
+            indicators.forEach(IndicatorImplementation::remove);
             Layer1ApiUserMessageAddStrategyUpdateGenerator generatorMessage = getGeneratorMessage(false, alias, this);
             provider.sendUserMessage(generatorMessage);
         }

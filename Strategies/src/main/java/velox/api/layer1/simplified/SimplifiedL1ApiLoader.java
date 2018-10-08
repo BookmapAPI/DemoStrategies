@@ -464,7 +464,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         public void addListener(Object simplifiedListener) {
             
             if (simplifiedListener instanceof TimeListener) {
-                timeNotificationInterval = ((TimeListener) simplifiedListener).getTimeNotificationInterval();
+                // Actually that's a dead code, but I'm not sure if we'll want to bring that back shortly
+                timeNotificationInterval = -1;
                 timeListeners.add((TimeListener) simplifiedListener);
             }
             

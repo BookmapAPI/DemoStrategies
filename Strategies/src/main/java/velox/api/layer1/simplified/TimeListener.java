@@ -1,11 +1,12 @@
 package velox.api.layer1.simplified;
 
+/** Get event timestamps */
 public interface TimeListener {
-    void onTimestamp(long t);
-
     /**
-     * Even if there are no events you will still be notified with this frequency.
-     * -1 if you don't want it.
+     * Time of the next event(s)
+     *
+     * @param t
+     *            time in nanoseconds
      */
-    long getTimeNotificationInterval();
+    void onTimestamp(long t);
 }

@@ -477,6 +477,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             }
             if (simplifiedListener instanceof BarDataListener) {
                 barInterval = ((BarDataListener) instance).getBarInterval();
+                if (barInterval < Intervals.MIN_INTERVAL) {
+                    throw new IllegalArgumentException("BarDataListener#getBarInterval < Intervals#MIN_INTERVAL (" + barInterval + ")");
+                }
                 barDataListeners.add((BarDataListener) instance);
             }
             if (simplifiedListener instanceof BboListener) {

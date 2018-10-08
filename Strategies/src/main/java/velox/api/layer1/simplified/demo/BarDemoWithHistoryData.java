@@ -45,6 +45,10 @@ public class BarDemoWithHistoryData implements
 //        volumeBuyIndicator = api.registerIndicator("Volume buy", GraphType.BOTTOM, Color.GREEN);
 //        volumeSellIndicator = api.registerIndicator("Volume sell", GraphType.BOTTOM, Color.GREEN);
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onBar(OrderBook orderBook, Bar bar) {

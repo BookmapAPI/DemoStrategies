@@ -28,6 +28,10 @@ public class BarMidPriceNoHistory implements
     public void initialize(String alias, InstrumentInfo info, Api api) {
         midPrice = api.registerIndicator("Mid price", GraphType.PRIMARY, Color.CYAN);
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onBar(OrderBook ob, Bar bar) {

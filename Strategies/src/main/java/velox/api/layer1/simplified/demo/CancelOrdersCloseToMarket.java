@@ -42,6 +42,10 @@ public class CancelOrdersCloseToMarket implements
     }
     
     @Override
+    public void stop() {
+    }
+    
+    @Override
     public void onBbo(int bidPrice, int bidSize, int askPrice, int askSize) {
         for (OrderInfo order : activeLimitOrders.values()) {
             // Since BBO is providing level number and order contains raw price, let's convert it to level number

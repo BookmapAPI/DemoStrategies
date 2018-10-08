@@ -32,6 +32,10 @@ public class LastTradeDemoNoHistory2 implements CustomModule, TradeDataListener
         lastTradeIndicator = api.registerIndicator("Last trade, no history",
                 GraphType.PRIMARY, Color.GREEN);
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onTrade(double price, int size, TradeInfo tradeInfo) {

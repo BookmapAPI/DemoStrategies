@@ -33,6 +33,10 @@ public class LastTradeDemoWithHistoryMode implements
         isHistoricalIndicator = api.registerIndicator("1 if historical",
                 GraphType.BOTTOM, Color.YELLOW, 1);
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onTrade(double price, int size, TradeInfo tradeInfo) {

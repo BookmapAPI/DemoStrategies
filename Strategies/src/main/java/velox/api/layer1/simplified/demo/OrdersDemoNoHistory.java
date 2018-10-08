@@ -41,6 +41,10 @@ public class OrdersDemoNoHistory implements
         balance = api.registerIndicator("Balance", GraphType.BOTTOM, Color.CYAN);
         position = api.registerIndicator("Position", GraphType.BOTTOM, Color.WHITE);
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onPositionUpdate(StatusInfo statusInfo) {

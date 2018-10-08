@@ -35,6 +35,10 @@ public class TradesIntervalNoHistory implements CustomModule, TradeDataListener,
         lastTradeInterval = api.registerIndicator("Last trade interval", GraphType.BOTTOM, Color.RED);
         lastTradeIntervalSmooth = api.registerIndicator("Last trade interval (smooth)", GraphType.BOTTOM, Color.GREEN);
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onTrade(double price, int size, TradeInfo tradeInfo) {

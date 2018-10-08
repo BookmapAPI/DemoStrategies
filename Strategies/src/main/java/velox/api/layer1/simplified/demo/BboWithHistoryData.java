@@ -36,6 +36,10 @@ public class BboWithHistoryData implements
         bidSizeIndicator = api.registerIndicator("Bid size", GraphType.BOTTOM, Color.RED);
         askSizeIndicator = api.registerIndicator("Ask size", GraphType.BOTTOM, Color.GREEN);
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onBbo(int bidPrice, int bidSize, int askPrice, int askSize) {

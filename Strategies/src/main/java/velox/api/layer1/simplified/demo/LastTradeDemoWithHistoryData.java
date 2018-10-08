@@ -29,6 +29,10 @@ public class LastTradeDemoWithHistoryData implements
         lastTradeIndicator = api.registerIndicator("Last trade, with historical",
                 GraphType.PRIMARY, Color.YELLOW);
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onTrade(double price, int size, TradeInfo tradeInfo) {

@@ -35,6 +35,10 @@ public class IsLastTradedNoHistory implements
                 GraphType.BOTTOM, Color.BLUE);
         outputInstrumetnAlias = alias;
     }
+    
+    @Override
+    public void stop() {
+    }
 
     @Override
     public void onTrade(double price, int size, TradeInfo tradeInfo) {

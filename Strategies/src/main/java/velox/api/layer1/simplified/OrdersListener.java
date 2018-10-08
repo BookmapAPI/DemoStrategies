@@ -12,12 +12,12 @@ import velox.api.layer1.data.OrderInfoUpdate;
 public interface OrdersListener {
     /**
      * Called each time order is changed (placed/cancelled/updated/filled/partially
-     * filled. Please also {@link OrdersListener} description.
+     * filled. Please also see {@link OrdersListener} description.
      */
     void onOrderUpdated(OrderInfoUpdate orderInfoUpdate);
 
     /**
-     * Called when execution (fill/partial fill) happens. Please also
+     * Called when execution (fill/partial fill) happens. Please also see
      * {@link OrdersListener} description. Order with
      * {@link ExecutionInfo#executionId} is supposed to exist (you should get at
      * least one {@link #onOrderUpdated(OrderInfoUpdate)} for that order first).

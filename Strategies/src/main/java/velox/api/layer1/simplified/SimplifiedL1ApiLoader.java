@@ -361,6 +361,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         
         private final List<TimeListener> timeListeners = new ArrayList<>();
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
+        private final List<SnapshotEndListener> snapshotEndListeners = new ArrayList<>();
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
         private final List<BarDataListener> barDataListeners = new ArrayList<>();
         private final List<BboListener> bboDataListeners = new ArrayList<>();
@@ -389,6 +390,11 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         
         private Map<String, OrderBook> submittedOrderBooks = new HashMap<>();
         
+        private boolean sendingSnapshots = false;
+        private HashSet<String> snapshotEndsSent = new HashSet<>();
+        private HashMap<String, Long> firstDepthUpdateTimes = new HashMap<>();
+        
+        
         public InstanceWrapper(String alias) {
             this.alias = alias;
             try {
@@ -416,6 +422,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
 
         private void sendSnapshots() {
+            sendingSnapshots = true;
             Map<String, InstrumentInfo> instrumentInfosToSend = multiInstrument
                     ? instruments
                     : Collections.singletonMap(alias, instruments.get(alias));
@@ -452,6 +459,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             if (balance != null) {
                 onBalance(balance, false);
             }
+            sendingSnapshots = false;
         }
 
         public void stop() {
@@ -471,6 +479,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             
             if (simplifiedListener instanceof DepthDataListener) {
                 depthDataListeners.add((DepthDataListener) simplifiedListener);
+            }
+            if (simplifiedListener instanceof SnapshotEndListener) {
+                snapshotEndListeners.add((SnapshotEndListener) simplifiedListener);
             }
             if (simplifiedListener instanceof TradeDataListener) {
                 tradeDataListeners.add((TradeDataListener) simplifiedListener);
@@ -551,6 +562,15 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                     }
                     
                     invokeCurrentTimeListeners(fromGenerator, true);
+                    boolean snapshotEndSent = snapshotEndsSent.contains(alias);
+                    long firstDepthUpdateTime = firstDepthUpdateTimes.getOrDefault(alias, -1L);
+                    if (!snapshotEndSent && firstDepthUpdateTime == -1) {
+                        firstDepthUpdateTime = time;
+                        firstDepthUpdateTimes.put(alias, firstDepthUpdateTime);
+                    }
+                    if (!snapshotEndSent && !sendingSnapshots && time > firstDepthUpdateTime) {
+                        invokeSnapshotEndListeners(alias);
+                    }
                     for (DepthDataListener listener : depthDataListeners) {
                         listener.onDepth(isBid, price, size);
                     }
@@ -558,10 +578,20 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             }
         }
 
+        private void invokeSnapshotEndListeners(String alias) {
+            for (SnapshotEndListener listener : snapshotEndListeners) {
+                listener.onSnapshotEnd();
+            }
+            snapshotEndsSent.add(alias);
+        }
+
         public void onTrade(String alias, double price, int size, TradeInfo tradeInfo, boolean fromGenerator) {
             if (eventShouldBePublished(fromGenerator)) {
                 if (multiInstrument || this.alias.equals(alias)) {
                     setCurrentAlias(alias);
+                    if (!snapshotEndsSent.contains(alias)) {
+                        invokeSnapshotEndListeners(alias);
+                    }
                     
                     Bar currentBar = currentBars.get(alias);
                     if (currentBar == null) {

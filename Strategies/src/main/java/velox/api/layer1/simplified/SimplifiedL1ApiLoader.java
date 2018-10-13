@@ -857,6 +857,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
 
     @Override
     public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
+        
+        InstanceWrapper instanceWrapper = instanceWrappers.get(alias);
+        if (instanceWrapper != null && instanceWrapper.instance instanceof CustomSettingsPanelProvider) {
+            return ((CustomSettingsPanelProvider)instanceWrapper.instance).getCustomSettingsPanels();
+        }
+        
         return new StrategyPanel[] {new StrategyPanel("No settings yet")};
     }
 

@@ -39,7 +39,7 @@ public class Bar {
             open = high = low = price;
         }
         high = Math.max(price, high);
-        low = Math.max(price, low);
+        low = Math.min(price, low);
         close = price;
 
         if (isBuy) {
@@ -118,7 +118,7 @@ public class Bar {
         return volumePremultipliedPriceSell / volumeSell;
     }
 
-    public double getVwapTotal() {
+    public double getVwap() {
         return (volumePremultipliedPriceBuy + volumePremultipliedPriceSell) / (volumeBuy + volumeSell);
     }
 }

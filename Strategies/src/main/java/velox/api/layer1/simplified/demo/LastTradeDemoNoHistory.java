@@ -33,6 +33,6 @@ public class LastTradeDemoNoHistory implements CustomModule, TradeDataListener
 
     @Override
     public void onTrade(double price, int size, TradeInfo tradeInfo) {
-        lastTradeIndicator.addPoint(price + 2);
+        lastTradeIndicator.addPoint(price);
     }
 }

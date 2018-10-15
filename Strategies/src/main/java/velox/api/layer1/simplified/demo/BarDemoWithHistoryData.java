@@ -15,6 +15,7 @@ import velox.api.layer1.simplified.BarDataListener;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.HistoricalDataListener;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.Intervals;
 
 @Layer1SimpleAttachable
@@ -34,7 +35,7 @@ public class BarDemoWithHistoryData implements
     private Indicator volumeSellIndicator;
 
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
 //        openIndicator = api.registerIndicator("Open", GraphType.PRIMARY, Color.MAGENTA);
 //        highIndicator = api.registerIndicator("High", GraphType.PRIMARY, Color.MAGENTA);
 //        lowIndicator = api.registerIndicator("Low", GraphType.PRIMARY, Color.MAGENTA);

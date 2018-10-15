@@ -16,6 +16,7 @@ import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.BalanceListener;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.OrdersListener;
 import velox.api.layer1.simplified.PositionListener;
 
@@ -33,7 +34,7 @@ public class OrdersDemoNoHistory implements
     private double pips;
     
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         pips = info.pips;
         
         lastExecutionPrice = api.registerIndicator("Last execution price", GraphType.PRIMARY, Color.ORANGE);

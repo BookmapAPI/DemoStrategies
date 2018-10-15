@@ -20,8 +20,11 @@ public interface CustomModule {
      *            it to get more information.
      * @param api
      *            object for interacting with Bookmap
+     * @param initialState
+     *            additional information partially replacing historical data, such
+     *            as last trade price
      */
-    void initialize(String alias, InstrumentInfo info, Api api);
+    void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState);
 
     /**
      * Called before unloading the module. If you have started any thread or

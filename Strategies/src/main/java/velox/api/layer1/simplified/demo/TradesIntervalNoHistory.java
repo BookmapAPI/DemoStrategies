@@ -15,6 +15,7 @@ import velox.api.layer1.simplified.Bar;
 import velox.api.layer1.simplified.BarDataListener;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.Intervals;
 import velox.api.layer1.simplified.TimeListener;
 import velox.api.layer1.simplified.TradeDataListener;
@@ -38,7 +39,7 @@ public class TradesIntervalNoHistory implements
     private long lastTradeTime = -1;
 
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         lastTradeInterval = api.registerIndicator("Last trade interval", GraphType.BOTTOM, Color.RED);
         lastTradeIntervalSmooth = api.registerIndicator("Last trade interval (smooth)", GraphType.BOTTOM, Color.GREEN);
     }

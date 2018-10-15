@@ -14,6 +14,7 @@ import velox.api.layer1.simplified.Bar;
 import velox.api.layer1.simplified.BarDataListener;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.Intervals;
 
 @Layer1SimpleAttachable
@@ -25,7 +26,7 @@ public class BarMidPriceNoHistory implements
     private Indicator midPrice;
 
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         midPrice = api.registerIndicator("Mid price", GraphType.PRIMARY, Color.CYAN);
     }
     

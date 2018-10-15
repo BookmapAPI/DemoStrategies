@@ -16,6 +16,7 @@ import velox.api.layer1.data.OrderInfoUpdate;
 import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.BboListener;
 import velox.api.layer1.simplified.CustomModule;
+import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.OrdersListener;
 
 /**
@@ -36,7 +37,7 @@ public class CancelOrdersCloseToMarket implements
     private double pips;
     
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         this.pips = info.pips;
         this.api = api;
     }

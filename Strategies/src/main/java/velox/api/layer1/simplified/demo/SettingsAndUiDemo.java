@@ -19,6 +19,7 @@ import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.CustomSettingsPanelProvider;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.TradeDataListener;
 import velox.gui.StrategyPanel;
 
@@ -43,7 +44,7 @@ public class SettingsAndUiDemo implements
     
     
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         this.api = api;
         
         lastTradeIndicator = api.registerIndicator("Last trade, no history",

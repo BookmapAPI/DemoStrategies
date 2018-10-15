@@ -13,6 +13,7 @@ import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.
 import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.MultiInstrumentListener;
 import velox.api.layer1.simplified.TradeDataListener;
 
@@ -30,7 +31,7 @@ public class IsLastTradedNoHistory implements
     private Indicator isLastTraded;
 
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         isLastTraded = api.registerIndicator("Is last traded?",
                 GraphType.BOTTOM, Color.BLUE);
         outputInstrumetnAlias = alias;

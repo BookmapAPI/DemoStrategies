@@ -13,6 +13,7 @@ import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.HistoricalModeListener;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.TradeDataListener;
 
 @Layer1SimpleAttachable
@@ -27,7 +28,7 @@ public class LastTradeDemoWithHistoryMode implements
     private Indicator isHistoricalIndicator;
 
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         lastTradeIndicator = api.registerIndicator("Last trade, with historical",
                 GraphType.PRIMARY, Color.ORANGE);
         isHistoricalIndicator = api.registerIndicator("1 if historical",

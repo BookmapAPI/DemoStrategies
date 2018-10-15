@@ -13,6 +13,7 @@ import velox.api.layer1.simplified.BboListener;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.HistoricalDataListener;
 import velox.api.layer1.simplified.Indicator;
+import velox.api.layer1.simplified.InitialState;
 
 /**
  * Follows BBO.Shows BBO sizes in bottom panel
@@ -29,7 +30,7 @@ public class BboWithHistoryData implements
     private Indicator askSizeIndicator;
 
     @Override
-    public void initialize(String alias, InstrumentInfo info, Api api) {
+    public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         bidPriceIndicator = api.registerIndicator("Bid", GraphType.PRIMARY, Color.RED);
         askPriceIndicator = api.registerIndicator("Ask", GraphType.PRIMARY, Color.GREEN);
 

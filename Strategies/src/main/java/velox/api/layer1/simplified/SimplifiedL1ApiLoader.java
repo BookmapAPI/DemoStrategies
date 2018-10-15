@@ -410,8 +410,11 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
 
         public void start() {
+            InitialState initialState = initialStates.computeIfAbsent(alias,
+                    k -> new InitialState());
+
             initializing = true;
-            instance.initialize(alias, instruments.get(alias), this);
+            instance.initialize(alias, instruments.get(alias), this, initialState);
             initializing = false;
             
             addListener(instance);
@@ -855,6 +858,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     private Map<String, OrderInfoUpdate> orders = new ConcurrentHashMap<>();
     private Map<String, StatusInfo> statuses = new ConcurrentHashMap<>();
     private BalanceInfo balance;
+    /** Data passed into initialization  */
+    private Map<String, InitialState> initialStates = new ConcurrentHashMap<>();
     
     // TODO: replace with settings
     private HashSet<String> enabledAliases = new HashSet<>();
@@ -1230,6 +1235,17 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     @Override
     public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
         super.onTrade(alias, price, size, tradeInfo);
+        
+        if (mode == Mode.LIVE && size != 0) {
+            InitialState initialState = initialStates.get(alias);
+            if (initialState == null) {
+                initialState = new InitialState();
+                initialStates.put(alias, initialState);
+            }
+            initialState.isLastTradeBid = tradeInfo.isBidAggressor;
+            initialState.lastTradePrice = price;
+            initialState.lastTradeSize = size;
+        }
         
         if (multiInstrument) {
             for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {

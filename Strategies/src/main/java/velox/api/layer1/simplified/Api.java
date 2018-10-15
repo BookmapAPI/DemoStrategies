@@ -4,6 +4,7 @@ import java.awt.Color;
 
 import velox.api.layer1.data.OrderSendParameters;
 import velox.api.layer1.data.OrderUpdateParameters;
+import velox.api.layer1.settings.StrategySettingsVersion;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
 
 /**
@@ -59,4 +60,26 @@ public interface Api {
      *            parameters
      */
     void updateOrder(OrderUpdateParameters orderUpdateParameters);
+    
+    /**
+     * Store settings.
+     *
+     * @param settingsObject
+     *            your settings object. Class must be annotated with
+     *            {@link StrategySettingsVersion}
+     */
+    public <T> void setSettings(T settingsObject);
+    
+    /**
+     * Retrieve earlier stored settings
+     *
+     * @param settingsClass
+     *            class of your settings object. Must be annotated with
+     *            {@link StrategySettingsVersion}
+     * @return settings object. If there is no compatible saved object for this
+     *         request, new object will be created with default constructor<br>
+     *         <b>Changing returned object will not change settings. You need to
+     *         call {@link #setSettings(Object)} for this</b>
+     */
+    public <T> T getSettings(Class<? extends T> settingsClass);
 }

@@ -354,6 +354,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     }
     
     private class InstanceWrapper implements Api {
+        private static final String DIRECT_SETTINGS_POSTFIX = ".direct";
+        
         private final CustomModule instance;
         private final String alias;
         
@@ -787,12 +789,25 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         public void updateOrder(OrderUpdateParameters orderUpdateParameters) {
             SimplifiedL1ApiLoader.this.updateOrder(orderUpdateParameters);
         }
+        
+        @SuppressWarnings("unchecked")
+        @Override
+        public <ST> ST getSettings(Class<? extends ST> settingsClass) {
+            return (ST) settingsAccess.getSettings(alias, simpleStrategyClass.getCanonicalName() + DIRECT_SETTINGS_POSTFIX, settingsClass);
+        }
+        
+        @Override
+        public <ST> void setSettings(ST settingsObject) {
+            settingsAccess.setSettings(alias, simpleStrategyClass.getCanonicalName() + DIRECT_SETTINGS_POSTFIX,
+                    settingsObject, settingsObject.getClass());
+        }
     }
     
     private final Layer1ApiRequestCurrentTimeEvents requestCurrentTimeEventsMessage = new Layer1ApiRequestCurrentTimeEvents(true, 0,
             TimeUnit.MILLISECONDS.toNanos(50));
     
     private DataStructureInterface dataStructureInterface;
+    private SettingsAccess settingsAccess;
     private Class<T> simpleStrategyClass;
     private Map<String, InstanceWrapper> instanceWrappers = new ConcurrentHashMap<>();
     
@@ -852,7 +867,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
 
     @Override
     public void acceptSettingsInterface(SettingsAccess settingsAccess) {
-        // Not working with settings yet
+        this.settingsAccess = settingsAccess;
     }
 
     @Override
@@ -863,7 +878,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             return ((CustomSettingsPanelProvider)instanceWrapper.instance).getCustomSettingsPanels();
         }
         
-        return new StrategyPanel[] {new StrategyPanel("No settings yet")};
+        return new StrategyPanel[] { new StrategyPanel("Please enable the module to configure") };
     }
 
     @Override

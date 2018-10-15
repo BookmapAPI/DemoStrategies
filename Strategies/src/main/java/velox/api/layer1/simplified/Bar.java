@@ -26,13 +26,17 @@ public class Bar {
     }
 
     public Bar(double openPrice) {
-        this.open = this.close = this.high = this.low = openPrice;
+        initPrice(openPrice);
     }
-    
+
     public Bar() {
         this(Double.NaN);
     }
-    
+
+    private void initPrice(double openPrice) {
+        open = close = high = low = openPrice;
+    }
+
     /** Update bar based on the new trade */
     public void addTrade(boolean isBuy, long volume, double price) {
         if (Double.isNaN(this.open)) {
@@ -50,10 +54,10 @@ public class Bar {
             volumePremultipliedPriceSell += volume * price;
         }
     }
-    
+
     /** Set open/close prices to previous close price, clear other fields */
     public void startNext() {
-        open = high = low = close;
+        initPrice(close);
         volumeBuy = volumeSell = 0;
         volumePremultipliedPriceBuy = volumePremultipliedPriceSell = 0;
     }

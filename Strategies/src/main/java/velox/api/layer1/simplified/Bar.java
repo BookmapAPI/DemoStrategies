@@ -53,7 +53,7 @@ public class Bar {
     
     /** Set open/close prices to previous close price, clear other fields */
     public void startNext() {
-        close = high = low = open;
+        open = high = low = close;
         volumeBuy = volumeSell = 0;
         volumePremultipliedPriceBuy = volumePremultipliedPriceSell = 0;
     }

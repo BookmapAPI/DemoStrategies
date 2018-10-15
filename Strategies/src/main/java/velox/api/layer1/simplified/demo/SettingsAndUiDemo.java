@@ -3,6 +3,7 @@ package velox.api.layer1.simplified.demo;
 import java.awt.BorderLayout;
 import java.awt.Color;
 
+import javax.swing.JButton;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
@@ -24,7 +25,7 @@ import velox.gui.StrategyPanel;
 @Layer1SimpleAttachable
 @Layer1StrategyName("Settings/UI demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
-public class SettingsAnUiDemo implements
+public class SettingsAndUiDemo implements
     CustomModule,
     TradeDataListener,
     CustomSettingsPanelProvider
@@ -63,15 +64,23 @@ public class SettingsAnUiDemo implements
     public StrategyPanel[] getCustomSettingsPanels() {
         StrategyPanel p1 = new StrategyPanel("Last trade offset");
         
-        JSpinner spinner = new JSpinner(new SpinnerNumberModel(
+        // This spinner will affect new values, but not computed ones
+        JSpinner offsetSpinner = new JSpinner(new SpinnerNumberModel(
                 settings.lastTradeOffset, -100, 100, 1));
-        spinner.addChangeListener(e -> {
-            settings.lastTradeOffset = (Integer)spinner.getValue();
+        offsetSpinner.addChangeListener(e -> {
+            settings.lastTradeOffset = (Integer)offsetSpinner.getValue();
             api.setSettings(settings);
         });
         
+        
+        // Note, that this will also trigger reloading of this panel, meaning focus will
+        // be lost
+        JButton reloadButton = new JButton("Apply and reload");
+        reloadButton.addActionListener(e -> api.reload());
+        
         p1.setLayout(new BorderLayout());
-        p1.add(spinner, BorderLayout.CENTER);
+        p1.add(offsetSpinner, BorderLayout.CENTER);
+        p1.add(reloadButton, BorderLayout.EAST);
         
         return new StrategyPanel[] {p1};
     }

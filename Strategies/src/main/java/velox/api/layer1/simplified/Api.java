@@ -82,4 +82,11 @@ public interface Api {
      *         call {@link #setSettings(Object)} for this</b>
      */
     public <T> T getSettings(Class<? extends T> settingsClass);
+    
+    /**
+     * Request reloading the module. This will lead to your module being unloaded
+     * for current alias, then loaded back. Typical use case would be to apply
+     * settings changes.
+     */
+    public void reload();
 }

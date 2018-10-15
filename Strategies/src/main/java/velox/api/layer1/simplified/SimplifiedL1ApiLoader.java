@@ -865,8 +865,6 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     private HashSet<String> enabledAliases = new HashSet<>();
     
     private HashMap<Pair<String, String>, Color> defaultColors = new HashMap<>();
-    // TODO: replace with settings
-    private HashMap<Pair<String, String>, Color> colors = new HashMap<>();
     
     public SimplifiedL1ApiLoader(Layer1ApiProvider provider, Class<T> clazz) {
         super(provider);
@@ -889,13 +887,12 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
 
     @Override
     public void setColor(String alias, String name, Color color) {
-        colors.put(new ImmutablePair<String, String>(alias, name), color);
+        throw new UnsupportedOperationException("Setting color not supported");
     }
 
     @Override
     public Color getColor(String alias, String name) {
-        return colors.computeIfAbsent(new ImmutablePair<String, String>(alias, name),
-                k -> defaultColors.get(k));
+        return defaultColors.get(new ImmutablePair<String, String>(alias, name));
     }
 
     @Override

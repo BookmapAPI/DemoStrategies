@@ -40,8 +40,11 @@ public class TradesIntervalNoHistory implements
 
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
-        lastTradeInterval = api.registerIndicator("Last trade interval", GraphType.BOTTOM, Color.RED);
-        lastTradeIntervalSmooth = api.registerIndicator("Last trade interval (smooth)", GraphType.BOTTOM, Color.GREEN);
+        lastTradeInterval = api.registerIndicator("Last trade interval", GraphType.BOTTOM);
+        lastTradeIntervalSmooth = api.registerIndicator("Last trade interval (smooth)", GraphType.BOTTOM);
+        
+        lastTradeInterval.setColor(Color.RED);
+        lastTradeIntervalSmooth.setColor(Color.GREEN);
     }
     
     @Override

@@ -157,29 +157,32 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         protected final String alias;
         protected final String name;
         protected final GraphType graphType;
-        protected final Color defaultColor;
         protected final double initialValue;
         protected final InstanceWrapper wrapper;
+        
+        protected Color color;
 
         protected AtomicReference<InvalidateInterface> invalidateInterface = new AtomicReference<>();
 
-        public IndicatorImplementation(String alias, String name, GraphType graphType, Color defaultColor, double initialValue, InstanceWrapper wrapper) {
+        public IndicatorImplementation(String alias, String name, GraphType graphType, Color color, double initialValue, InstanceWrapper wrapper) {
             super();
             this.alias = alias;
             this.name = name;
             this.graphType = graphType;
-            this.defaultColor = defaultColor;
+            this.color = color;
             this.initialValue = initialValue;
             this.wrapper = wrapper;
+            
+            setSefaultColor(alias, name, color);
         }
 
         public void register() {
-            Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, defaultColor, alias, true, this);
+            Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, color, alias, true, this);
             provider.sendUserMessage(message);
         }
 
         public void remove() {
-            Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, defaultColor, alias, false, this);
+            Layer1ApiUserMessageModifyIndicator message = getUserMessageModify(name, graphType, color, alias, false, this);
             provider.sendUserMessage(message);
         }
 
@@ -188,6 +191,18 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             if (interfaceToInvalidate != null) {
                 interfaceToInvalidate.invalidate();
             }
+        }
+        
+        @Override
+        public void setColor(Color color) {
+            inject(() -> {
+                remove();
+                
+                this.color = color;
+                setSefaultColor(alias, name, color);
+                
+                register();
+            });
         }
     }
 
@@ -355,6 +370,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     }
     
     private class InstanceWrapper implements Api {
+
         private static final String DIRECT_SETTINGS_POSTFIX = ".direct";
         
         private final CustomModule instance;
@@ -537,17 +553,15 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
 
         @Override
-        public Indicator registerIndicator(String name, GraphType graphType, Color defaultColor, double initialValue) {
+        public Indicator registerIndicator(String name, GraphType graphType, double initialValue) {
             
             if (!initializing) {
                 throw new IllegalStateException("Registering indicators is only allowed inside CustomModule#initialize");
             }
-            
-            defaultColors.put(new ImmutablePair<String, String>(alias, name), defaultColor);
 
             IndicatorImplementation indicatorImplementation = mode == Mode.GENERATORS
-                    ? new IndicatorGeneratorImplementation(alias, name, graphType, defaultColor, this, generatorIndicatorId++, initialValue)
-                    : new IndicatorBasicImplementation(alias, name, graphType, defaultColor, initialValue, this);
+                    ? new IndicatorGeneratorImplementation(alias, name, graphType, DEFAULT_INDICATOR_COLOR, this, generatorIndicatorId++, initialValue)
+                    : new IndicatorBasicImplementation(alias, name, graphType, DEFAULT_INDICATOR_COLOR, initialValue, this);
             indicatorImplementation.register();
             indicators.add(indicatorImplementation);
             return indicatorImplementation;
@@ -838,6 +852,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
     }
     
+    private static final Color DEFAULT_INDICATOR_COLOR = Color.WHITE;
+
     private final Layer1ApiRequestCurrentTimeEvents requestCurrentTimeEventsMessage = new Layer1ApiRequestCurrentTimeEvents(true, 0,
             TimeUnit.MILLISECONDS.toNanos(50));
     
@@ -893,6 +909,11 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     @Override
     public Color getColor(String alias, String name) {
         return defaultColors.get(new ImmutablePair<String, String>(alias, name));
+    }
+    
+
+    private void setSefaultColor(String alias, String name, Color color) {
+        defaultColors.put(new ImmutablePair<String, String>(alias, name), color);
     }
 
     @Override

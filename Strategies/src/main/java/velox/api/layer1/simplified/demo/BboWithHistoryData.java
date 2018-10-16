@@ -31,11 +31,16 @@ public class BboWithHistoryData implements
 
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
-        bidPriceIndicator = api.registerIndicator("Bid", GraphType.PRIMARY, Color.RED);
-        askPriceIndicator = api.registerIndicator("Ask", GraphType.PRIMARY, Color.GREEN);
+        bidPriceIndicator = api.registerIndicator("Bid", GraphType.PRIMARY);
+        askPriceIndicator = api.registerIndicator("Ask", GraphType.PRIMARY);
 
-        bidSizeIndicator = api.registerIndicator("Bid size", GraphType.BOTTOM, Color.RED);
-        askSizeIndicator = api.registerIndicator("Ask size", GraphType.BOTTOM, Color.GREEN);
+        bidSizeIndicator = api.registerIndicator("Bid size", GraphType.BOTTOM);
+        askSizeIndicator = api.registerIndicator("Ask size", GraphType.BOTTOM);
+        
+        bidPriceIndicator.setColor(Color.RED);
+        bidSizeIndicator.setColor(Color.RED);
+        askPriceIndicator.setColor(Color.GREEN);
+        askSizeIndicator.setColor(Color.GREEN);
     }
     
     @Override

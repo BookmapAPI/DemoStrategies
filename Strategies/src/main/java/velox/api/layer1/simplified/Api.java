@@ -20,12 +20,10 @@ public interface Api {
      *            alias.</b>
      * @param graphType
      *            where to draw the indicator (bottom panel or main chart)
-     * @param color
-     *            color to use for indicator
      * @return indicator object that can be used to manipulate the line
      */
-    default Indicator registerIndicator(String name, GraphType graphType, Color color) {
-        return registerIndicator(name, graphType, color, Double.NaN);
+    default Indicator registerIndicator(String name, GraphType graphType) {
+        return registerIndicator(name, graphType, Double.NaN);
     }
 
     /**
@@ -36,13 +34,11 @@ public interface Api {
      *            alias.</b>
      * @param graphType
      *            where to draw the indicator (bottom panel or main chart)
-     * @param color
-     *            color to use for indicator
      * @param initialValue
      *            initial value of the indicator. NaN means "no visible line".
      * @return indicator object that can be used to manipulate the line
      */
-    Indicator registerIndicator(String name, GraphType graphType, Color color, double initialValue);
+    Indicator registerIndicator(String name, GraphType graphType, double initialValue);
     
 
     /**

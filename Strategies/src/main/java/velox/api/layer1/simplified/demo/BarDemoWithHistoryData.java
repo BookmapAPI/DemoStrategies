@@ -39,7 +39,8 @@ public class BarDemoWithHistoryData implements
 //        openIndicator = api.registerIndicator("Open", GraphType.PRIMARY, Color.MAGENTA);
 //        highIndicator = api.registerIndicator("High", GraphType.PRIMARY, Color.MAGENTA);
 //        lowIndicator = api.registerIndicator("Low", GraphType.PRIMARY, Color.MAGENTA);
-        closeIndicator = api.registerIndicator("Close", GraphType.PRIMARY, Color.MAGENTA);
+        closeIndicator = api.registerIndicator("Close", GraphType.PRIMARY);
+        closeIndicator.setColor(Color.MAGENTA);
 //        vwapBuyIndicator = api.registerIndicator("VWAP buy", GraphType.PRIMARY, Color.MAGENTA);
 //        vwapSellIndicator = api.registerIndicator("VWAP sell", GraphType.PRIMARY, Color.MAGENTA);
 //        vwapTotalIndicator = api.registerIndicator("VWAP combined", GraphType.PRIMARY, Color.MAGENTA);

@@ -33,7 +33,8 @@ public class IsLastTradedNoHistory implements
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         isLastTraded = api.registerIndicator("Is last traded?",
-                GraphType.BOTTOM, Color.BLUE);
+                GraphType.BOTTOM);
+        isLastTraded.setColor(Color.BLUE);
         outputInstrumetnAlias = alias;
     }
     

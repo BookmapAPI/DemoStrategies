@@ -1,5 +1,7 @@
 package velox.api.layer1.simplified;
 
+import java.awt.Color;
+
 /**
  * Indicator representing a line.
  */
@@ -12,4 +14,6 @@ public interface Indicator {
      *            new value
      */
     void addPoint(double value);
+    
+    void setColor(Color color);
 }

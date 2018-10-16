@@ -22,6 +22,7 @@ import velox.api.layer1.simplified.Indicator;
 import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.TradeDataListener;
 import velox.gui.StrategyPanel;
+import velox.gui.colors.ColorsConfigItem;
 
 @Layer1SimpleAttachable
 @Layer1StrategyName("Settings/UI demo")
@@ -34,7 +35,10 @@ public class SettingsAndUiDemo implements
     @StrategySettingsVersion(currentVersion = 1, compatibleVersions = {})
     public static class Settings {
         int lastTradeOffset = 0;
+        Color lastTradeColor = DEFAULT_LAST_TRADE_COLOR;
     }
+    
+    private static final Color DEFAULT_LAST_TRADE_COLOR = Color.GREEN;
     
     private Api api;
     
@@ -48,8 +52,11 @@ public class SettingsAndUiDemo implements
         this.api = api;
         
         lastTradeIndicator = api.registerIndicator("Last trade, no history",
-                GraphType.PRIMARY, Color.GREEN);
+                GraphType.PRIMARY);
+        
         settings = api.getSettings(Settings.class);
+        lastTradeIndicator.setColor(settings.lastTradeColor);
+
     }
     
     @Override
@@ -83,6 +90,21 @@ public class SettingsAndUiDemo implements
         p1.add(offsetSpinner, BorderLayout.CENTER);
         p1.add(reloadButton, BorderLayout.EAST);
         
-        return new StrategyPanel[] {p1};
+        StrategyPanel p2 = new StrategyPanel("Line color");
+        
+        // Label parameter can be omitted if you want to use separate component for that
+        ColorsConfigItem colorConfig = new ColorsConfigItem(
+                settings.lastTradeColor, DEFAULT_LAST_TRADE_COLOR, "Last trade", color -> {
+            settings.lastTradeColor = color;
+            api.setSettings(settings);
+            
+            // Note, that there is no need to reload indicator to apply the color - it's applied immediately
+            lastTradeIndicator.setColor(color);
+        });
+        
+        p2.setLayout(new BorderLayout());
+        p2.add(colorConfig, BorderLayout.CENTER);
+        
+        return new StrategyPanel[] {p1, p2};
     }
 }

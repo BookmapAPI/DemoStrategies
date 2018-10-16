@@ -30,9 +30,12 @@ public class LastTradeDemoWithHistoryMode implements
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         lastTradeIndicator = api.registerIndicator("Last trade, with historical",
-                GraphType.PRIMARY, Color.ORANGE);
+                GraphType.PRIMARY);
         isHistoricalIndicator = api.registerIndicator("1 if historical",
-                GraphType.BOTTOM, Color.YELLOW, 1);
+                GraphType.BOTTOM, 1);
+        
+        lastTradeIndicator.setColor(Color.ORANGE);
+        isHistoricalIndicator.setColor(Color.YELLOW);
     }
     
     @Override

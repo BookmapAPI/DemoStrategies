@@ -37,10 +37,15 @@ public class OrdersDemoNoHistory implements
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         pips = info.pips;
         
-        lastExecutionPrice = api.registerIndicator("Last execution price", GraphType.PRIMARY, Color.ORANGE);
-        lastOrderLimitPrice = api.registerIndicator("Last order limit price", GraphType.PRIMARY, Color.BLUE);
-        balance = api.registerIndicator("Balance", GraphType.BOTTOM, Color.CYAN);
-        position = api.registerIndicator("Position", GraphType.BOTTOM, Color.WHITE);
+        lastExecutionPrice = api.registerIndicator("Last execution price", GraphType.PRIMARY);
+        lastOrderLimitPrice = api.registerIndicator("Last order limit price", GraphType.PRIMARY);
+        balance = api.registerIndicator("Balance", GraphType.BOTTOM);
+        position = api.registerIndicator("Position", GraphType.BOTTOM);
+        
+        lastExecutionPrice.setColor(Color.ORANGE);
+        lastOrderLimitPrice.setColor(Color.BLUE);
+        balance.setColor(Color.CYAN);
+        position.setColor(Color.WHITE);
     }
     
     @Override

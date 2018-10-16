@@ -27,7 +27,8 @@ public class BarMidPriceNoHistory implements
 
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
-        midPrice = api.registerIndicator("Mid price", GraphType.PRIMARY, Color.CYAN);
+        midPrice = api.registerIndicator("Mid price", GraphType.PRIMARY);
+        midPrice.setColor(Color.CYAN);
     }
     
     @Override

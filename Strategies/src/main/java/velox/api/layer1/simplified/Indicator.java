@@ -15,9 +15,27 @@ public interface Indicator {
      */
     void addPoint(double value);
     
+    /**
+     * Set new line color. Applied immediately.
+     *
+     * @param color
+     *            new line color
+     */
     void setColor(Color color);
-    
+
+    /**
+     * Set new line width. Applied immediately.
+     *
+     * @param width
+     *            width in pixels
+     */
     void setWidth(int width);
-    
+
+    /**
+     * Set new line style. Applied immediately.
+     *
+     * @param lineStyle
+     *            new line style
+     */
     void setLineStyle(LineStyle lineStyle);
 }

@@ -39,6 +39,7 @@ import velox.api.layer1.layers.strategies.interfaces.CustomGeneratedEvent;
 import velox.api.layer1.layers.strategies.interfaces.CustomGeneratedEventAliased;
 import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
 import velox.api.layer1.layers.strategies.interfaces.Layer1IndicatorColorInterface;
+import velox.api.layer1.layers.strategies.interfaces.Layer1PriceAxisRangeCalculatable;
 import velox.api.layer1.layers.strategies.interfaces.OnlineCalculatable;
 import velox.api.layer1.layers.strategies.interfaces.OnlineValueCalculatorAdapter;
 import velox.api.layer1.layers.utils.OrderBook;
@@ -61,6 +62,7 @@ import velox.api.layer1.messages.indicators.StrategyUpdateGenerator;
 import velox.api.layer1.messages.indicators.WidgetDisplayInfo;
 import velox.api.layer1.messages.indicators.WidgetDisplayInfo.Type;
 import velox.api.layer1.settings.Layer1ConfigSettingsInterface;
+import velox.api.layer1.utils.PriceRangeCalculationHelper;
 import velox.colors.ColorsChangedListener;
 import velox.gui.StrategyPanel;
 
@@ -69,7 +71,8 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
     Layer1CustomPanelsGetter,
     Layer1ConfigSettingsInterface,
     Layer1IndicatorColorInterface,
-    Layer1ApiInstrumentSpecificEnabledStateProvider {
+    Layer1ApiInstrumentSpecificEnabledStateProvider,
+    Layer1PriceAxisRangeCalculatable {
     
     private enum Mode {
         LIVE,
@@ -153,7 +156,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
     };
     
-    private abstract class IndicatorImplementation implements Indicator, OnlineCalculatable {
+    abstract class IndicatorImplementation implements Indicator, OnlineCalculatable {
         
         protected final String alias;
         protected final String name;
@@ -161,9 +164,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         protected final double initialValue;
         protected final InstanceWrapper wrapper;
         
+        protected final String fullName;
+        
         protected Color color = DEFAULT_INDICATOR_COLOR;
         protected LineStyle lineStyle = LineStyle.SOLID;
         protected int width = IndicatorLineStyle.DEFAULT.mainLineWidth;
+        
+        protected AxisRules axisRules;
+        protected AxisGroup axisGroup;
 
         protected AtomicReference<InvalidateInterface> invalidateInterface = new AtomicReference<>();
 
@@ -175,7 +183,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             this.initialValue = initialValue;
             this.wrapper = wrapper;
             
+            this.fullName = getUserMessageModify(name, graphType,
+                    lineStyle, width, color, alias, false, this).fullName;
+            
             setSefaultColor(alias, name, color);
+        }
+        
+        public String getFullName() {
+            return fullName;
         }
 
         public void register() {
@@ -221,6 +236,27 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         @Override
         public void setLineStyle(LineStyle lineStyle) {
             doWithReload(() -> this.lineStyle = lineStyle);
+        }
+        
+        @Override
+        public void setAxisRules(AxisRules axisRules) {
+            doWithReload(() -> {
+                this.axisRules = axisRules;
+            });
+        }
+        
+        public AxisRules getAxisRules() {
+            return axisRules;
+        }
+
+        public void setAxisGroup(AxisGroup axisGroup) {
+            doWithReload(() -> {
+                this.axisGroup = axisGroup;
+            });
+        }
+        
+        public AxisGroup getAxisGroup() {
+            return axisGroup;
         }
     }
 
@@ -394,7 +430,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         private final CustomModule instance;
         private final String alias;
         
-        private List<IndicatorImplementation> indicators = new ArrayList<>();
+        private Map<String, IndicatorImplementation> indicators = new ConcurrentHashMap<>();
         
         private final List<TimeListener> timeListeners = new ArrayList<>();
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
@@ -512,7 +548,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             stopped = true;
             
             instance.stop();
-            indicators.forEach(IndicatorImplementation::remove);
+            indicators.values().forEach(IndicatorImplementation::remove);
             Layer1ApiUserMessageAddStrategyUpdateGenerator generatorMessage = getGeneratorMessage(false, alias, this);
             provider.sendUserMessage(generatorMessage);
             
@@ -581,7 +617,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                     ? new IndicatorGeneratorImplementation(alias, name, graphType, this, generatorIndicatorId++, initialValue)
                     : new IndicatorBasicImplementation(alias, name, graphType, initialValue, this);
             indicatorImplementation.register();
-            indicators.add(indicatorImplementation);
+            indicators.put(indicatorImplementation.getFullName(), indicatorImplementation);
             return indicatorImplementation;
         }
 
@@ -826,7 +862,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         }
         
         public void invalidateOnlineCalculators() {
-            for (IndicatorImplementation indicator : indicators) {
+            for (IndicatorImplementation indicator : indicators.values()) {
                 indicator.invalidateOnlineCalculator();
             }
         }
@@ -867,6 +903,47 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         public StrategyPanel[] getCustomSettingsPanels() {
             StrategyPanel[] panels = ((CustomSettingsPanelProvider)instance).getCustomSettingsPanels();
             return panels;
+        }
+
+        public Map<String, ResultPriceAxisInfo> getPriceRanges(double linesCount,
+                Map<String, InputPriceAxisInfo> inputInfo) {
+            Map<String, ResultPriceAxisInfo> result = new HashMap<>();
+            
+            
+            for (Entry<String, InputPriceAxisInfo> entry : inputInfo.entrySet()) {
+                String fullName = entry.getKey();
+
+                IndicatorImplementation indicator = indicators.get(fullName);
+                
+                AxisGroup axisGroup = indicator.getAxisGroup();
+                
+                @SuppressWarnings("unchecked")
+                List<IndicatorImplementation> rangeInputIndicators = axisGroup == null
+                        ? Collections.singletonList(indicator)
+                        : (List<IndicatorImplementation>)(Object)axisGroup.getIndicators();
+                
+                double minMinValue = Double.POSITIVE_INFINITY;
+                double maxMaxValue = Double.NEGATIVE_INFINITY;
+                        
+                for (IndicatorImplementation rangeInputIndicator : rangeInputIndicators) {
+                    InputPriceAxisInfo inputPriceAxisInfo = inputInfo.get(rangeInputIndicator.getFullName());
+                    minMinValue = Math.min(minMinValue, inputPriceAxisInfo.minValue);
+                    maxMaxValue = Math.max(maxMaxValue, inputPriceAxisInfo.maxValue);
+                }
+                
+                AxisRules axisRules = axisGroup == null
+                        ? indicator.getAxisRules()
+                        : axisGroup.getAxisRules();
+                if (axisRules == null) {
+                    axisRules = new AxisRules();
+                }
+                        
+                Pair<Double, Double> range = axisRules.apply(minMinValue, maxMaxValue);
+                
+                result.put(fullName, PriceRangeCalculationHelper
+                        .getGoodNumbersCalculation(range.getLeft(), range.getRight(), linesCount));
+            }
+            return result;
         }
     }
     
@@ -1358,5 +1435,11 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         for (InstanceWrapper instanceWrapper : instanceWrappers.values()) {
             instanceWrapper.onBalance(balanceInfo, false);
         }
+    }
+
+    @Override
+    public Map<String, ResultPriceAxisInfo> getPriceRanges(String alias, double linesCount, Map<String, InputPriceAxisInfo> inputInfo) {
+        
+        return instanceWrappers.get(alias).getPriceRanges(linesCount, inputInfo);
     }
 }

@@ -38,4 +38,14 @@ public interface Indicator {
      *            new line style
      */
     void setLineStyle(LineStyle lineStyle);
+    
+    /**
+     * Set rules for selecting indicator range. Please keep in mind, that when part
+     * of {@link AxisGroup} this method should not be called directly, instead call
+     * corresponding {@link AxisGroup#setAxisRules(AxisRules)}
+     *
+     * @param axisRules
+     *            object describing the rules
+     */
+    void setAxisRules(AxisRules axisRules);
 }

@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
 
@@ -20,6 +21,7 @@ import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.CustomSettingsPanelProvider;
 import velox.api.layer1.simplified.Indicator;
 import velox.api.layer1.simplified.InitialState;
+import velox.api.layer1.simplified.LineStyle;
 import velox.api.layer1.simplified.TradeDataListener;
 import velox.gui.StrategyPanel;
 import velox.gui.colors.ColorsConfigItem;
@@ -36,6 +38,8 @@ public class SettingsAndUiDemo implements
     public static class Settings {
         int lastTradeOffset = 0;
         Color lastTradeColor = DEFAULT_LAST_TRADE_COLOR;
+        int lineWidth = 3;
+        LineStyle lineStyle = LineStyle.SOLID;
     }
     
     private static final Color DEFAULT_LAST_TRADE_COLOR = Color.GREEN;
@@ -56,6 +60,8 @@ public class SettingsAndUiDemo implements
         
         settings = api.getSettings(Settings.class);
         lastTradeIndicator.setColor(settings.lastTradeColor);
+        lastTradeIndicator.setLineStyle(settings.lineStyle);
+        lastTradeIndicator.setWidth(settings.lineWidth);
 
     }
     
@@ -105,6 +111,33 @@ public class SettingsAndUiDemo implements
         p2.setLayout(new BorderLayout());
         p2.add(colorConfig, BorderLayout.CENTER);
         
-        return new StrategyPanel[] {p1, p2};
+        StrategyPanel p3 = new StrategyPanel("Line width");
+        // This spinner will affect new values, but not computed ones
+        JSpinner lineWidthSpinner = new JSpinner(new SpinnerNumberModel(
+                settings.lineWidth, 1, 10, 1));
+        lineWidthSpinner.addChangeListener(e -> {
+            settings.lineWidth = (Integer)lineWidthSpinner.getValue();
+            api.setSettings(settings);
+            lastTradeIndicator.setWidth(settings.lineWidth);
+        });
+        
+        p3.setLayout(new BorderLayout());
+        p3.add(lineWidthSpinner, BorderLayout.CENTER);
+        
+        
+        StrategyPanel p4 = new StrategyPanel("Line style");
+        // This spinner will affect new values, but not computed ones
+        JComboBox<LineStyle> lineStyleComboBox = new JComboBox<>(LineStyle.values());
+        lineStyleComboBox.setSelectedItem(settings.lineStyle);
+        lineStyleComboBox.addActionListener(e -> {
+            settings.lineStyle = (LineStyle) lineStyleComboBox.getSelectedItem();
+            api.setSettings(settings);
+            lastTradeIndicator.setLineStyle(settings.lineStyle);
+        });
+        
+        p4.setLayout(new BorderLayout());
+        p4.add(lineStyleComboBox, BorderLayout.CENTER);
+        
+        return new StrategyPanel[] {p1, p2, p3, p4};
     }
 }

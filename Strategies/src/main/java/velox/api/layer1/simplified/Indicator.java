@@ -16,4 +16,8 @@ public interface Indicator {
     void addPoint(double value);
     
     void setColor(Color color);
+    
+    void setWidth(int width);
+    
+    void setLineStyle(LineStyle lineStyle);
 }

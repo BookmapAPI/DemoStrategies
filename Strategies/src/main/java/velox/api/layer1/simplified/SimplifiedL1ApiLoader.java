@@ -586,20 +586,20 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 intervalListeners.add((IntervalListener) simplifiedListener);
             }
             if (simplifiedListener instanceof BarDataListener) {
-                barDataListeners.add((BarDataListener) instance);
+                barDataListeners.add((BarDataListener) simplifiedListener);
             }
             if (simplifiedListener instanceof BboListener) {
-                bboDataListeners.add((BboListener) instance);
+                bboDataListeners.add((BboListener) simplifiedListener);
             }
             
             if (simplifiedListener instanceof OrdersListener) {
-                ordersListeners.add((OrdersListener) instance);
+                ordersListeners.add((OrdersListener) simplifiedListener);
             }
             if (simplifiedListener instanceof PositionListener) {
-                statusListeners.add((PositionListener) instance);
+                statusListeners.add((PositionListener) simplifiedListener);
             }
             if (simplifiedListener instanceof BalanceListener) {
-                balanceListeners.add((BalanceListener) instance);
+                balanceListeners.add((BalanceListener) simplifiedListener);
             }
 
             if (simplifiedListener instanceof HistoricalModeListener) {

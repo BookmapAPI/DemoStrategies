@@ -1357,9 +1357,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                 initialState = new InitialState();
                 initialStates.put(alias, initialState);
             }
-            initialState.isLastTradeBid = tradeInfo.isBidAggressor;
             initialState.lastTradePrice = price;
             initialState.lastTradeSize = size;
+            initialState.tradeInfo = tradeInfo;
         }
         
         if (multiInstrument) {

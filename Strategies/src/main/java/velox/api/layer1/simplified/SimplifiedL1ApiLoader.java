@@ -436,6 +436,7 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
         private final List<DepthDataListener> depthDataListeners = new ArrayList<>();
         private final List<SnapshotEndListener> snapshotEndListeners = new ArrayList<>();
         private final List<TradeDataListener> tradeDataListeners = new ArrayList<>();
+        private final List<IntervalListener> intervalListeners = new ArrayList<>();
         private final List<BarDataListener> barDataListeners = new ArrayList<>();
         private final List<BboListener> bboDataListeners = new ArrayList<>();
         private final List<OrdersListener> ordersListeners = new ArrayList<>();
@@ -577,11 +578,14 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
             if (simplifiedListener instanceof TradeDataListener) {
                 tradeDataListeners.add((TradeDataListener) simplifiedListener);
             }
-            if (simplifiedListener instanceof BarDataListener) {
-                barInterval = ((BarDataListener) instance).getBarInterval();
+            if (simplifiedListener instanceof IntervalListener) {
+                barInterval = ((IntervalListener) instance).getInterval();
                 if (barInterval < Intervals.MIN_INTERVAL) {
                     throw new IllegalArgumentException("BarDataListener#getBarInterval < Intervals#MIN_INTERVAL (" + barInterval + ")");
                 }
+                intervalListeners.add((IntervalListener) simplifiedListener);
+            }
+            if (simplifiedListener instanceof BarDataListener) {
                 barDataListeners.add((BarDataListener) instance);
             }
             if (simplifiedListener instanceof BboListener) {
@@ -822,6 +826,9 @@ public class SimplifiedL1ApiLoader<T extends CustomModule> extends Layer1ApiInje
                             }
                             
                             invokeCurrentTimeListeners(fromGenerator, false);
+                            for (IntervalListener listener : intervalListeners) {
+                                listener.onInterval();
+                            }
                             for (BarDataListener listener : barDataListeners) {
                                 listener.onBar(orderBook, bar);
                             }

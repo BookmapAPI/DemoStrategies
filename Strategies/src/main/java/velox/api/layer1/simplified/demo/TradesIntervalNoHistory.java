@@ -8,14 +8,12 @@ import velox.api.layer1.annotations.Layer1SimpleAttachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.TradeInfo;
-import velox.api.layer1.layers.utils.OrderBook;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
 import velox.api.layer1.simplified.Api;
-import velox.api.layer1.simplified.Bar;
-import velox.api.layer1.simplified.BarDataListener;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.Indicator;
 import velox.api.layer1.simplified.InitialState;
+import velox.api.layer1.simplified.IntervalListener;
 import velox.api.layer1.simplified.Intervals;
 import velox.api.layer1.simplified.TimeListener;
 import velox.api.layer1.simplified.TradeDataListener;
@@ -30,7 +28,7 @@ public class TradesIntervalNoHistory implements
         CustomModule,
         TradeDataListener,
         TimeListener,
-        BarDataListener {
+        IntervalListener {
 
     private Indicator lastTradeInterval;
     private Indicator lastTradeIntervalSmooth;
@@ -72,12 +70,12 @@ public class TradesIntervalNoHistory implements
     }
     
     @Override
-    public void onBar(OrderBook orderBook, Bar bar) {
+    public void onInterval() {
         // We don't need the call itself, but it is guaranteed to be called with requested frequency
     }
     
     @Override
-    public long getBarInterval() {
+    public long getInterval() {
         return Intervals.INTERVAL_50_MILLISECONDS;
     }
 

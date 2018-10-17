@@ -3,14 +3,20 @@ package velox.api.layer1.simplified;
 import velox.api.layer1.layers.utils.OrderBook;
 
 /** Get bars and order book snapshot with fixed interval */
-public interface BarDataListener {
-    /** Called when bar is ready */
-    void onBar(OrderBook orderBook, Bar bar);
-
+public interface BarDataListener extends IntervalListener {
     /**
-     * Return desired bar width in nanoseconds. Should always be larger than
-     * {@link Intervals#MIN_INTERVAL}. You can user other constants in
-     * {@link Intervals} class for common intervals, but you are not required to.
+     * Called when bar is ready. Bar width is specified via
+     * {@link IntervalListener#getInterval()}
      */
-    long getBarInterval();
+    void onBar(OrderBook orderBook, Bar bar);
+    
+    /**
+     * {@link BarDataListener} provides default empty implementation for
+     * {@link IntervalListener#onInterval()} since you get
+     * {@link #onBar(OrderBook, Bar)} called at the same time. But you still can override and use
+     * this method.
+     */
+    @Override
+    default void onInterval() {
+    }
 }

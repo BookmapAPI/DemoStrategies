@@ -41,7 +41,7 @@ public class BarMidPriceNoHistory implements
     }
 
     @Override
-    public long getBarInterval() {
+    public long getInterval() {
         return Intervals.INTERVAL_15_SECONDS;
     }
 }

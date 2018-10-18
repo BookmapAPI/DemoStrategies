@@ -14,6 +14,7 @@ dependencies {
         compile files('C:/Program Files/Bookmap/lib/bm-l1api.jar')
         compile files('C:/Program Files/Bookmap/lib/bm-l1api-javadoc.jar')
         compile files('C:/Program Files/Bookmap/lib/bm-simplified-api-wrapper.jar')
+        compile files('C:/Program Files/Bookmap/lib/bm-simplified-api-wrapper-javadoc.jar')
 
         compileOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
     }
@@ -29,8 +30,10 @@ eclipse {
             file {
                 whenMerged { cp ->
                     def fileReferenceFactory = new org.gradle.plugins.ide.eclipse.model.internal.FileReferenceFactory()
-                    def entry = cp.entries.find{ entry -> entry.path.endsWith('bm-l1api.jar') }
-                    entry.javadocPath = fileReferenceFactory.fromFile(file('C:/Program Files/Bookmap/lib/bm-l1api-javadoc.jar'))
+                    def l1ApiEntry = cp.entries.find{ entry -> entry.path.endsWith('bm-l1api.jar') }
+                    l1ApiEntry.javadocPath = fileReferenceFactory.fromFile(file('C:/Program Files/Bookmap/lib/bm-l1api-javadoc.jar'))
+                    def simplifiedWrapperEntry = cp.entries.find{ entry -> entry.path.endsWith('bm-simplified-api-wrapper.jar') }
+                    simplifiedWrapperEntry.javadocPath = fileReferenceFactory.fromFile(file('C:/Program Files/Bookmap/lib/bm-simplified-api-wrapper-javadoc.jar'))
                 }
             }
         }

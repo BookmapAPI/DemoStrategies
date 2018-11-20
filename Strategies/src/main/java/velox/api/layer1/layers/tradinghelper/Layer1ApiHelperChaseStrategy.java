@@ -14,6 +14,8 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeListener;
 
 import velox.api.layer1.Layer1ApiProvider;
+import velox.api.layer1.annotations.Layer1ApiVersion;
+import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.annotations.Layer1TradingStrategy;
@@ -30,6 +32,7 @@ import velox.gui.StrategyPanel;
 @Layer1Attachable
 @Layer1TradingStrategy
 @Layer1StrategyName("Chase")
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class Layer1ApiHelperChaseStrategy extends Layer1ApiHelperStrategyAbstract<HelperChaseStrategySettings> {
     private static final int DISTANCE_MIN = 0;
     private static final int DISTANCE_MAX = 99;

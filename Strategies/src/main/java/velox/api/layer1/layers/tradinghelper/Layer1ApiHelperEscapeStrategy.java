@@ -16,6 +16,8 @@ import javax.swing.JSpinner;
 import javax.swing.event.ChangeListener;
 
 import velox.api.layer1.Layer1ApiProvider;
+import velox.api.layer1.annotations.Layer1ApiVersion;
+import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.annotations.Layer1TradingStrategy;
@@ -31,6 +33,7 @@ import velox.gui.StrategyPanel;
 @Layer1Attachable
 @Layer1TradingStrategy
 @Layer1StrategyName("Escape")
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class Layer1ApiHelperEscapeStrategy extends Layer1ApiHelperStrategyAbstract<HelperEscapeStrategySettings> {
     private static final int MOVE_DISTANCE_MIN = 1;
     private static final int MOVE_DISTANCE_MAX = 20;

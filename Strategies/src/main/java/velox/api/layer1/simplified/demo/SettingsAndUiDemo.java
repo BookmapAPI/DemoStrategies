@@ -28,7 +28,7 @@ import velox.gui.colors.ColorsConfigItem;
 
 @Layer1SimpleAttachable
 @Layer1StrategyName("Settings/UI demo")
-@Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class SettingsAndUiDemo implements
     CustomModule,
     TradeDataListener,

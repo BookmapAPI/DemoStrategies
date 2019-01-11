@@ -8,7 +8,7 @@ import velox.api.layer1.simplified.HistoricalDataListener;
 
 @Layer1SimpleAttachable
 @Layer1StrategyName("Trade interval: with history")
-@Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class TradesIntervalWithHistory extends TradesIntervalNoHistory
     implements HistoricalDataListener {
 

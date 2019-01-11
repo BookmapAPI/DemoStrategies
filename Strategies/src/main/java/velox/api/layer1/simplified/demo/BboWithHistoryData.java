@@ -20,7 +20,7 @@ import velox.api.layer1.simplified.InitialState;
  */
 @Layer1SimpleAttachable
 @Layer1StrategyName("BBO: with history")
-@Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class BboWithHistoryData implements
     CustomModule, BboListener, HistoricalDataListener {
 

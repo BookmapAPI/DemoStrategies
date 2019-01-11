@@ -18,7 +18,7 @@ import velox.api.layer1.simplified.TradeDataListener;
 
 @Layer1SimpleAttachable
 @Layer1StrategyName("Last trade: history+mode")
-@Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class LastTradeDemoWithHistoryMode implements
     CustomModule, TradeDataListener, HistoricalModeListener {
 

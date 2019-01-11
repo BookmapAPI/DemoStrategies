@@ -22,7 +22,7 @@ import velox.api.layer1.simplified.PositionListener;
 
 @Layer1SimpleAttachable
 @Layer1StrategyName("Basic orders/balance info")
-@Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class OrdersDemoNoHistory implements
     CustomModule, OrdersListener, BalanceListener, PositionListener {
     

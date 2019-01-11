@@ -2,6 +2,8 @@ package velox.api.layer1.simpledemo.largeordersfilter;
 
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiProvider;
+import velox.api.layer1.annotations.Layer1ApiVersion;
+import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Injectable;
 import velox.api.layer1.annotations.Layer1StrategyDateLicensed;
 import velox.api.layer1.annotations.Layer1StrategyName;
@@ -22,6 +24,7 @@ import velox.api.layer1.layers.Layer1ApiInjectorRelay;
 @Layer1Injectable
 @Layer1StrategyName("Large orders filter")
 @Layer1StrategyDateLicensed("BmDemo-LargeOrdersFilter")
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class LargeOrdersFilter extends Layer1ApiInjectorRelay implements Layer1ApiFinishable {
 
     public LargeOrdersFilter(Layer1ApiProvider provider) {

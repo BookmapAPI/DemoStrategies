@@ -23,7 +23,7 @@ import velox.api.layer1.simplified.TradeDataListener;
  */
 @Layer1SimpleAttachable
 @Layer1StrategyName("Trade interval: no history")
-@Layer1ApiVersion(Layer1ApiVersionValue.VERSION1)
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class TradesIntervalNoHistory implements
         CustomModule,
         TradeDataListener,

@@ -13,6 +13,8 @@ import velox.api.layer1.Layer1ApiInstrumentAdapter;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.Layer1ApiTradingAdapter;
 import velox.api.layer1.Layer1CustomPanelsGetter;
+import velox.api.layer1.annotations.Layer1ApiVersion;
+import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
@@ -31,6 +33,7 @@ import velox.gui.StrategyPanel;
 
 @Layer1Attachable
 @Layer1StrategyName("FeedRecorder demo")
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class FeedRecorder implements Layer1CustomPanelsGetter, Layer1ApiDataAdapter, Layer1ApiFinishable,
         Layer1ApiInstrumentAdapter, Layer1ApiTradingAdapter {
 

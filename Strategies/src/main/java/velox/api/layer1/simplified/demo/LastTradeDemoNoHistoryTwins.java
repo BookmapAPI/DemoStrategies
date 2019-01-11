@@ -9,7 +9,6 @@ import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
-import velox.api.layer1.messages.indicators.WidgetDisplayInfo;
 import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.AxisGroup;
 import velox.api.layer1.simplified.AxisRules;
@@ -50,7 +49,7 @@ public class LastTradeDemoNoHistoryTwins implements CustomModule, TradeDataListe
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
         WidgetGroup widgetGroup = new WidgetGroup();
-        widgetGroup.setWidgetRules(new WidgetRules(4000d, 50000d, new WidgetDisplayInfo(WidgetDisplayInfo.Type.SYMMETRIC, 0)));
+        widgetGroup.setWidgetRules(new WidgetRules(4000d, 50000d));
         lastTradeIndicator = api.registerIndicator("Last trade, no history", GraphType.BOTTOM, Double.NaN);
         lastTradeIndicator.setColor(firstColor);
         

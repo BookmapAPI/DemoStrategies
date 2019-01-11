@@ -9,8 +9,6 @@ import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
-import velox.api.layer1.messages.indicators.WidgetDisplayInfo;
-import velox.api.layer1.messages.indicators.WidgetDisplayInfo.Type;
 import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.CustomModule;
 import velox.api.layer1.simplified.HistoricalDataListener;
@@ -38,7 +36,7 @@ public class LastTradeDemoSettingWidgetRange implements CustomModule, TradeDataL
     double upper = Double.NaN;
     double lower = Double.NaN;
     final long widgetRangeLifeSpan = 1_000 * 1_000_000_000l;// 1000sec so sample length is 10 sec
-    WidgetRules widgetRules = new WidgetRules(lower, upper, new WidgetDisplayInfo(Type.DEFAULT, 0), widgetRangeLifeSpan);
+    WidgetRules widgetRules = new WidgetRules(lower, upper, widgetRangeLifeSpan);
     WidgetGroup widgetGroup = new WidgetGroup();
 
     @Override

@@ -29,12 +29,12 @@ public class LastTradeDemoNoHistoryTwins implements CustomModule, TradeDataListe
     private Indicator lastTradeIndicator;
     private Indicator lastTradeIndicatorCopy;
     
-	@Parameter(name = "Price shift", step = 1.0)
+    @Parameter(name = "Price shift", step = 1.0)
     Integer priceShift = 2;
-	
-	@Parameter(name = "Price shift 2", step = 1.0)
-	Short priceShift0 = 2;
-	
+    
+    @Parameter(name = "Price shift 2", step = 1.0)
+    Short priceShift0 = 2;
+    
     @Parameter(name = "Second Color")
     Color secondColor = Color.ORANGE;
     
@@ -49,8 +49,8 @@ public class LastTradeDemoNoHistoryTwins implements CustomModule, TradeDataListe
          
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {
-    	WidgetGroup widgetGroup = new WidgetGroup();
-    	widgetGroup.setWidgetRules(new WidgetRules(4000d, 50000d, new WidgetDisplayInfo(WidgetDisplayInfo.Type.SYMMETRIC, 0)));
+        WidgetGroup widgetGroup = new WidgetGroup();
+        widgetGroup.setWidgetRules(new WidgetRules(4000d, 50000d, new WidgetDisplayInfo(WidgetDisplayInfo.Type.SYMMETRIC, 0)));
         lastTradeIndicator = api.registerIndicator("Last trade, no history", GraphType.BOTTOM, Double.NaN);
         lastTradeIndicator.setColor(firstColor);
         
@@ -61,22 +61,22 @@ public class LastTradeDemoNoHistoryTwins implements CustomModule, TradeDataListe
         axisGroup.setAxisRules(rules);
         lastTradeIndicator.setAxisGroup(axisGroup);
         lastTradeIndicatorCopy = api.registerIndicator("Copy of Last trade, no history", GraphType.BOTTOM, Double.NaN);
-    	lastTradeIndicatorCopy.setColor(secondColor);
-    	lastTradeIndicatorCopy.setAxisGroup(axisGroup);
-    	
-    	
+        lastTradeIndicatorCopy.setColor(secondColor);
+        lastTradeIndicatorCopy.setAxisGroup(axisGroup);
+        
+        
     }
 
     @Override
     public void onTrade(double price, int size, TradeInfo tradeInfo) {
-    	Double shift = isEnabledPriceShift == true? priceShift : 0.0;
+        Double shift = isEnabledPriceShift == true? priceShift : 0.0;
         lastTradeIndicator.addPoint(price + shift);
         lastTradeIndicatorCopy.addPoint(price + shift - 1);
     }
 
-	@Override
-	public void stop() {
-		// TODO Auto-generated method stub
-	}
+    @Override
+    public void stop() {
+        // TODO Auto-generated method stub
+    }
     
 }

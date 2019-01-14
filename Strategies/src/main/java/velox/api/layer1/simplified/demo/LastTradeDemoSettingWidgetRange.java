@@ -66,7 +66,4 @@ public class LastTradeDemoSettingWidgetRange implements CustomModule, TradeDataL
     public void stop() {
     }
 
-
-    
-
 }

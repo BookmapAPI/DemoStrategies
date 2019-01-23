@@ -41,7 +41,7 @@ public class WidgetRangeDemo implements CustomModule, TradeDataListener, Histori
         indicatorSecond.setColor(Color.YELLOW);
 
         WidgetGroup widgetGroup = new WidgetGroup();
-        widgetGroup.setWidgetRules(new WidgetRules(8_000, 20_000));
+        widgetGroup.setWidgetRules(new WidgetRules(6_000, 9_500));
         widgetGroup.addIndicator(indicatorFirst);
         widgetGroup.addIndicator(indicatorSecond);
     }

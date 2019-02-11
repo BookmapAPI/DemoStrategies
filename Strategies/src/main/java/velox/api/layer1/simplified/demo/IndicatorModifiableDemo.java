@@ -12,7 +12,6 @@ import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
 import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.CustomModule;
-import velox.api.layer1.simplified.HistoricalDataListener;
 import velox.api.layer1.simplified.IndicatorModifiable;
 import velox.api.layer1.simplified.InitialState;
 import velox.api.layer1.simplified.TimeListener;
@@ -25,10 +24,10 @@ public class IndicatorModifiableDemo implements CustomModule, TradeDataListener,
 {
     private IndicatorModifiable lastTradeIndicator;
     private int pointNumber;
-    private long t;
+    private long timestamp;
     
     private long t10;
-    private double point10; 
+    private double point10;
     private long t25;
     private double point25;
 
@@ -53,11 +52,11 @@ public class IndicatorModifiableDemo implements CustomModule, TradeDataListener,
         }
         
         if (pointNumber == 10) {
-            t10 = t;
+            t10 = timestamp;
             point10 = price;
         }
         if (pointNumber == 25) {
-            t25 = t;
+            t25 = timestamp;
             point25 = price;
         }
         if (pointNumber == 30) {
@@ -69,6 +68,6 @@ public class IndicatorModifiableDemo implements CustomModule, TradeDataListener,
 
     @Override
     public void onTimestamp(long t) {
-        this.t = t;
+        this.timestamp = t;
     }
 }

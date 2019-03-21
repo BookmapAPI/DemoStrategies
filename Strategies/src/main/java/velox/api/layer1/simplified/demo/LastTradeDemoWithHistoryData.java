@@ -23,7 +23,7 @@ public class LastTradeDemoWithHistoryData implements
     CustomModule, TradeDataListener, HistoricalDataListener {
 
     /** Last trade price */
-    private Indicator lastTradeIndicator;
+    protected Indicator lastTradeIndicator;
 
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {

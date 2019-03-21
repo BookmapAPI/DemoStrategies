@@ -20,7 +20,7 @@ import velox.api.layer1.simplified.TradeDataListener;
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class LastTradeDemoNoHistory implements CustomModule, TradeDataListener
 {
-    private Indicator lastTradeIndicator;
+    protected Indicator lastTradeIndicator;
 
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {

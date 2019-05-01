@@ -165,7 +165,7 @@ public class Layer1ApiCanvasColorsDemo implements
 
             private PreparedImage generateCrossedBoxIcon(int width, int height, Color color, int lineWidth, boolean dashed) {
                 BufferedImage icon = new BufferedImage(width, height,
-                        BufferedImage.TYPE_4BYTE_ABGR);
+                        BufferedImage.TYPE_INT_ARGB);
                 Graphics2D graphics = (Graphics2D) icon.getGraphics();
                 graphics.setColor(color);
                 if (dashed) {

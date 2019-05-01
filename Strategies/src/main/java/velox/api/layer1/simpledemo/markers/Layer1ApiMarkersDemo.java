@@ -89,7 +89,7 @@ public class Layer1ApiMarkersDemo implements
     
     private DataStructureInterface dataStructureInterface;
     
-    private BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_4BYTE_ABGR);
+    private BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
     private Map<String, BufferedImage> orderIcons = Collections.synchronizedMap(new HashMap<>());
     
     private Object locker = new Object();
@@ -370,7 +370,7 @@ public class Layer1ApiMarkersDemo implements
     }
     
     private void reloadOrderIcon(String alias) {
-        BufferedImage orderIcon = new BufferedImage(16, 16, BufferedImage.TYPE_4BYTE_ABGR);
+        BufferedImage orderIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         Graphics graphics = orderIcon.getGraphics();
         graphics.setColor(Colors.TRANSPARENT);
         graphics.fillRect(0, 0, 15, 15);

@@ -114,7 +114,7 @@ public class Layer1ApiLastPricePlankDemo implements
 
         private PreparedImage generatLastPriceIcon(int width, int height, String alias, double price) {
             BufferedImage icon = new BufferedImage(width, height,
-                    BufferedImage.TYPE_4BYTE_ABGR);
+                    BufferedImage.TYPE_INT_ARGB);
             Graphics2D graphics = (Graphics2D) icon.getGraphics();
             graphics.setBackground(Color.GRAY);
             graphics.clearRect(0, 0, icon.getWidth(), icon.getHeight());

@@ -306,7 +306,7 @@ public class Layer1OrdersOverlayDemo implements
                     if (lineImagesCache.size() >= CACHE_MAX_SIZE) {
                         lineImagesCache.clear();
                     }
-                    BufferedImage bufferedImage = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
+                    BufferedImage bufferedImage = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
                     Graphics2D graphics = bufferedImage.createGraphics();
                     graphics.setColor(color);
                     graphics.fillRect(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight());
@@ -324,7 +324,7 @@ public class Layer1OrdersOverlayDemo implements
                     if (cancelationImagesCache.size() >= CACHE_MAX_SIZE) {
                         cancelationImagesCache.clear();
                     }
-                    BufferedImage bufferedImage = new BufferedImage(30, 30, BufferedImage.TYPE_4BYTE_ABGR);
+                    BufferedImage bufferedImage = new BufferedImage(30, 30, BufferedImage.TYPE_INT_ARGB);
                     Graphics2D graphics = bufferedImage.createGraphics();
                     graphics.setStroke(new BasicStroke(4f));
                     graphics.setColor(color);

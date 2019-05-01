@@ -17,7 +17,7 @@ import velox.api.layer1.data.TradeInfo;
 public class LastTradeDemoIconsNoHistory extends LastTradeDemoNoHistory
 {
     private BufferedImage makeRandomArrow(boolean isBid) {
-        BufferedImage icon = new BufferedImage(50, 40, BufferedImage.TYPE_4BYTE_ABGR);
+        BufferedImage icon = new BufferedImage(50, 40, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = icon.createGraphics();
         graphics.setColor(isBid ? Color.GREEN : Color.RED);
         graphics.setStroke(new BasicStroke(5));

@@ -54,7 +54,7 @@ public class Layer1ApiGridDemo implements
     static {
         
         BufferedImage gridPatternImage = new BufferedImage(1, 1,
-                BufferedImage.TYPE_4BYTE_ABGR);
+                BufferedImage.TYPE_INT_ARGB);
         Graphics graphics = gridPatternImage.getGraphics();
         graphics.setColor(Color.CYAN);
         graphics.fillRect(0, 0, 1, 1);

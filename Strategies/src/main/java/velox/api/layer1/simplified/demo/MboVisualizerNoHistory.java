@@ -37,9 +37,15 @@ public class MboVisualizerNoHistory
     private OrderBookMbo orderBookMbo = new OrderBookMbo();
     private OrderBook orderBook = new OrderBook();
 
-    private JLabel displayLabel = new JLabel();
+    private JLabel displayLabel;
 
     private AtomicBoolean updateIsScheduled = new AtomicBoolean();
+    
+    public MboVisualizerNoHistory() {
+        SwingUtilities.invokeLater(() -> {
+            displayLabel = new JLabel();
+        });
+    }
 
     @Override
     public void initialize(String alias, InstrumentInfo info, Api api, InitialState initialState) {

@@ -13,6 +13,14 @@ Word of caution: please be very careful when using something with real account. 
 - Run `gradle jar`. If everything was done correctly - gradle will tell you that build was successful.
 - In `Strategies/build/libs` subfolder (relative to the root of the repository) you should now have `bm-strategies.jar` - those are your indicators and strategies compiled and ready to be loaded into Bookmap
 
+If you have Gradle installed and configured to use Java 8, you can simply run these commands:
+```
+git clone https://github.com/BookmapAPI/DemoStrategies.git
+cd DemoStrategies/Strategies
+gradle jar
+```
+And you'll have your jar file that is ready to be loaded inside `build/libs`.
+
 ## Loading into bookmap
 
 In Bookmap go to "Settings"->"Api plugins configuration" (or click a corresponding toolbar button) and press "Add". Select your newly compiled Jar file and pick an addon you'd like to load in popup window.

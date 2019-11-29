@@ -4,7 +4,7 @@ apply plugin: 'eclipse'
 repositories {
     mavenCentral()
     maven {
-        url "http://maven.bookmap.com/maven2/releases/"
+        url "http://maven.bookmap.com/maven2/develop/"
     }
 }
 
@@ -14,8 +14,8 @@ dependencies {
         compile project(':Level1Api')
         compile project(':SimplifiedApiWrapper')
     } else {
-        compileOnly group: 'com.bookmap.api', name: 'api-core', version: '7.1.0.24';
-        compileOnly group: 'com.bookmap.api', name: 'api-simplified', version: '7.1.0.24';
+        compileOnly group: 'com.bookmap.api', name: 'api-core', version: '7.1.1.f0093bafebd';
+        compileOnly group: 'com.bookmap.api', name: 'api-simplified', version: '7.1.1.f0093bafebd';
 
         compileOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
     }

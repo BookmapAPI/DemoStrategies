@@ -231,7 +231,7 @@ As you can see in `build.gradle`, additional repository is added and following a
 
 Note that repository also contains javadoc, and while it's far from perfect it still recommended to make sure you download it and read it before using corresponding functionality.
 
-## IDE
+## IDE and tricks
 
 You should be able to use any IDE you like as long as it supports Gradle. The process was validated with Eclipse, but it is not the only option (and, as shown earlier - you don't even really need an IDE). You might have to add and configure certain gradle plugins though, depending on the IDE you chose. In Eclipse you just need to import gradle project from `Strategies` directory using Buildship plugin.
 
@@ -241,7 +241,15 @@ You might also want to run Bookmap from IDE. This will make development faster a
 - Add `C:\Program Files\Bookmap\Bookmap.jar` to the classpath. It should list the dependencies in manifest, so that will often be enough, but you can include libraries from `C:\Program Files\Bookmap\lib` if Bookmap complains about missing classes.
 - Start velox.ib.Main
 
-Now you should be able to start bookmap from IDE directly. If you set Bookmap to load your module every time you can simply restart Bookmap after making changes or even edit the code without restart if debugger is attached.
+Now you should be able to start bookmap from IDE directly. 
+
+You might want to avoid packing jar every time you want to make changes. Best way to do it is the following:
+- create empty `bm-strategy-package-fs-root.jar` file in a folder where your class files are. E.g. it could be something like `Strategies\build\classes\java\main` (though it will usually be different depending on your IDE). This folder will be passed to URLClassLoader, so it should contain folder(s) matching top level package names, which contain either other folders corresponding to lower level package names or class files, e.g. `HelperStrategySettings.class`.
+- load this file into bookmap as you would normally load your jar file. When empty file named `bm-strategy-package-fs-root.jar` is loaded, bookmap will not actually read the file but instead will load classes from a folder where it is located.
+- file can be deleted after it's loaded into bookmap. Bookmap only relies on the file in file dialog and no longer needs it afterwards.
+- keep in mind that you should use a folder where your class files are actually recompiled to. E.g. you might have 2 folders (one used by gradle and another used by IDE - you probably should use the one used by IDE, as it will save you from invoking gradle after every change as long as IDE recompiles classes automatically)
+
+If you set Bookmap to load your module every time you can simply restart Bookmap after making changes or even edit the code without restart if debugger is attached.
 
 ## How your module is loaded (Classloaders, compatibility)
 

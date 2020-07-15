@@ -25,6 +25,7 @@ import velox.api.layer1.simplified.LineStyle;
 import velox.api.layer1.simplified.TradeDataListener;
 import velox.gui.StrategyPanel;
 import velox.gui.colors.ColorsConfigItem;
+import velox.gui.utils.GuiUtils;
 
 @Layer1SimpleAttachable
 @Layer1StrategyName("Settings/UI demo")
@@ -76,6 +77,24 @@ public class SettingsAndUiDemo implements
 
     @Override
     public StrategyPanel[] getCustomSettingsPanels() {
+        return getCustomSettingsPanels(settings, api, lastTradeIndicator);
+    }
+    
+    /**
+     * Generate custom settings UI. Since we want to generate both disabled and
+     * enabled UI we move the code to separate method. If we would not care about
+     * having disabled UI (to be shown while module is not loaded) we could just
+     * implement {@link #getCustomSettingsPanels()}
+     *
+     * @param settings           settings to show in UI and change
+     * @param api                API object to interact with bookmap. If it's null -
+     *                           UI is generated as disabled (because module is not
+     *                           loaded)
+     * @param lastTradeIndicator indicator to manage. It will be null if UI is
+     *                           disabled
+     * @return generated UI
+     */
+    private static StrategyPanel[] getCustomSettingsPanels(Settings settings, Api api, Indicator lastTradeIndicator) {
         StrategyPanel p1 = new StrategyPanel("Last trade offset");
         
         // This spinner will affect new values, but not computed ones
@@ -85,7 +104,6 @@ public class SettingsAndUiDemo implements
             settings.lastTradeOffset = (Integer)offsetSpinner.getValue();
             api.setSettings(settings);
         });
-        
         
         // Note, that this will also trigger reloading of this panel, meaning focus will
         // be lost
@@ -102,10 +120,14 @@ public class SettingsAndUiDemo implements
         ColorsConfigItem colorConfig = new ColorsConfigItem(
                 settings.lastTradeColor, DEFAULT_LAST_TRADE_COLOR, "Last trade", color -> {
             settings.lastTradeColor = color;
-            api.setSettings(settings);
             
-            // Note, that there is no need to reload indicator to apply the color - it's applied immediately
-            lastTradeIndicator.setColor(color);
+            // ColorsConfigItem currently can trigger callback during construction
+            if (api != null) {
+                api.setSettings(settings);
+                
+                // Note, that there is no need to reload indicator to apply the color - it's applied immediately
+                lastTradeIndicator.setColor(color);
+            }
         });
         
         p2.setLayout(new BorderLayout());
@@ -138,6 +160,25 @@ public class SettingsAndUiDemo implements
         p4.setLayout(new BorderLayout());
         p4.add(lineStyleComboBox, BorderLayout.CENTER);
         
-        return new StrategyPanel[] {p1, p2, p3, p4};
+        StrategyPanel[] strategyPanels = new StrategyPanel[] {p1, p2, p3, p4};
+        
+        // If module is not loaded - disable all components
+        if (api == null) {
+            for (StrategyPanel strategyPanel : strategyPanels) {
+                GuiUtils.setPanelEnabled(strategyPanel, false);
+            }
+        }
+
+        return strategyPanels;
+    }
+    
+    /**
+     * Optional method generating UI for unloaded module. See javadoc for
+     * {@link CustomSettingsPanelProvider}
+     */
+    public static StrategyPanel[] getCustomDisabledSettingsPanels() {
+        // Generating disabled UI
+        return getCustomSettingsPanels(new Settings(), null ,null);
+        
     }
 }

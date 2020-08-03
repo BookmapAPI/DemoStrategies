@@ -57,6 +57,7 @@ import velox.api.layer1.simpledemo.markers.Layer1ApiMarkersDemo;
  * </p>
  * <p>
  * Let's imagine there is an order placed every 1 minute.
+ * </p>
  * <ol>
  * <li>It is placed somewhere near BBO (for simplicity - let's take some random
  * price; it's possible to get necessary data using
@@ -67,6 +68,7 @@ import velox.api.layer1.simpledemo.markers.Layer1ApiMarkersDemo;
  * levels it has to be divided by {@link InstrumentInfo#pips})</li>
  * <li>In 3 seconds it's cancelled.</li>
  * </ol>
+ * <p>
  * Orders are placed with varying offsets relative to the price. After every 2
  * orders color randomly changes.
  * </p>

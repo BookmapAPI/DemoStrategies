@@ -1,6 +1,11 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 
+// This is optional, tells gradle that we want Java 8 compatible bytecode.
+// Can be removed in standalone addons
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
 repositories {
     mavenCentral()
     maven {

@@ -228,6 +228,7 @@ As you can see in `build.gradle`, additional repository is added and following a
         compileOnly group: 'com.bookmap.api', name: 'api-simplified', version: 'x.y.z.b';
 ```
 `x.y.z` part is Bookmap version for which module is compiled and `b` is the specific build (see next section for information about compatibility). You can switch to a newer version/build to gain access to newer functionality.
+To avoid conflicts with dependencies Bookmap is using please view **Classloaders, compatibility** section.
 
 Note that repository also contains javadoc, and while it's far from perfect it still recommended to make sure you download it and read it before using corresponding functionality.
 
@@ -237,6 +238,8 @@ You should be able to use any IDE you like as long as it supports Gradle. The pr
 
 You might also want to run Bookmap from IDE. This will make development faster and also allow you to attach debugger to Bookmap and debug your code. In order to do this:
 - Use 64 bit Java 8 VM
+- Sometimes your IDE may ignore your gradle source/target compatibility settings for Java (if you have those). Ensure it is Java 8 in your project environment/compiler settings. If not, set it explicitly in the project settings.
+- Sometimes your IDE may ignore your gradle compileOnly dependencies. In this case you may want to explicitly add libs to your project in your project properties.
 - Working directory will determine where your config folder will be. Note that Bookmap will create some folders next to it (not within it). On Windows you can set `C:\Bookmap\Config`, which is the default during installation, but you can also maintain multiple separate Bookmap configs, if you want.
 - Add `C:\Program Files\Bookmap\Bookmap.jar` to the classpath. It should list the dependencies in manifest, so that will often be enough, but you can include libraries from `C:\Program Files\Bookmap\lib` if Bookmap complains about missing classes.
 - Start velox.ib.Main
@@ -256,6 +259,10 @@ If you set Bookmap to load your module every time you can simply restart Bookmap
 Your module is loaded into a custom child classloader. It is a "normal" parent-first classloader, meaning that if there is the same class in both your jar and Bookmap - the one from Bookmap will be prefered.
 
 You can ship necessary libraries with your code, and the easiest way to achieve this would be to create a "fat jar", also known as "uber". Just be aware of potential conflicts with the libraries that are packaged with Bookmap - e.g. it's probably not a great idea to try using a different version of the same library (it can be done in a way that will work, e.g. by using another classloader, just be aware of conflicts if you decide to do it in a simple way).
+
+A common way to keep versions consistency for the libraries is taking a look into Bookmap's lib folder and checking libraries versions. Explicitly make gradle use the versions of libraries Bookmap uses.  
+Example: gson library Bookmap uses is in the lib folder (`gson-2.8.5.jar`). You can find the notation for Gradle in the maven repository and add it to the dependencies in your project's gradle.build:  
+`compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.8.5'`
 
 When new version of Bookmap is released it will usually be able to load the code created for older versions (but not the other way around).
 

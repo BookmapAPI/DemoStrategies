@@ -2,7 +2,6 @@ package velox.api.layer1.simpledemo.dataeditor;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
-import java.util.concurrent.CountDownLatch;
 
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiProvider;
@@ -79,19 +78,12 @@ public class DataEditorBasicExample extends Layer1ApiInjectorRelay implements La
 
     @Override
     public void finish() {
-        CountDownLatch latch = new CountDownLatch(1);
-        inject(() -> {
+        injectSynchronously(() -> {
             if (isActive) {
                 isActive = false;
                 deactivate();
             }
-            latch.countDown();
         });
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
     }
     
 

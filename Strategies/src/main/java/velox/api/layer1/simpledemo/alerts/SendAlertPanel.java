@@ -14,9 +14,9 @@ class SendAlertPanel extends StrategyPanel {
     private JComboBox<String> comboBoxAliases;
     
     static interface SendAlertPanelCallback {
-        void sendSimpleAlert();
-        void sendTextOnlyAlert();
-        void sendSoundOnlyAlert();
+        void sendSimpleAlert(long repeats, int priority);
+        void sendTextOnlyAlert(long repeats, int priority);
+        void sendSoundOnlyAlert(long repeats, int priority);
     }
 
     public SendAlertPanel(SendAlertPanelCallback callback) {
@@ -29,7 +29,7 @@ class SendAlertPanel extends StrategyPanel {
         setLayout(gridBagLayout);
         
         JButton btnSimpleAlert = new JButton("Send simple alert");
-        btnSimpleAlert.addActionListener(e -> callback.sendSimpleAlert());
+        btnSimpleAlert.addActionListener(e -> callback.sendSimpleAlert(1, 0));
         GridBagConstraints gbc_btnSimpleAlert = new GridBagConstraints();
         gbc_btnSimpleAlert.fill = GridBagConstraints.HORIZONTAL;
         gbc_btnSimpleAlert.insets = new Insets(0, 0, 5, 5);
@@ -38,7 +38,7 @@ class SendAlertPanel extends StrategyPanel {
         add(btnSimpleAlert, gbc_btnSimpleAlert);
         
         JButton btnTextAlert = new JButton("Send text-only alert");
-        btnTextAlert.addActionListener(e -> callback.sendTextOnlyAlert());
+        btnTextAlert.addActionListener(e -> callback.sendTextOnlyAlert(1, 0));
         GridBagConstraints gbc_btnTextAlert = new GridBagConstraints();
         gbc_btnTextAlert.fill = GridBagConstraints.HORIZONTAL;
         gbc_btnTextAlert.insets = new Insets(0, 0, 5, 5);
@@ -50,7 +50,7 @@ class SendAlertPanel extends StrategyPanel {
         GridBagConstraints gbc_btnSoundOnlyAlert = new GridBagConstraints();
         gbc_btnSoundOnlyAlert.fill = GridBagConstraints.HORIZONTAL;
         gbc_btnSoundOnlyAlert.insets = new Insets(0, 0, 5, 5);
-        btnSoundOnlyAlert.addActionListener(e -> callback.sendSoundOnlyAlert());
+        btnSoundOnlyAlert.addActionListener(e -> callback.sendSoundOnlyAlert(1, 0));
         gbc_btnSoundOnlyAlert.gridx = 0;
         gbc_btnSoundOnlyAlert.gridy = 2;
         add(btnSoundOnlyAlert, gbc_btnSoundOnlyAlert);

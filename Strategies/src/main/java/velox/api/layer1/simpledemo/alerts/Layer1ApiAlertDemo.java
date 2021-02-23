@@ -85,21 +85,21 @@ public class Layer1ApiAlertDemo implements
     }
 
     @Override
-    public void sendSimpleAlert() {
-        sendAlert("Text+sound alert", true, true);
+    public void sendSimpleAlert(long repeats, int priority) {
+        sendAlert("Text+sound alert", true, true, repeats, priority);
     }
 
     @Override
-    public void sendTextOnlyAlert() {
-        sendAlert("Text only alert", false, true);
+    public void sendTextOnlyAlert(long repeats, int priority) {
+        sendAlert("Text only alert", false, true, repeats, priority);
     }
 
     @Override
-    public void sendSoundOnlyAlert() {
-        sendAlert("Sound only alert", true, false);
+    public void sendSoundOnlyAlert(long repeats, int priority) {
+        sendAlert("Sound only alert", true, false, repeats, priority);
     }
 
-    private void sendAlert(String message, boolean playSound, boolean showPopup) {
+    private void sendAlert(String message, boolean playSound, boolean showPopup, long repeats, int priority) {
         Layer1ApiSoundAlertMessage data = Layer1ApiSoundAlertMessage.builder()
             .setAlias(sendAlertPanel.getAlias())
             .setTextInfo(message)
@@ -107,6 +107,8 @@ public class Layer1ApiAlertDemo implements
             .setStatusListener((alertId, status) -> Log.info("onSoundAlertStatus: " + alertId + " " + status))
             .setSource(Layer1ApiAlertDemo.class)
             .setShowPopup(showPopup)
+            .setRepeatCount(repeats)
+            .setPriority(priority)
             .build();
 
         provider.sendUserMessage(data);

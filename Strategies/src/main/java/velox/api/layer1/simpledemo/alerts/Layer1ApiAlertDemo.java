@@ -1,5 +1,6 @@
 package velox.api.layer1.simpledemo.alerts;
 
+import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import velox.api.layer1.common.Log;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.layers.utils.SoundSynthHelper;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
+import velox.api.layer1.messages.UserMessageHistoricalData.DepthUpdate;
 import velox.api.layer1.simpledemo.alerts.SendAlertPanel.SendAlertPanelCallback;
 import velox.gui.StrategyPanel;
 
@@ -85,21 +87,21 @@ public class Layer1ApiAlertDemo implements
     }
 
     @Override
-    public void sendSimpleAlert(long repeats, int priority) {
-        sendAlert("Text+sound alert", true, true, repeats, priority);
+    public void sendSimpleAlert(long repeats, Duration repeatDelay, int priority) {
+        sendAlert("Text+sound alert", true, true, repeats, repeatDelay, priority);
     }
 
     @Override
-    public void sendTextOnlyAlert(long repeats, int priority) {
-        sendAlert("Text only alert", false, true, repeats, priority);
+    public void sendTextOnlyAlert(long repeats, Duration repeatDelay, int priority) {
+        sendAlert("Text only alert", false, true, repeats, repeatDelay, priority);
     }
 
     @Override
-    public void sendSoundOnlyAlert(long repeats, int priority) {
-        sendAlert("Sound only alert", true, false, repeats, priority);
+    public void sendSoundOnlyAlert(long repeats, Duration repeatDelay, int priority) {
+        sendAlert("Sound only alert", true, false, repeats, repeatDelay, priority);
     }
 
-    private void sendAlert(String message, boolean playSound, boolean showPopup, long repeats, int priority) {
+    private void sendAlert(String message, boolean playSound, boolean showPopup, long repeats, Duration repeatDelay, int priority) {
         Layer1ApiSoundAlertMessage data = Layer1ApiSoundAlertMessage.builder()
             .setAlias(sendAlertPanel.getAlias())
             .setTextInfo(message)
@@ -108,6 +110,7 @@ public class Layer1ApiAlertDemo implements
             .setSource(Layer1ApiAlertDemo.class)
             .setShowPopup(showPopup)
             .setRepeatCount(repeats)
+            .setRepeatDelay(repeatDelay)
             .setPriority(priority)
             .build();
 

@@ -48,7 +48,7 @@ class SendAlertPanel extends StrategyPanel {
         
         JButton btnTextAlert = new JButton("Send text-only alert");
         btnTextAlert.addActionListener(e -> callback.sendTextOnlyAlert((Long) repeatsSpinner.getValue(),
-            Duration.ofMillis((Long) delaySpinner.getValue()), 
+            Duration.ofMillis((Long) delaySpinner.getValue()),
             (Integer) prioritySpinner.getValue()));
         GridBagConstraints gbc_btnTextAlert = new GridBagConstraints();
         gbc_btnTextAlert.fill = GridBagConstraints.HORIZONTAL;

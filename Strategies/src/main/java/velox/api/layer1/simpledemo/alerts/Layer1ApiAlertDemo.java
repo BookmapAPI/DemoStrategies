@@ -17,7 +17,6 @@ import velox.api.layer1.common.Log;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.layers.utils.SoundSynthHelper;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
-import velox.api.layer1.messages.UserMessageHistoricalData.DepthUpdate;
 import velox.api.layer1.simpledemo.alerts.SendAlertPanel.SendAlertPanelCallback;
 import velox.gui.StrategyPanel;
 

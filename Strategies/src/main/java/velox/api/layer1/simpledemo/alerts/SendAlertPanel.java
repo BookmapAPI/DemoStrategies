@@ -13,26 +13,31 @@ import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 
+import javax.swing.JTextField;
+
 class SendAlertPanel extends StrategyPanel {
     private static final String SOURCE_GLOBAL = "<NONE> (Global alert)";
     private JComboBox<String> comboBoxAliases;
     private final JSpinner prioritySpinner = new JSpinner();
     private final JSpinner repeatsSpinner = new JSpinner();
     private final JSpinner delaySpinner = new JSpinner();
+    private JTextField textFieldAlertMsg;
+    private JTextField textFieldAlertAdditionalInfo;
 
     static interface SendAlertPanelCallback {
         void sendSimpleAlert(long repeats, Duration repeatDelay, int priority);
         void sendTextOnlyAlert(long repeats, Duration repeatDelay, int priority);
         void sendSoundOnlyAlert(long repeats, Duration repeatDelay, int priority);
+        void sendTextAndAdditionalInfoAlert(String message, String additionalInfo);
     }
 
     public SendAlertPanel(SendAlertPanelCallback callback) {
         super("Send alert");
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{0, 0, 0};
-        gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0};
+        gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         gridBagLayout.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
         setLayout(gridBagLayout);
         
         JButton btnSimpleAlert = new JButton("Send simple alert");
@@ -124,17 +129,61 @@ class SendAlertPanel extends StrategyPanel {
         JLabel priorityLabel = new JLabel("Priority:");
         GridBagConstraints gbc_priorityLabel = new GridBagConstraints();
         gbc_priorityLabel.anchor = GridBagConstraints.EAST;
-        gbc_priorityLabel.insets = new Insets(0, 0, 0, 5);
+        gbc_priorityLabel.insets = new Insets(0, 0, 5, 5);
         gbc_priorityLabel.gridx = 0;
         gbc_priorityLabel.gridy = 6;
         add(priorityLabel, gbc_priorityLabel);
         priorityLabel.setToolTipText("Set next alert priority");
         
         GridBagConstraints gbc_prioritySpinner = new GridBagConstraints();
+        gbc_prioritySpinner.insets = new Insets(0, 0, 5, 0);
         gbc_prioritySpinner.fill = GridBagConstraints.HORIZONTAL;
         gbc_prioritySpinner.gridx = 1;
         gbc_prioritySpinner.gridy = 6;
         add(prioritySpinner, gbc_prioritySpinner);
+        
+        JButton btnSendCustomTxtAlert = new JButton("Send custom text alert");
+        btnSendCustomTxtAlert.addActionListener(e -> {
+            callback.sendTextAndAdditionalInfoAlert(textFieldAlertMsg.getText(), textFieldAlertAdditionalInfo.getText());
+        });
+        GridBagConstraints gbc_btnSendCustomTxtAlert = new GridBagConstraints();
+        gbc_btnSendCustomTxtAlert.insets = new Insets(0, 0, 5, 5);
+        gbc_btnSendCustomTxtAlert.gridx = 0;
+        gbc_btnSendCustomTxtAlert.gridy = 7;
+        add(btnSendCustomTxtAlert, gbc_btnSendCustomTxtAlert);
+        
+        JLabel lblAlertMsg = new JLabel("Alert message:");
+        GridBagConstraints gbc_lblAlertMsg = new GridBagConstraints();
+        gbc_lblAlertMsg.insets = new Insets(0, 0, 5, 5);
+        gbc_lblAlertMsg.anchor = GridBagConstraints.ABOVE_BASELINE_TRAILING;
+        gbc_lblAlertMsg.gridx = 0;
+        gbc_lblAlertMsg.gridy = 8;
+        add(lblAlertMsg, gbc_lblAlertMsg);
+        
+        textFieldAlertMsg = new JTextField("Alert custom message");
+        GridBagConstraints gbc_textFieldAlertMsg = new GridBagConstraints();
+        gbc_textFieldAlertMsg.insets = new Insets(0, 0, 5, 0);
+        gbc_textFieldAlertMsg.fill = GridBagConstraints.HORIZONTAL;
+        gbc_textFieldAlertMsg.gridx = 1;
+        gbc_textFieldAlertMsg.gridy = 8;
+        add(textFieldAlertMsg, gbc_textFieldAlertMsg);
+        textFieldAlertMsg.setColumns(10);
+        
+        JLabel lblAlertAdditionalInfo = new JLabel("Alert additional info:");
+        GridBagConstraints gbc_lblAlertAdditionalInfo = new GridBagConstraints();
+        gbc_lblAlertAdditionalInfo.insets = new Insets(0, 0, 0, 5);
+        gbc_lblAlertAdditionalInfo.anchor = GridBagConstraints.EAST;
+        gbc_lblAlertAdditionalInfo.gridx = 0;
+        gbc_lblAlertAdditionalInfo.gridy = 9;
+        add(lblAlertAdditionalInfo, gbc_lblAlertAdditionalInfo);
+        
+        textFieldAlertAdditionalInfo = new JTextField("Additional info");
+        GridBagConstraints gbc_textFieldAlertAdditionalInfo = new GridBagConstraints();
+        gbc_textFieldAlertAdditionalInfo.fill = GridBagConstraints.HORIZONTAL;
+        gbc_textFieldAlertAdditionalInfo.gridx = 1;
+        gbc_textFieldAlertAdditionalInfo.gridy = 9;
+        add(textFieldAlertAdditionalInfo, gbc_textFieldAlertAdditionalInfo);
+        textFieldAlertAdditionalInfo.setColumns(10);
     }
 
     public void addAlias(String alias) {

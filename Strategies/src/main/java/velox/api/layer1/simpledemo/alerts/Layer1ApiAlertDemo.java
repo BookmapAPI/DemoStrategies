@@ -4,8 +4,10 @@ import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiInstrumentAdapter;
+import velox.api.layer1.Layer1ApiInstrumentSpecificEnabledStateProvider;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.Layer1CustomPanelsGetter;
 import velox.api.layer1.annotations.Layer1ApiVersion;
@@ -32,13 +34,16 @@ public class Layer1ApiAlertDemo implements
     Layer1CustomPanelsGetter,
     Layer1ApiFinishable,
     SendAlertPanelCallback,
-    Layer1ApiInstrumentAdapter {
+    Layer1ApiInstrumentAdapter,
+    Layer1ApiInstrumentSpecificEnabledStateProvider {
 
     private final Layer1ApiProvider provider;
 
     private SendAlertPanel sendAlertPanel;
 
     private Set<String> instruments = new HashSet<>();
+    
+    private AtomicBoolean isEnabled = new AtomicBoolean(false);
 
     public Layer1ApiAlertDemo(Layer1ApiProvider provider) {
         super();
@@ -53,6 +58,7 @@ public class Layer1ApiAlertDemo implements
         if (sendAlertPanel == null) {
             synchronized (instruments) {
                 sendAlertPanel = new SendAlertPanel(this);
+                sendAlertPanel.setEnabled(false);
                 instruments.forEach(sendAlertPanel::addAlias);
             }
         }
@@ -82,9 +88,24 @@ public class Layer1ApiAlertDemo implements
 
     @Override
     public void finish() {
-
+        synchronized (instruments) {
+            sendAlertPanel.setEnabled(false);
+        }
     }
 
+    @Override
+    public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
+        synchronized (instruments) {
+            this.isEnabled.set(isEnabled);
+            sendAlertPanel.setEnabled(isEnabled);
+        }
+    }
+    
+    @Override
+    public boolean isStrategyEnabled(String alias) {
+        return isEnabled.get();
+    }
+    
     @Override
     public void sendSimpleAlert(long repeats, Duration repeatDelay, int priority) {
         sendAlert("Text+sound alert", null, true, true, repeats, repeatDelay, priority);

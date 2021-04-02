@@ -1,5 +1,7 @@
 package velox.api.layer1.simpledemo.alerts;
 
+import javax.swing.ImageIcon;
+import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.gui.StrategyPanel;
 import java.awt.GridBagLayout;
 import javax.swing.JButton;
@@ -18,6 +20,7 @@ import javax.swing.JTextField;
 class SendAlertPanel extends StrategyPanel {
     private static final String SOURCE_GLOBAL = "<NONE> (Global alert)";
     private JComboBox<String> comboBoxAliases;
+    private JComboBox<SeverityIcons> combBoxAlertIcons;
     private final JSpinner prioritySpinner = new JSpinner();
     private final JSpinner repeatsSpinner = new JSpinner();
     private final JSpinner delaySpinner = new JSpinner();
@@ -28,16 +31,29 @@ class SendAlertPanel extends StrategyPanel {
         void sendSimpleAlert(long repeats, Duration repeatDelay, int priority);
         void sendTextOnlyAlert(long repeats, Duration repeatDelay, int priority);
         void sendSoundOnlyAlert(long repeats, Duration repeatDelay, int priority);
-        void sendTextAndAdditionalInfoAlert(String message, String additionalInfo);
+        void sendTextAndAdditionalInfoAlert(String message, String additionalInfo, ImageIcon selectedIcon);
+    }
+    
+    enum SeverityIcons {
+        NONE(null),
+        INFO(Layer1ApiSoundAlertMessage.ICON_INFO),
+        WARN(Layer1ApiSoundAlertMessage.ICON_WARN),
+        ERROR(Layer1ApiSoundAlertMessage.ICON_ERROR);
+    
+        public final ImageIcon icon;
+    
+        SeverityIcons(ImageIcon icon) {
+            this.icon = icon;
+        }
     }
 
     public SendAlertPanel(SendAlertPanelCallback callback) {
         super("Send alert");
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{0, 0, 0};
-        gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         gridBagLayout.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
         setLayout(gridBagLayout);
         
         JButton btnSimpleAlert = new JButton("Send simple alert");
@@ -144,7 +160,8 @@ class SendAlertPanel extends StrategyPanel {
         
         JButton btnSendCustomTxtAlert = new JButton("Send custom text alert");
         btnSendCustomTxtAlert.addActionListener(e -> {
-            callback.sendTextAndAdditionalInfoAlert(textFieldAlertMsg.getText(), textFieldAlertAdditionalInfo.getText());
+            SeverityIcons selectedIcon = (SeverityIcons) combBoxAlertIcons.getSelectedItem();
+            callback.sendTextAndAdditionalInfoAlert(textFieldAlertMsg.getText(), textFieldAlertAdditionalInfo.getText(), selectedIcon.icon);
         });
         GridBagConstraints gbc_btnSendCustomTxtAlert = new GridBagConstraints();
         gbc_btnSendCustomTxtAlert.insets = new Insets(0, 0, 5, 5);
@@ -171,7 +188,7 @@ class SendAlertPanel extends StrategyPanel {
         
         JLabel lblAlertAdditionalInfo = new JLabel("Alert additional info:");
         GridBagConstraints gbc_lblAlertAdditionalInfo = new GridBagConstraints();
-        gbc_lblAlertAdditionalInfo.insets = new Insets(0, 0, 0, 5);
+        gbc_lblAlertAdditionalInfo.insets = new Insets(0, 0, 5, 5);
         gbc_lblAlertAdditionalInfo.anchor = GridBagConstraints.EAST;
         gbc_lblAlertAdditionalInfo.gridx = 0;
         gbc_lblAlertAdditionalInfo.gridy = 9;
@@ -179,11 +196,27 @@ class SendAlertPanel extends StrategyPanel {
         
         textFieldAlertAdditionalInfo = new JTextField("Additional info");
         GridBagConstraints gbc_textFieldAlertAdditionalInfo = new GridBagConstraints();
+        gbc_textFieldAlertAdditionalInfo.insets = new Insets(0, 0, 5, 0);
         gbc_textFieldAlertAdditionalInfo.fill = GridBagConstraints.HORIZONTAL;
         gbc_textFieldAlertAdditionalInfo.gridx = 1;
         gbc_textFieldAlertAdditionalInfo.gridy = 9;
         add(textFieldAlertAdditionalInfo, gbc_textFieldAlertAdditionalInfo);
         textFieldAlertAdditionalInfo.setColumns(10);
+        
+        JLabel lblAlertIcon = new JLabel("Alert Icon");
+        GridBagConstraints gbc_lblAlertIcon = new GridBagConstraints();
+        gbc_lblAlertIcon.insets = new Insets(0, 0, 0, 5);
+        gbc_lblAlertIcon.anchor = GridBagConstraints.EAST;
+        gbc_lblAlertIcon.gridx = 0;
+        gbc_lblAlertIcon.gridy = 10;
+        add(lblAlertIcon, gbc_lblAlertIcon);
+    
+        combBoxAlertIcons = new JComboBox<>(SeverityIcons.values());
+        GridBagConstraints gbc_combBoxAlertIcon = new GridBagConstraints();
+        gbc_combBoxAlertIcon.fill = GridBagConstraints.HORIZONTAL;
+        gbc_combBoxAlertIcon.gridx = 1;
+        gbc_combBoxAlertIcon.gridy = 10;
+        add(combBoxAlertIcons, gbc_combBoxAlertIcon);
     }
 
     public void addAlias(String alias) {

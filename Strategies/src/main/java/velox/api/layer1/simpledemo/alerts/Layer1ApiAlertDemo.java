@@ -1,11 +1,11 @@
 package velox.api.layer1.simpledemo.alerts;
 
+import java.awt.Image;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.ImageIcon;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiInstrumentAdapter;
 import velox.api.layer1.Layer1ApiInstrumentSpecificEnabledStateProvider;
@@ -109,25 +109,25 @@ public class Layer1ApiAlertDemo implements
     
     @Override
     public void sendSimpleAlert(long repeats, Duration repeatDelay, int priority) {
-        sendAlert("Text+sound alert", null, true, true, repeats, repeatDelay, priority, Layer1ApiSoundAlertMessage.ICON_NONE);
+        sendAlert("Text+sound alert", null, true, true, repeats, repeatDelay, priority, null);
     }
 
     @Override
     public void sendTextOnlyAlert(long repeats, Duration repeatDelay, int priority) {
-        sendAlert("Text only alert", null, false, true, repeats, repeatDelay, priority, Layer1ApiSoundAlertMessage.ICON_NONE);
+        sendAlert("Text only alert", null, false, true, repeats, repeatDelay, priority, null);
     }
 
     @Override
     public void sendSoundOnlyAlert(long repeats, Duration repeatDelay, int priority) {
-        sendAlert("Sound only alert", null, true, false, repeats, repeatDelay, priority, Layer1ApiSoundAlertMessage.ICON_NONE);
+        sendAlert("Sound only alert", null, true, false, repeats, repeatDelay, priority, null);
     }
     
     @Override
-    public void sendTextAndAdditionalInfoAlert(String message, String additionalInfo, ImageIcon selectedIcon) {
+    public void sendTextAndAdditionalInfoAlert(String message, String additionalInfo, Image selectedIcon) {
         sendAlert(message, additionalInfo, false, true, 1, null, 0, selectedIcon);
     }
     
-    private void sendAlert(String message, String additionalInfo, boolean playSound, boolean showPopup, long repeats, Duration repeatDelay, int priority, ImageIcon icon) {
+    private void sendAlert(String message, String additionalInfo, boolean playSound, boolean showPopup, long repeats, Duration repeatDelay, int priority, Image icon) {
         Layer1ApiSoundAlertMessage data = Layer1ApiSoundAlertMessage.builder()
             .setAlias(sendAlertPanel.getAlias())
             .setTextInfo(message)

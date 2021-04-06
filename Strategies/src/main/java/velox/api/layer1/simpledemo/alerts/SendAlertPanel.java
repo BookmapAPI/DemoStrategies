@@ -1,7 +1,7 @@
 package velox.api.layer1.simpledemo.alerts;
 
 import java.awt.Image;
-import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
+import velox.api.layer1.gui.Layer1DefaultAlertIcons;
 import velox.gui.StrategyPanel;
 import java.awt.GridBagLayout;
 import javax.swing.JButton;
@@ -36,9 +36,9 @@ class SendAlertPanel extends StrategyPanel {
     
     enum SeverityIcons {
         NONE(null),
-        INFO(Layer1ApiSoundAlertMessage.ICON_INFO),
-        WARN(Layer1ApiSoundAlertMessage.ICON_WARN),
-        ERROR(Layer1ApiSoundAlertMessage.ICON_ERROR);
+        INFO(Layer1DefaultAlertIcons.getInfoIcon()),
+        WARN(Layer1DefaultAlertIcons.getWarnIcon()),
+        ERROR(Layer1DefaultAlertIcons.getErrorIcon());
     
         public final Image icon;
     

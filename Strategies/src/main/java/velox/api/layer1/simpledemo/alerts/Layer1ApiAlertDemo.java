@@ -90,7 +90,9 @@ public class Layer1ApiAlertDemo implements
     @Override
     public void finish() {
         synchronized (instruments) {
-            sendAlertPanel.setEnabled(false);
+            if (sendAlertPanel != null) {
+                sendAlertPanel.setEnabled(false);
+            }
         }
     }
 

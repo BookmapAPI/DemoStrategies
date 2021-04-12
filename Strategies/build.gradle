@@ -9,7 +9,7 @@ targetCompatibility = JavaVersion.VERSION_1_8
 repositories {
     mavenCentral()
     maven {
-        url "http://maven.bookmap.com/maven2/develop/"
+        url "https://maven.bookmap.com/maven2/develop/"
     }
 }
 

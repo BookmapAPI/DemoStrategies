@@ -27,7 +27,7 @@ dependencies {
 }
 
 jar {
-    archiveName 'bm-strategies.jar'
+    archiveFileName = 'bm-strategies.jar'
 }
 
 eclipse.classpath.downloadJavadoc = true

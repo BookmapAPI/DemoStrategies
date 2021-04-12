@@ -290,6 +290,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
         this.settingsAccess = settingsAccess;
     }
     
+    @SuppressWarnings("unchecked")
     protected V getSettingsFor(String alias) {
         synchronized (locker) {
             V settings = settingsMap.get(alias);

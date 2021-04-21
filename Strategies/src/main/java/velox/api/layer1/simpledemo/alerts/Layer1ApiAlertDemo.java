@@ -1,7 +1,5 @@
 package velox.api.layer1.simpledemo.alerts;
 
-import java.awt.Image;
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,10 +14,10 @@ import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
-import velox.api.layer1.common.Log;
 import velox.api.layer1.data.InstrumentInfo;
-import velox.api.layer1.layers.utils.SoundSynthHelper;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
+import velox.api.layer1.messages.Layer1ApiSoundAlertMessageDeclaration;
+import velox.api.layer1.simpledemo.alerts.DeclareAlertPanel.DeclareAlertPanelCallback;
 import velox.api.layer1.simpledemo.alerts.SendAlertPanel.SendAlertPanelCallback;
 import velox.gui.StrategyPanel;
 
@@ -35,12 +33,14 @@ public class Layer1ApiAlertDemo implements
     Layer1CustomPanelsGetter,
     Layer1ApiFinishable,
     SendAlertPanelCallback,
+    DeclareAlertPanelCallback,
     Layer1ApiInstrumentAdapter,
     Layer1ApiInstrumentSpecificEnabledStateProvider {
 
     private final Layer1ApiProvider provider;
 
     private SendAlertPanel sendAlertPanel;
+    private DeclareAlertPanel declareAlertPanel;
 
     private Set<String> instruments = new HashSet<>();
     
@@ -63,8 +63,12 @@ public class Layer1ApiAlertDemo implements
                 instruments.forEach(sendAlertPanel::addAlias);
             }
         }
+        if (declareAlertPanel == null) {
+            declareAlertPanel = new DeclareAlertPanel(this);
+            declareAlertPanel.setEnabled(false);
+        }
 
-        return new StrategyPanel[]{sendAlertPanel};
+        return new StrategyPanel[]{declareAlertPanel, sendAlertPanel};
     }
 
     @Override
@@ -93,6 +97,9 @@ public class Layer1ApiAlertDemo implements
             if (sendAlertPanel != null) {
                 sendAlertPanel.setEnabled(false);
             }
+            if (declareAlertPanel != null) {
+                declareAlertPanel.setEnabled(false);
+            }
         }
     }
 
@@ -101,6 +108,7 @@ public class Layer1ApiAlertDemo implements
         synchronized (instruments) {
             this.isEnabled.set(isEnabled);
             sendAlertPanel.setEnabled(isEnabled);
+            declareAlertPanel.setEnabled(isEnabled);
         }
     }
     
@@ -112,5 +120,10 @@ public class Layer1ApiAlertDemo implements
     @Override
     public void sendCustomAlert(Layer1ApiSoundAlertMessage message) {
         provider.sendUserMessage(message);
+    }
+    
+    @Override
+    public void sendDeclarationMessage(Layer1ApiSoundAlertMessageDeclaration declarationMessage) {
+        provider.sendUserMessage(declarationMessage);
     }
 }

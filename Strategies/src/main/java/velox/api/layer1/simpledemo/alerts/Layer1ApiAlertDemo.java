@@ -110,40 +110,7 @@ public class Layer1ApiAlertDemo implements
     }
     
     @Override
-    public void sendSimpleAlert(long repeats, Duration repeatDelay, int priority) {
-        sendAlert("Text+sound alert", null, true, true, repeats, repeatDelay, priority, null);
-    }
-
-    @Override
-    public void sendTextOnlyAlert(long repeats, Duration repeatDelay, int priority) {
-        sendAlert("Text only alert", null, false, true, repeats, repeatDelay, priority, null);
-    }
-
-    @Override
-    public void sendSoundOnlyAlert(long repeats, Duration repeatDelay, int priority) {
-        sendAlert("Sound only alert", null, true, false, repeats, repeatDelay, priority, null);
-    }
-    
-    @Override
-    public void sendTextAndAdditionalInfoAlert(String message, String additionalInfo, Image selectedIcon) {
-        sendAlert(message, additionalInfo, false, true, 1, null, 0, selectedIcon);
-    }
-    
-    private void sendAlert(String message, String additionalInfo, boolean playSound, boolean showPopup, long repeats, Duration repeatDelay, int priority, Image icon) {
-        Layer1ApiSoundAlertMessage data = Layer1ApiSoundAlertMessage.builder()
-            .setAlias(sendAlertPanel.getAlias())
-            .setTextInfo(message)
-            .setAdditionalInfo(additionalInfo)
-            .setSound(playSound ? SoundSynthHelper.synthesize(message) : null)
-            .setStatusListener((alertId, status) -> Log.info("onSoundAlertStatus: " + alertId + " " + status))
-            .setSource(Layer1ApiAlertDemo.class)
-            .setShowPopup(showPopup)
-            .setRepeatCount(repeats)
-            .setRepeatDelay(repeatDelay)
-            .setPriority(priority)
-            .setSeverityIcon(icon)
-            .build();
-
-        provider.sendUserMessage(data);
+    public void sendCustomAlert(Layer1ApiSoundAlertMessage message) {
+        provider.sendUserMessage(message);
     }
 }

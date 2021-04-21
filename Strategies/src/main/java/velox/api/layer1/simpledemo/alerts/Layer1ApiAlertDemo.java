@@ -55,18 +55,19 @@ public class Layer1ApiAlertDemo implements
 
     @Override
     public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
-
-        if (sendAlertPanel == null) {
-            synchronized (instruments) {
+        synchronized (instruments) {
+            if (sendAlertPanel == null) {
                 sendAlertPanel = new SendAlertPanel(this);
                 sendAlertPanel.setEnabled(false);
                 instruments.forEach(sendAlertPanel::addAlias);
             }
+            if (declareAlertPanel == null) {
+                declareAlertPanel = new DeclareAlertPanel(this);
+                declareAlertPanel.setEnabled(false);
+                instruments.forEach(declareAlertPanel::addAlias);
+            }
         }
-        if (declareAlertPanel == null) {
-            declareAlertPanel = new DeclareAlertPanel(this);
-            declareAlertPanel.setEnabled(false);
-        }
+
 
         return new StrategyPanel[]{declareAlertPanel, sendAlertPanel};
     }
@@ -78,6 +79,9 @@ public class Layer1ApiAlertDemo implements
             if (sendAlertPanel != null) {
                 sendAlertPanel.addAlias(alias);
             }
+            if (declareAlertPanel != null) {
+                declareAlertPanel.addAlias(alias);
+            }
         }
     }
 
@@ -87,6 +91,9 @@ public class Layer1ApiAlertDemo implements
             instruments.remove(alias);
             if (sendAlertPanel != null) {
                 sendAlertPanel.removeAlias(alias);
+            }
+            if (declareAlertPanel != null) {
+                declareAlertPanel.removeAlias(alias);
             }
         }
     }

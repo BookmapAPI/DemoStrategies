@@ -22,7 +22,6 @@ public class DeclareAlertPanel extends StrategyPanel {
     }
     
     private static final String SOURCE_GLOBAL = "<NONE> (Global alert)";
-    private JTextField textFieldDeclarationName;
     private JTextField textFieldDescription;
     private JComboBox<String> comboBoxMatchedAlias;
     
@@ -30,42 +29,25 @@ public class DeclareAlertPanel extends StrategyPanel {
         super("Declare alert");
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{150, 0, 0};
-        gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0};
+        gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0};
         gridBagLayout.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
         setLayout(gridBagLayout);
         
-        JLabel lblDeclarationName = new JLabel("Declaration name:");
-        GridBagConstraints gbc_lblDeclarationName = new GridBagConstraints();
-        gbc_lblDeclarationName.anchor = GridBagConstraints.EAST;
-        gbc_lblDeclarationName.insets = new Insets(0, 0, 5, 5);
-        gbc_lblDeclarationName.gridx = 0;
-        gbc_lblDeclarationName.gridy = 0;
-        add(lblDeclarationName, gbc_lblDeclarationName);
-        
-        textFieldDeclarationName = new JTextField();
-        GridBagConstraints gbc_textFieldDeclarationName = new GridBagConstraints();
-        gbc_textFieldDeclarationName.insets = new Insets(0, 0, 5, 0);
-        gbc_textFieldDeclarationName.fill = GridBagConstraints.HORIZONTAL;
-        gbc_textFieldDeclarationName.gridx = 1;
-        gbc_textFieldDeclarationName.gridy = 0;
-        add(textFieldDeclarationName, gbc_textFieldDeclarationName);
-        textFieldDeclarationName.setColumns(10);
-        
-        JLabel lblDescription = new JLabel("Description:");
-        GridBagConstraints gbc_lblDescription = new GridBagConstraints();
-        gbc_lblDescription.anchor = GridBagConstraints.EAST;
-        gbc_lblDescription.insets = new Insets(0, 0, 5, 5);
-        gbc_lblDescription.gridx = 0;
-        gbc_lblDescription.gridy = 1;
-        add(lblDescription, gbc_lblDescription);
+        JLabel lblTriggerDescription = new JLabel("Trigger description:");
+        GridBagConstraints gbc_lblTriggerDescription = new GridBagConstraints();
+        gbc_lblTriggerDescription.anchor = GridBagConstraints.EAST;
+        gbc_lblTriggerDescription.insets = new Insets(0, 0, 5, 5);
+        gbc_lblTriggerDescription.gridx = 0;
+        gbc_lblTriggerDescription.gridy = 0;
+        add(lblTriggerDescription, gbc_lblTriggerDescription);
         
         textFieldDescription = new JTextField();
         GridBagConstraints gbc_textFieldDescription = new GridBagConstraints();
         gbc_textFieldDescription.insets = new Insets(0, 0, 5, 0);
         gbc_textFieldDescription.fill = GridBagConstraints.HORIZONTAL;
         gbc_textFieldDescription.gridx = 1;
-        gbc_textFieldDescription.gridy = 1;
+        gbc_textFieldDescription.gridy = 0;
         add(textFieldDescription, gbc_textFieldDescription);
         textFieldDescription.setColumns(10);
         
@@ -75,7 +57,7 @@ public class DeclareAlertPanel extends StrategyPanel {
         gbc_lbAliasMatcher.anchor = GridBagConstraints.EAST;
         gbc_lbAliasMatcher.insets = new Insets(0, 0, 5, 5);
         gbc_lbAliasMatcher.gridx = 0;
-        gbc_lbAliasMatcher.gridy = 2;
+        gbc_lbAliasMatcher.gridy = 1;
         add(lbAliasMatcher, gbc_lbAliasMatcher);
     
         comboBoxMatchedAlias = new JComboBox<>();
@@ -84,7 +66,7 @@ public class DeclareAlertPanel extends StrategyPanel {
         gbc_comboBox.insets = new Insets(0, 0, 5, 0);
         gbc_comboBox.fill = GridBagConstraints.HORIZONTAL;
         gbc_comboBox.gridx = 1;
-        gbc_comboBox.gridy = 2;
+        gbc_comboBox.gridy = 1;
         add(comboBoxMatchedAlias, gbc_comboBox);
         
         JLabel lblNewLabel = new JLabel("Notifications:");
@@ -92,7 +74,7 @@ public class DeclareAlertPanel extends StrategyPanel {
         gbc_lblNewLabel.anchor = GridBagConstraints.EAST;
         gbc_lblNewLabel.insets = new Insets(0, 0, 5, 5);
         gbc_lblNewLabel.gridx = 0;
-        gbc_lblNewLabel.gridy = 3;
+        gbc_lblNewLabel.gridy = 2;
         add(lblNewLabel, gbc_lblNewLabel);
         
         JPanel panel = new JPanel();
@@ -100,7 +82,7 @@ public class DeclareAlertPanel extends StrategyPanel {
         gbc_panel.insets = new Insets(0, 0, 5, 0);
         gbc_panel.fill = GridBagConstraints.BOTH;
         gbc_panel.gridx = 1;
-        gbc_panel.gridy = 3;
+        gbc_panel.gridy = 2;
         add(panel, gbc_panel);
         panel.setLayout(new GridLayout(0, 2, 0, 0));
         
@@ -115,7 +97,7 @@ public class DeclareAlertPanel extends StrategyPanel {
         gbc_chckbxIsRepeated.anchor = GridBagConstraints.WEST;
         gbc_chckbxIsRepeated.insets = new Insets(0, 0, 5, 0);
         gbc_chckbxIsRepeated.gridx = 1;
-        gbc_chckbxIsRepeated.gridy = 4;
+        gbc_chckbxIsRepeated.gridy = 3;
         add(chckbxIsRepeated, gbc_chckbxIsRepeated);
     
         JButton btnDeclareAlert = new JButton("Declare alert");
@@ -136,7 +118,7 @@ public class DeclareAlertPanel extends StrategyPanel {
         GridBagConstraints gbc_btnNewButton = new GridBagConstraints();
         gbc_btnNewButton.fill = GridBagConstraints.HORIZONTAL;
         gbc_btnNewButton.gridx = 1;
-        gbc_btnNewButton.gridy = 5;
+        gbc_btnNewButton.gridy = 4;
         add(btnDeclareAlert, gbc_btnNewButton);
     }
     

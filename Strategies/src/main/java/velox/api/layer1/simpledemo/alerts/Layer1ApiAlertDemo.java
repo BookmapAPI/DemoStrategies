@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiInstrumentAdapter;
 import velox.api.layer1.Layer1ApiInstrumentSpecificEnabledStateProvider;
@@ -35,6 +36,7 @@ public class Layer1ApiAlertDemo implements
     SendAlertPanelCallback,
     DeclareAlertPanelCallback,
     Layer1ApiInstrumentAdapter,
+    Layer1ApiAdminAdapter,
     Layer1ApiInstrumentSpecificEnabledStateProvider {
 
     private final Layer1ApiProvider provider;
@@ -132,5 +134,17 @@ public class Layer1ApiAlertDemo implements
     @Override
     public void sendDeclarationMessage(Layer1ApiSoundAlertMessageDeclaration declarationMessage) {
         provider.sendUserMessage(declarationMessage);
+    }
+    
+    @Override
+    public void onUserMessage(Object data) {
+        if (data instanceof Layer1ApiSoundAlertMessageDeclaration) {
+            Layer1ApiSoundAlertMessageDeclaration message = (Layer1ApiSoundAlertMessageDeclaration) data;
+            
+            sendAlertPanel.removeAlertDeclaration(message);
+            if (message.isAdd) {
+                sendAlertPanel.addAlertDeclaration(message);
+            }
+        }
     }
 }

@@ -1,11 +1,16 @@
 package velox.api.layer1.simpledemo.alerts;
 
 import java.awt.Image;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import javax.swing.DefaultComboBoxModel;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.gui.Layer1DefaultAlertIcons;
 import velox.api.layer1.layers.utils.SoundSynthHelper;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
+import velox.api.layer1.messages.Layer1ApiSoundAlertMessageDeclaration;
 import velox.gui.StrategyPanel;
 import java.awt.GridBagLayout;
 import javax.swing.JButton;
@@ -25,14 +30,17 @@ import java.awt.GridLayout;
 import javax.swing.JCheckBox;
 
 class SendAlertPanel extends StrategyPanel {
+    
     private static final String SOURCE_GLOBAL = "<NONE> (Global alert)";
-    private JComboBox<String> comboBoxAliases;
-    private JComboBox<SeverityIcons> combBoxAlertIcons;
+    private final JComboBox<String> comboBoxAliases;
+    private final JComboBox<SeverityIcons> combBoxAlertIcons;
+    private final JComboBox<AlertDeclarationComboBoxOption> comboBoxAlertDeclarations;
     private final JSpinner prioritySpinner = new JSpinner();
     private final JSpinner repeatsSpinner = new JSpinner();
     private final JSpinner delaySpinner = new JSpinner();
-    private JTextField textFieldAlertMsg;
-    private JTextField textFieldAlertAdditionalInfo;
+    private final JTextField textFieldAlertMsg;
+    private final JTextField textFieldAlertAdditionalInfo;
+    private final Map<String, Layer1ApiSoundAlertMessageDeclaration> registeredDeclarations = new HashMap<>();
 
     static interface SendAlertPanelCallback {
         void sendCustomAlert(Layer1ApiSoundAlertMessage message);
@@ -57,7 +65,7 @@ class SendAlertPanel extends StrategyPanel {
         gridBagLayout.columnWidths = new int[]{150, 0, 0};
         gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         gridBagLayout.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
         setLayout(gridBagLayout);
         
         JLabel lblSource = new JLabel("Source instrument:");
@@ -163,21 +171,38 @@ class SendAlertPanel extends StrategyPanel {
         add(textFieldAlertAdditionalInfo, gbc_textFieldAlertAdditionalInfo);
         textFieldAlertAdditionalInfo.setColumns(10);
         
+        JLabel lblAlertDeclaration = new JLabel("Linked Declaration:");
+        GridBagConstraints gbc_lblAlertDeclaration = new GridBagConstraints();
+        gbc_lblAlertDeclaration.anchor = GridBagConstraints.EAST;
+        gbc_lblAlertDeclaration.insets = new Insets(0, 0, 5, 5);
+        gbc_lblAlertDeclaration.gridx = 0;
+        gbc_lblAlertDeclaration.gridy = 6;
+        add(lblAlertDeclaration, gbc_lblAlertDeclaration);
+    
+        comboBoxAlertDeclarations = new JComboBox<>();
+        GridBagConstraints gbc_comboBoxAlertDeclaration = new GridBagConstraints();
+        gbc_comboBoxAlertDeclaration.insets = new Insets(0, 0, 5, 0);
+        gbc_comboBoxAlertDeclaration.fill = GridBagConstraints.HORIZONTAL;
+        gbc_comboBoxAlertDeclaration.gridx = 1;
+        gbc_comboBoxAlertDeclaration.gridy = 6;
+        add(comboBoxAlertDeclarations, gbc_comboBoxAlertDeclaration);
+        
         JLabel lblAlertIcon = new JLabel("Alert Icon");
         GridBagConstraints gbc_lblAlertIcon = new GridBagConstraints();
         gbc_lblAlertIcon.insets = new Insets(0, 0, 5, 5);
         gbc_lblAlertIcon.anchor = GridBagConstraints.EAST;
         gbc_lblAlertIcon.gridx = 0;
-        gbc_lblAlertIcon.gridy = 6;
+        gbc_lblAlertIcon.gridy = 7;
         add(lblAlertIcon, gbc_lblAlertIcon);
     
         combBoxAlertIcons = new JComboBox<>();
         combBoxAlertIcons.setModel(new DefaultComboBoxModel<>(SeverityIcons.values()));
+        comboBoxAlertDeclarations.addItem(new AlertDeclarationComboBoxOption("<NONE>", null));
         GridBagConstraints gbc_combBoxAlertIcon = new GridBagConstraints();
         gbc_combBoxAlertIcon.insets = new Insets(0, 0, 5, 0);
         gbc_combBoxAlertIcon.fill = GridBagConstraints.HORIZONTAL;
         gbc_combBoxAlertIcon.gridx = 1;
-        gbc_combBoxAlertIcon.gridy = 6;
+        gbc_combBoxAlertIcon.gridy = 7;
         add(combBoxAlertIcons, gbc_combBoxAlertIcon);
         
         JLabel lblNotifications = new JLabel("Notifications");
@@ -185,7 +210,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_lblNotifications.anchor = GridBagConstraints.EAST;
         gbc_lblNotifications.insets = new Insets(0, 0, 5, 5);
         gbc_lblNotifications.gridx = 0;
-        gbc_lblNotifications.gridy = 7;
+        gbc_lblNotifications.gridy = 8;
         add(lblNotifications, gbc_lblNotifications);
         
         JPanel panel = new JPanel();
@@ -193,7 +218,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_panel.insets = new Insets(0, 0, 5, 0);
         gbc_panel.fill = GridBagConstraints.BOTH;
         gbc_panel.gridx = 1;
-        gbc_panel.gridy = 7;
+        gbc_panel.gridy = 8;
         add(panel, gbc_panel);
         panel.setLayout(new GridLayout(0, 2, 0, 0));
         
@@ -207,6 +232,11 @@ class SendAlertPanel extends StrategyPanel {
         JButton btnSendCustomAlert = new JButton("Send custom alert");
         btnSendCustomAlert.addActionListener(e -> {
             String mainText = textFieldAlertMsg.getText();
+            Layer1ApiSoundAlertMessageDeclaration selectedDeclaration = Optional
+                .ofNullable((AlertDeclarationComboBoxOption) comboBoxAlertDeclarations.getSelectedItem())
+                .map(option -> option.declarationId)
+                .map(registeredDeclarations::get)
+                .orElse(null);
             
             Layer1ApiSoundAlertMessage data = Layer1ApiSoundAlertMessage.builder()
                 .setAlias(getAlias())
@@ -220,6 +250,7 @@ class SendAlertPanel extends StrategyPanel {
                 .setRepeatDelay(Duration.ofMillis((Long) delaySpinner.getValue()))
                 .setPriority((Integer) prioritySpinner.getValue())
                 .setSeverityIcon(((SeverityIcons) combBoxAlertIcons.getSelectedItem()).icon)
+                .setAlertDeclaration(selectedDeclaration)
                 .build();
             
             callback.sendCustomAlert(data);
@@ -228,7 +259,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_btnSendCustomAlert.fill = GridBagConstraints.HORIZONTAL;
         gbc_btnSendCustomAlert.insets = new Insets(0, 0, 5, 0);
         gbc_btnSendCustomAlert.gridx = 1;
-        gbc_btnSendCustomAlert.gridy = 8;
+        gbc_btnSendCustomAlert.gridy = 9;
         add(btnSendCustomAlert, gbc_btnSendCustomAlert);
     }
 
@@ -240,7 +271,7 @@ class SendAlertPanel extends StrategyPanel {
         SwingUtilities.invokeLater(() -> comboBoxAliases.removeItem(alias));
     }
     
-    public String getAlias() {
+    private String getAlias() {
         String source = (String) comboBoxAliases.getSelectedItem();
         if (source.equals(SOURCE_GLOBAL)) {
             source = null;
@@ -248,4 +279,54 @@ class SendAlertPanel extends StrategyPanel {
         return source;
     }
 
+    public void addAlertDeclaration(Layer1ApiSoundAlertMessageDeclaration declaration) {
+        SwingUtilities.invokeLater(() -> {
+            registeredDeclarations.put(declaration.alertDeclarationId, declaration);
+            comboBoxAlertDeclarations.addItem(new AlertDeclarationComboBoxOption(declaration));
+        });
+    }
+    
+    public void removeAlertDeclaration(Layer1ApiSoundAlertMessageDeclaration declaration) {
+        SwingUtilities.invokeLater(() -> {
+            registeredDeclarations.remove(declaration.alertDeclarationId);
+            comboBoxAlertDeclarations.removeItem(new AlertDeclarationComboBoxOption(declaration));
+        });
+    }
+ 
+    
+    private static class AlertDeclarationComboBoxOption {
+        final String triggerDescription;
+        final String declarationId;
+    
+        public AlertDeclarationComboBoxOption(Layer1ApiSoundAlertMessageDeclaration message) {
+            this(message.description, message.alertDeclarationId);
+        }
+    
+        public AlertDeclarationComboBoxOption(String triggerDescription, String declarationId) {
+            this.triggerDescription = triggerDescription;
+            this.declarationId = declarationId;
+        }
+    
+        @Override
+        public String toString() {
+            return triggerDescription;
+        }
+    
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof AlertDeclarationComboBoxOption)) {
+                return false;
+            }
+            AlertDeclarationComboBoxOption that = (AlertDeclarationComboBoxOption) o;
+            return Objects.equals(declarationId, that.declarationId);
+        }
+    
+        @Override
+        public int hashCode() {
+            return Objects.hash(declarationId);
+        }
+    }
 }

@@ -281,14 +281,14 @@ class SendAlertPanel extends StrategyPanel {
 
     public void addAlertDeclaration(Layer1ApiSoundAlertMessageDeclaration declaration) {
         SwingUtilities.invokeLater(() -> {
-            registeredDeclarations.put(declaration.alertDeclarationId, declaration);
+            registeredDeclarations.put(declaration.declarationId, declaration);
             comboBoxAlertDeclarations.addItem(new AlertDeclarationComboBoxOption(declaration));
         });
     }
     
     public void removeAlertDeclaration(Layer1ApiSoundAlertMessageDeclaration declaration) {
         SwingUtilities.invokeLater(() -> {
-            registeredDeclarations.remove(declaration.alertDeclarationId);
+            registeredDeclarations.remove(declaration.declarationId);
             comboBoxAlertDeclarations.removeItem(new AlertDeclarationComboBoxOption(declaration));
         });
     }
@@ -299,7 +299,7 @@ class SendAlertPanel extends StrategyPanel {
         final String declarationId;
     
         public AlertDeclarationComboBoxOption(Layer1ApiSoundAlertMessageDeclaration message) {
-            this(message.description, message.alertDeclarationId);
+            this(message.triggerDescription, message.declarationId);
         }
     
         public AlertDeclarationComboBoxOption(String triggerDescription, String declarationId) {

@@ -125,8 +125,7 @@ public class DeclareAlertPanel extends StrategyPanel {
             Layer1ApiSoundAlertMessageDeclaration declarationMessage = Layer1ApiSoundAlertMessageDeclaration
                 .builder()
                 .setIsAdd(true)
-                .setName(textFieldDeclarationName.getText())
-                .setDescription(textFieldDescription.getText())
+                .setTriggerDescription(textFieldDescription.getText())
                 .setPopup(chckbxPopup.isSelected())
                 .setRepeated(chckbxIsRepeated.isSelected())
                 .setSource(Layer1ApiAlertDemo.class)

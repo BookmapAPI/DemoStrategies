@@ -17,7 +17,7 @@ import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
-import velox.api.layer1.messages.Layer1ApiSoundAlertMessageDeclaration;
+import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.api.layer1.simpledemo.alerts.DeclareAlertPanel.DeclareAlertPanelCallback;
 import velox.api.layer1.simpledemo.alerts.SendAlertPanel.SendAlertPanelCallback;
 import velox.gui.StrategyPanel;
@@ -132,14 +132,14 @@ public class Layer1ApiAlertDemo implements
     }
     
     @Override
-    public void sendDeclarationMessage(Layer1ApiSoundAlertMessageDeclaration declarationMessage) {
+    public void sendDeclarationMessage(Layer1ApiSoundAlertDeclarationMessage declarationMessage) {
         provider.sendUserMessage(declarationMessage);
     }
     
     @Override
     public void onUserMessage(Object data) {
-        if (data instanceof Layer1ApiSoundAlertMessageDeclaration) {
-            Layer1ApiSoundAlertMessageDeclaration message = (Layer1ApiSoundAlertMessageDeclaration) data;
+        if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
+            Layer1ApiSoundAlertDeclarationMessage message = (Layer1ApiSoundAlertDeclarationMessage) data;
             
             sendAlertPanel.removeAlertDeclaration(message);
             if (message.isAdd) {

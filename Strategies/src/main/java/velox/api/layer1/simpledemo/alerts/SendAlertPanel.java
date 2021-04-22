@@ -10,7 +10,7 @@ import velox.api.layer1.common.Log;
 import velox.api.layer1.gui.Layer1DefaultAlertIcons;
 import velox.api.layer1.layers.utils.SoundSynthHelper;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
-import velox.api.layer1.messages.Layer1ApiSoundAlertMessageDeclaration;
+import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.gui.StrategyPanel;
 import java.awt.GridBagLayout;
 import javax.swing.JButton;
@@ -40,7 +40,7 @@ class SendAlertPanel extends StrategyPanel {
     private final JSpinner delaySpinner = new JSpinner();
     private final JTextField textFieldAlertMsg;
     private final JTextField textFieldAlertAdditionalInfo;
-    private final Map<String, Layer1ApiSoundAlertMessageDeclaration> registeredDeclarations = new HashMap<>();
+    private final Map<String, Layer1ApiSoundAlertDeclarationMessage> registeredDeclarations = new HashMap<>();
 
     static interface SendAlertPanelCallback {
         void sendCustomAlert(Layer1ApiSoundAlertMessage message);
@@ -232,7 +232,7 @@ class SendAlertPanel extends StrategyPanel {
         JButton btnSendCustomAlert = new JButton("Send custom alert");
         btnSendCustomAlert.addActionListener(e -> {
             String mainText = textFieldAlertMsg.getText();
-            Layer1ApiSoundAlertMessageDeclaration selectedDeclaration = Optional
+            Layer1ApiSoundAlertDeclarationMessage selectedDeclaration = Optional
                 .ofNullable((AlertDeclarationComboBoxOption) comboBoxAlertDeclarations.getSelectedItem())
                 .map(option -> option.declarationId)
                 .map(registeredDeclarations::get)
@@ -279,14 +279,14 @@ class SendAlertPanel extends StrategyPanel {
         return source;
     }
 
-    public void addAlertDeclaration(Layer1ApiSoundAlertMessageDeclaration declaration) {
+    public void addAlertDeclaration(Layer1ApiSoundAlertDeclarationMessage declaration) {
         SwingUtilities.invokeLater(() -> {
             registeredDeclarations.put(declaration.declarationId, declaration);
             comboBoxAlertDeclarations.addItem(new AlertDeclarationComboBoxOption(declaration));
         });
     }
     
-    public void removeAlertDeclaration(Layer1ApiSoundAlertMessageDeclaration declaration) {
+    public void removeAlertDeclaration(Layer1ApiSoundAlertDeclarationMessage declaration) {
         SwingUtilities.invokeLater(() -> {
             registeredDeclarations.remove(declaration.declarationId);
             comboBoxAlertDeclarations.removeItem(new AlertDeclarationComboBoxOption(declaration));
@@ -298,7 +298,7 @@ class SendAlertPanel extends StrategyPanel {
         final String triggerDescription;
         final String declarationId;
     
-        public AlertDeclarationComboBoxOption(Layer1ApiSoundAlertMessageDeclaration message) {
+        public AlertDeclarationComboBoxOption(Layer1ApiSoundAlertDeclarationMessage message) {
             this(message.triggerDescription, message.declarationId);
         }
     

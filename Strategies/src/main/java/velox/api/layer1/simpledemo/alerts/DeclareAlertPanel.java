@@ -11,14 +11,14 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import velox.api.layer1.messages.Layer1ApiSoundAlertMessageDeclaration;
+import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.gui.StrategyPanel;
 
 public class DeclareAlertPanel extends StrategyPanel {
     
     interface DeclareAlertPanelCallback {
         
-        void sendDeclarationMessage(Layer1ApiSoundAlertMessageDeclaration declarationMessage);
+        void sendDeclarationMessage(Layer1ApiSoundAlertDeclarationMessage declarationMessage);
     }
     
     private static final String SOURCE_GLOBAL = "<NONE> (Global alert)";
@@ -122,7 +122,7 @@ public class DeclareAlertPanel extends StrategyPanel {
         btnDeclareAlert.addActionListener(e -> {
             String selectedAlias = getAlias();
             
-            Layer1ApiSoundAlertMessageDeclaration declarationMessage = Layer1ApiSoundAlertMessageDeclaration
+            Layer1ApiSoundAlertDeclarationMessage declarationMessage = Layer1ApiSoundAlertDeclarationMessage
                 .builder()
                 .setIsAdd(true)
                 .setTriggerDescription(textFieldDescription.getText())

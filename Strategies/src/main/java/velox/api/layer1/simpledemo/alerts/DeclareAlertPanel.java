@@ -109,6 +109,7 @@ public class DeclareAlertPanel extends StrategyPanel {
                 .setIsAdd(true)
                 .setTriggerDescription(textFieldDescription.getText())
                 .setPopup(chckbxPopup.isSelected())
+                .setSound(chckbxSound.isSelected())
                 .setRepeated(chckbxIsRepeated.isSelected())
                 .setSource(Layer1ApiAlertDemo.class)
                 .setAliasMatcher((alias) -> selectedAlias == null || selectedAlias.equals(alias))

@@ -16,6 +16,7 @@ import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.data.InstrumentInfo;
+import velox.api.layer1.messages.Layer1ApiAlertGuiMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.api.layer1.simpledemo.alerts.DeclareAlertPanel.DeclareAlertPanelCallback;
@@ -119,6 +120,7 @@ public class Layer1ApiAlertDemo implements
             sendAlertPanel.setEnabled(isEnabled);
             declareAlertPanel.setEnabled(isEnabled);
         }
+        provider.sendUserMessage(new Layer1ApiAlertGuiMessage(Layer1ApiAlertDemo.class, getCustomGuiFor(null, null)));
     }
     
     @Override

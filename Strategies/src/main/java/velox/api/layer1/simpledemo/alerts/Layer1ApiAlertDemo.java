@@ -122,7 +122,10 @@ public class Layer1ApiAlertDemo implements
     
         Layer1ApiAlertGuiMessage message = Layer1ApiAlertGuiMessage.builder()
             .setSource(Layer1ApiAlertDemo.class)
-            .setGuiPanelsProvider(declaration -> new StrategyPanel[]{declareAlertPanel})
+            .setGuiPanelsProvider(declaration -> {
+                declareAlertPanel.setConfiguredDeclaration(declaration);
+                return new StrategyPanel[]{declareAlertPanel};
+            })
             .build();
         provider.sendUserMessage(message);
     }

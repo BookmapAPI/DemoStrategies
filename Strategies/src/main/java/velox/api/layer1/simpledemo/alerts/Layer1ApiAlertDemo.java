@@ -64,15 +64,9 @@ public class Layer1ApiAlertDemo implements
                 sendAlertPanel.setEnabled(false);
                 instruments.forEach(sendAlertPanel::addAlias);
             }
-            if (declareAlertPanel == null) {
-                declareAlertPanel = new DeclareAlertPanel(this);
-                declareAlertPanel.setEnabled(false);
-                instruments.forEach(declareAlertPanel::addAlias);
-            }
         }
 
-
-        return new StrategyPanel[]{declareAlertPanel, sendAlertPanel};
+        return new StrategyPanel[]{sendAlertPanel};
     }
 
     @Override
@@ -118,12 +112,17 @@ public class Layer1ApiAlertDemo implements
         synchronized (instruments) {
             this.isEnabled.set(isEnabled);
             sendAlertPanel.setEnabled(isEnabled);
+            
+            if (declareAlertPanel == null) {
+                declareAlertPanel = new DeclareAlertPanel(this);
+                instruments.forEach(declareAlertPanel::addAlias);
+            }
             declareAlertPanel.setEnabled(isEnabled);
         }
     
         Layer1ApiAlertGuiMessage message = Layer1ApiAlertGuiMessage.builder()
             .setSource(Layer1ApiAlertDemo.class)
-            .setGuiPanelsProvider(declaration -> getCustomGuiFor(null, null))
+            .setGuiPanelsProvider(declaration -> new StrategyPanel[]{declareAlertPanel})
             .build();
         provider.sendUserMessage(message);
     }

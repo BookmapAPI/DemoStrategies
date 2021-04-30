@@ -16,7 +16,7 @@ import javax.swing.SwingUtilities;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.gui.StrategyPanel;
 
-public class DeclareAlertPanel extends StrategyPanel {
+public class DeclareOrUpdateAlertPanel extends StrategyPanel {
     
     interface DeclareAlertPanelCallback {
         
@@ -51,7 +51,7 @@ public class DeclareAlertPanel extends StrategyPanel {
     private final JCheckBox chckbxIsRepeated;
     private JPanel bottomBtnsPanel;
     
-    public DeclareAlertPanel(DeclareAlertPanelCallback callback) {
+    public DeclareOrUpdateAlertPanel(DeclareAlertPanelCallback callback) {
         super("Declare/Update alert");
         this.callback = callback;
         GridBagLayout gridBagLayout = new GridBagLayout();

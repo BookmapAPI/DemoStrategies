@@ -19,7 +19,7 @@ import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.messages.Layer1ApiAlertGuiMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
-import velox.api.layer1.simpledemo.alerts.DeclareAlertPanel.DeclareAlertPanelCallback;
+import velox.api.layer1.simpledemo.alerts.DeclareOrUpdateAlertPanel.DeclareAlertPanelCallback;
 import velox.api.layer1.simpledemo.alerts.SendAlertPanel.SendAlertPanelCallback;
 import velox.gui.StrategyPanel;
 
@@ -43,7 +43,7 @@ public class Layer1ApiAlertDemo implements
     private final Layer1ApiProvider provider;
 
     private SendAlertPanel sendAlertPanel;
-    private DeclareAlertPanel declareAlertPanel;
+    private DeclareOrUpdateAlertPanel declareOrUpdateAlertPanel;
 
     private Set<String> instruments = new HashSet<>();
     
@@ -76,8 +76,8 @@ public class Layer1ApiAlertDemo implements
             if (sendAlertPanel != null) {
                 sendAlertPanel.addAlias(alias);
             }
-            if (declareAlertPanel != null) {
-                declareAlertPanel.addAlias(alias);
+            if (declareOrUpdateAlertPanel != null) {
+                declareOrUpdateAlertPanel.addAlias(alias);
             }
         }
     }
@@ -89,8 +89,8 @@ public class Layer1ApiAlertDemo implements
             if (sendAlertPanel != null) {
                 sendAlertPanel.removeAlias(alias);
             }
-            if (declareAlertPanel != null) {
-                declareAlertPanel.removeAlias(alias);
+            if (declareOrUpdateAlertPanel != null) {
+                declareOrUpdateAlertPanel.removeAlias(alias);
             }
         }
     }
@@ -101,8 +101,8 @@ public class Layer1ApiAlertDemo implements
             if (sendAlertPanel != null) {
                 sendAlertPanel.setEnabled(false);
             }
-            if (declareAlertPanel != null) {
-                declareAlertPanel.setEnabled(false);
+            if (declareOrUpdateAlertPanel != null) {
+                declareOrUpdateAlertPanel.setEnabled(false);
             }
         }
     }
@@ -113,18 +113,18 @@ public class Layer1ApiAlertDemo implements
             this.isEnabled.set(isEnabled);
             sendAlertPanel.setEnabled(isEnabled);
             
-            if (declareAlertPanel == null) {
-                declareAlertPanel = new DeclareAlertPanel(this);
-                instruments.forEach(declareAlertPanel::addAlias);
+            if (declareOrUpdateAlertPanel == null) {
+                declareOrUpdateAlertPanel = new DeclareOrUpdateAlertPanel(this);
+                instruments.forEach(declareOrUpdateAlertPanel::addAlias);
             }
-            declareAlertPanel.setEnabled(isEnabled);
+            declareOrUpdateAlertPanel.setEnabled(isEnabled);
         }
     
         Layer1ApiAlertGuiMessage message = Layer1ApiAlertGuiMessage.builder()
             .setSource(Layer1ApiAlertDemo.class)
             .setGuiPanelsProvider(declaration -> {
-                declareAlertPanel.setConfiguredDeclaration(declaration);
-                return new StrategyPanel[]{declareAlertPanel};
+                declareOrUpdateAlertPanel.setConfiguredDeclaration(declaration);
+                return new StrategyPanel[]{declareOrUpdateAlertPanel};
             })
             .build();
         provider.sendUserMessage(message);

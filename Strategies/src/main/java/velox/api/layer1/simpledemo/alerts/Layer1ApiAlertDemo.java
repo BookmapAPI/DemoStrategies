@@ -120,7 +120,12 @@ public class Layer1ApiAlertDemo implements
             sendAlertPanel.setEnabled(isEnabled);
             declareAlertPanel.setEnabled(isEnabled);
         }
-        provider.sendUserMessage(new Layer1ApiAlertGuiMessage(Layer1ApiAlertDemo.class, getCustomGuiFor(null, null)));
+    
+        Layer1ApiAlertGuiMessage message = Layer1ApiAlertGuiMessage.builder()
+            .setSource(Layer1ApiAlertDemo.class)
+            .setGuiPanelsProvider(declaration -> getCustomGuiFor(null, null))
+            .build();
+        provider.sendUserMessage(message);
     }
     
     @Override

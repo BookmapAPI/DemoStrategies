@@ -1,6 +1,8 @@
 package velox.api.layer1.simpledemo.alerts;
 
 import java.awt.Image;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -127,6 +129,38 @@ public class Layer1ApiAlertDemo implements
     @Override
     public void sendTextAndAdditionalInfoAlert(String message, String additionalInfo, Image selectedIcon) {
         sendAlert(message, additionalInfo, false, true, 1, null, 0, selectedIcon);
+    }
+    
+    @Override
+    public void sendNoSoundNoPopupAlert() {
+        sendAlert(null, null, false, false, 1, null, 0, null);
+    }
+    
+    @Override
+    public void sendZeroDurationSoundAlert() {
+        byte[] soundData;
+        try (InputStream soundFileStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("silence.wav")) {
+            soundData = new byte[soundFileStream.available()];
+            soundFileStream.read(soundData);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    
+        Layer1ApiSoundAlertMessage data = Layer1ApiSoundAlertMessage.builder()
+            .setAlias(sendAlertPanel.getAlias())
+            .setTextInfo(null)
+            .setAdditionalInfo(null)
+            .setSound(soundData)
+            .setStatusListener((alertId, status) -> Log.info("onSoundAlertStatus: " + alertId + " " + status))
+            .setSource(Layer1ApiAlertDemo.class)
+            .setShowPopup(false)
+            .setRepeatCount(1)
+            .setRepeatDelay(null)
+            .setPriority(0)
+            .setSeverityIcon(null)
+            .build();
+    
+        provider.sendUserMessage(data);
     }
     
     private void sendAlert(String message, String additionalInfo, boolean playSound, boolean showPopup, long repeats, Duration repeatDelay, int priority, Image icon) {

@@ -1,6 +1,7 @@
 package velox.api.layer1.simpledemo.alerts;
 
 import java.awt.Image;
+import javax.swing.DefaultComboBoxModel;
 import velox.api.layer1.gui.Layer1DefaultAlertIcons;
 import velox.gui.StrategyPanel;
 import java.awt.GridBagLayout;
@@ -32,6 +33,8 @@ class SendAlertPanel extends StrategyPanel {
         void sendTextOnlyAlert(long repeats, Duration repeatDelay, int priority);
         void sendSoundOnlyAlert(long repeats, Duration repeatDelay, int priority);
         void sendTextAndAdditionalInfoAlert(String message, String additionalInfo, Image selectedIcon);
+        void sendNoSoundNoPopupAlert();
+        void sendZeroDurationSoundAlert();
     }
     
     enum SeverityIcons {
@@ -51,9 +54,9 @@ class SendAlertPanel extends StrategyPanel {
         super("Send alert");
         GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[]{0, 0, 0};
-        gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+        gridBagLayout.rowHeights = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
         gridBagLayout.columnWeights = new double[]{0.0, 1.0, Double.MIN_VALUE};
-        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
+        gridBagLayout.rowWeights = new double[]{0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE};
         setLayout(gridBagLayout);
         
         JButton btnSimpleAlert = new JButton("Send simple alert");
@@ -89,12 +92,28 @@ class SendAlertPanel extends StrategyPanel {
         gbc_btnSoundOnlyAlert.gridy = 2;
         add(btnSoundOnlyAlert, gbc_btnSoundOnlyAlert);
         
+        JButton btnNoSoundNoPopupAlert = new JButton("No sound+no popup alert");
+        btnNoSoundNoPopupAlert.addActionListener(e -> callback.sendNoSoundNoPopupAlert());
+        GridBagConstraints gbc_btnNoSoundNoPopupAlert = new GridBagConstraints();
+        gbc_btnNoSoundNoPopupAlert.insets = new Insets(0, 0, 5, 5);
+        gbc_btnNoSoundNoPopupAlert.gridx = 0;
+        gbc_btnNoSoundNoPopupAlert.gridy = 3;
+        add(btnNoSoundNoPopupAlert, gbc_btnNoSoundNoPopupAlert);
+        
+        JButton btnZeroDurationSoundAlert = new JButton("Zero duration sound alert");
+        btnZeroDurationSoundAlert.addActionListener(e -> callback.sendZeroDurationSoundAlert());
+        GridBagConstraints gbc_btnZeroDurationSoundAlert = new GridBagConstraints();
+        gbc_btnZeroDurationSoundAlert.insets = new Insets(0, 0, 5, 5);
+        gbc_btnZeroDurationSoundAlert.gridx = 0;
+        gbc_btnZeroDurationSoundAlert.gridy = 4;
+        add(btnZeroDurationSoundAlert, gbc_btnZeroDurationSoundAlert);
+        
         JLabel lblSource = new JLabel("Source instrument:");
         GridBagConstraints gbc_lblSource = new GridBagConstraints();
         gbc_lblSource.insets = new Insets(0, 0, 5, 5);
         gbc_lblSource.anchor = GridBagConstraints.EAST;
         gbc_lblSource.gridx = 0;
-        gbc_lblSource.gridy = 3;
+        gbc_lblSource.gridy = 5;
         add(lblSource, gbc_lblSource);
         
         comboBoxAliases = new JComboBox<>();
@@ -103,7 +122,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_comboBoxSource.insets = new Insets(0, 0, 5, 0);
         gbc_comboBoxSource.fill = GridBagConstraints.HORIZONTAL;
         gbc_comboBoxSource.gridx = 1;
-        gbc_comboBoxSource.gridy = 3;
+        gbc_comboBoxSource.gridy = 5;
         add(comboBoxAliases, gbc_comboBoxSource);
         
         JLabel repeatsLabel = new JLabel("Alert repeats:");
@@ -113,7 +132,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_repeatsLabel.anchor = GridBagConstraints.EAST;
         gbc_repeatsLabel.insets = new Insets(0, 0, 5, 5);
         gbc_repeatsLabel.gridx = 0;
-        gbc_repeatsLabel.gridy = 4;
+        gbc_repeatsLabel.gridy = 6;
         add(repeatsLabel, gbc_repeatsLabel);
 
         repeatsSpinner.setModel(new SpinnerNumberModel(Long.valueOf(1), Long.valueOf(1), Long.valueOf(Long.MAX_VALUE), Long.valueOf(1)));
@@ -121,7 +140,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_repeatsSpinner.fill = GridBagConstraints.HORIZONTAL;
         gbc_repeatsSpinner.insets = new Insets(0, 0, 5, 0);
         gbc_repeatsSpinner.gridx = 1;
-        gbc_repeatsSpinner.gridy = 4;
+        gbc_repeatsSpinner.gridy = 6;
         add(repeatsSpinner, gbc_repeatsSpinner);
         
         JLabel repeatDelayLabel = new JLabel("Repeat Delay, ms:");
@@ -129,7 +148,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_repeatDelayLabel.anchor = GridBagConstraints.EAST;
         gbc_repeatDelayLabel.insets = new Insets(0, 0, 5, 5);
         gbc_repeatDelayLabel.gridx = 0;
-        gbc_repeatDelayLabel.gridy = 5;
+        gbc_repeatDelayLabel.gridy = 7;
         add(repeatDelayLabel, gbc_repeatDelayLabel);
         repeatDelayLabel.setHorizontalAlignment(SwingConstants.CENTER);
         repeatDelayLabel.setToolTipText("Set next alert repeats count");
@@ -139,7 +158,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_delaySpinner.fill = GridBagConstraints.HORIZONTAL;
         gbc_delaySpinner.insets = new Insets(0, 0, 5, 0);
         gbc_delaySpinner.gridx = 1;
-        gbc_delaySpinner.gridy = 5;
+        gbc_delaySpinner.gridy = 7;
         add(delaySpinner, gbc_delaySpinner);
         
         JLabel priorityLabel = new JLabel("Priority:");
@@ -147,7 +166,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_priorityLabel.anchor = GridBagConstraints.EAST;
         gbc_priorityLabel.insets = new Insets(0, 0, 5, 5);
         gbc_priorityLabel.gridx = 0;
-        gbc_priorityLabel.gridy = 6;
+        gbc_priorityLabel.gridy = 8;
         add(priorityLabel, gbc_priorityLabel);
         priorityLabel.setToolTipText("Set next alert priority");
         
@@ -155,7 +174,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_prioritySpinner.insets = new Insets(0, 0, 5, 0);
         gbc_prioritySpinner.fill = GridBagConstraints.HORIZONTAL;
         gbc_prioritySpinner.gridx = 1;
-        gbc_prioritySpinner.gridy = 6;
+        gbc_prioritySpinner.gridy = 8;
         add(prioritySpinner, gbc_prioritySpinner);
         
         JButton btnSendCustomTxtAlert = new JButton("Send custom text alert");
@@ -166,7 +185,7 @@ class SendAlertPanel extends StrategyPanel {
         GridBagConstraints gbc_btnSendCustomTxtAlert = new GridBagConstraints();
         gbc_btnSendCustomTxtAlert.insets = new Insets(0, 0, 5, 5);
         gbc_btnSendCustomTxtAlert.gridx = 0;
-        gbc_btnSendCustomTxtAlert.gridy = 7;
+        gbc_btnSendCustomTxtAlert.gridy = 9;
         add(btnSendCustomTxtAlert, gbc_btnSendCustomTxtAlert);
         
         JLabel lblAlertMsg = new JLabel("Alert message:");
@@ -174,7 +193,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_lblAlertMsg.insets = new Insets(0, 0, 5, 5);
         gbc_lblAlertMsg.anchor = GridBagConstraints.ABOVE_BASELINE_TRAILING;
         gbc_lblAlertMsg.gridx = 0;
-        gbc_lblAlertMsg.gridy = 8;
+        gbc_lblAlertMsg.gridy = 10;
         add(lblAlertMsg, gbc_lblAlertMsg);
         
         textFieldAlertMsg = new JTextField("Alert custom message");
@@ -182,7 +201,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_textFieldAlertMsg.insets = new Insets(0, 0, 5, 0);
         gbc_textFieldAlertMsg.fill = GridBagConstraints.HORIZONTAL;
         gbc_textFieldAlertMsg.gridx = 1;
-        gbc_textFieldAlertMsg.gridy = 8;
+        gbc_textFieldAlertMsg.gridy = 10;
         add(textFieldAlertMsg, gbc_textFieldAlertMsg);
         textFieldAlertMsg.setColumns(10);
         
@@ -191,7 +210,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_lblAlertAdditionalInfo.insets = new Insets(0, 0, 5, 5);
         gbc_lblAlertAdditionalInfo.anchor = GridBagConstraints.EAST;
         gbc_lblAlertAdditionalInfo.gridx = 0;
-        gbc_lblAlertAdditionalInfo.gridy = 9;
+        gbc_lblAlertAdditionalInfo.gridy = 11;
         add(lblAlertAdditionalInfo, gbc_lblAlertAdditionalInfo);
         
         textFieldAlertAdditionalInfo = new JTextField("Additional info");
@@ -199,7 +218,7 @@ class SendAlertPanel extends StrategyPanel {
         gbc_textFieldAlertAdditionalInfo.insets = new Insets(0, 0, 5, 0);
         gbc_textFieldAlertAdditionalInfo.fill = GridBagConstraints.HORIZONTAL;
         gbc_textFieldAlertAdditionalInfo.gridx = 1;
-        gbc_textFieldAlertAdditionalInfo.gridy = 9;
+        gbc_textFieldAlertAdditionalInfo.gridy = 11;
         add(textFieldAlertAdditionalInfo, gbc_textFieldAlertAdditionalInfo);
         textFieldAlertAdditionalInfo.setColumns(10);
         
@@ -208,14 +227,15 @@ class SendAlertPanel extends StrategyPanel {
         gbc_lblAlertIcon.insets = new Insets(0, 0, 0, 5);
         gbc_lblAlertIcon.anchor = GridBagConstraints.EAST;
         gbc_lblAlertIcon.gridx = 0;
-        gbc_lblAlertIcon.gridy = 10;
+        gbc_lblAlertIcon.gridy = 12;
         add(lblAlertIcon, gbc_lblAlertIcon);
     
-        combBoxAlertIcons = new JComboBox<>(SeverityIcons.values());
+        combBoxAlertIcons = new JComboBox<>();
+        combBoxAlertIcons.setModel(new DefaultComboBoxModel<>(SeverityIcons.values()));
         GridBagConstraints gbc_combBoxAlertIcon = new GridBagConstraints();
         gbc_combBoxAlertIcon.fill = GridBagConstraints.HORIZONTAL;
         gbc_combBoxAlertIcon.gridx = 1;
-        gbc_combBoxAlertIcon.gridy = 10;
+        gbc_combBoxAlertIcon.gridy = 12;
         add(combBoxAlertIcons, gbc_combBoxAlertIcon);
     }
 

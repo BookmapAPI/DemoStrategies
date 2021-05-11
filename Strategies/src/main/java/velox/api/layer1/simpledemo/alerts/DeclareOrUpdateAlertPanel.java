@@ -205,9 +205,9 @@ public class DeclareOrUpdateAlertPanel extends StrategyPanel {
             JPanel bottomBtnsPanel = new JPanel();
             bottomBtnsPanel.setLayout(new BorderLayout());
     
-            JButton btnUpdateDeclaration = new JButton("Update declaration");
-            bottomBtnsPanel.add(btnUpdateDeclaration, BorderLayout.CENTER);
-            btnUpdateDeclaration.addActionListener(e -> {
+            JButton btnDeclareAlert = new JButton("Declare new alert");
+            bottomBtnsPanel.add(btnDeclareAlert, BorderLayout.CENTER);
+            btnDeclareAlert.addActionListener(e -> {
                 Layer1ApiSoundAlertDeclarationMessage declarationMessage = updateMessageBuilder(Layer1ApiSoundAlertDeclarationMessage.builder());
                 callback.sendDeclarationMessage(declarationMessage);
             });
@@ -259,13 +259,13 @@ public class DeclareOrUpdateAlertPanel extends StrategyPanel {
             gbc_btnReset.gridy = 0;
             bottomBtnsPanel.add(btnReset, gbc_btnReset);
     
-            JButton btnDeclareAlert = new JButton("Declare alert");
+            JButton btnUpdateDeclaration = new JButton("Update declaration");
             GridBagConstraints gbc_btnDeclareAlert = new GridBagConstraints();
             gbc_btnDeclareAlert.fill = GridBagConstraints.VERTICAL;
             gbc_btnDeclareAlert.gridx = 1;
             gbc_btnDeclareAlert.gridy = 0;
-            bottomBtnsPanel.add(btnDeclareAlert, gbc_btnDeclareAlert);
-            btnDeclareAlert.addActionListener(e -> {
+            bottomBtnsPanel.add(btnUpdateDeclaration, gbc_btnDeclareAlert);
+            btnUpdateDeclaration.addActionListener(e -> {
                 Layer1ApiSoundAlertDeclarationMessage declarationMessage = updateMessageBuilder(declaration.getClonedBuilder());
                 callback.sendDeclarationMessage(declarationMessage);
             });

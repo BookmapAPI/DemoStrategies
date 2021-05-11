@@ -139,7 +139,7 @@ public class Layer1ApiAlertDemo implements
     @Override
     public void sendZeroDurationSoundAlert() {
         byte[] soundData;
-        try (InputStream soundFileStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("silence.wav")) {
+        try (InputStream soundFileStream = Layer1ApiAlertDemo.class.getClassLoader().getResourceAsStream("silence.wav")) {
             soundData = new byte[soundFileStream.available()];
             soundFileStream.read(soundData);
         } catch (IOException e) {

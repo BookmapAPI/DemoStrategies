@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.swing.SwingUtilities;
 import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiInstrumentAdapter;
@@ -46,6 +47,7 @@ public class Layer1ApiAlertDemo implements
     private DeclareOrUpdateAlertPanel declareOrUpdateAlertPanel;
 
     private Set<String> instruments = new HashSet<>();
+    private Layer1ApiAlertGuiMessage guiDeclarationMessage;
     
     private AtomicBoolean isEnabled = new AtomicBoolean(false);
 
@@ -111,23 +113,34 @@ public class Layer1ApiAlertDemo implements
     public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
         synchronized (instruments) {
             this.isEnabled.set(isEnabled);
-            sendAlertPanel.setEnabled(isEnabled);
-            
-            if (declareOrUpdateAlertPanel == null) {
+            SwingUtilities.invokeLater(() -> {
+                sendAlertPanel.setEnabled(isEnabled);
+                declareOrUpdateAlertPanel.setEnabled(isEnabled);
+            });
+        
+            if (isEnabled && declareOrUpdateAlertPanel == null) {
                 declareOrUpdateAlertPanel = new DeclareOrUpdateAlertPanel(this);
                 instruments.forEach(declareOrUpdateAlertPanel::addAlias);
             }
-            declareOrUpdateAlertPanel.setEnabled(isEnabled);
         }
     
-        Layer1ApiAlertGuiMessage message = Layer1ApiAlertGuiMessage.builder()
-            .setSource(Layer1ApiAlertDemo.class)
-            .setGuiPanelsProvider(declaration -> {
-                declareOrUpdateAlertPanel.setConfiguredDeclaration(declaration);
-                return new StrategyPanel[]{declareOrUpdateAlertPanel};
-            })
-            .build();
-        provider.sendUserMessage(message);
+        if (isEnabled) {
+            if (guiDeclarationMessage == null) {
+                guiDeclarationMessage = Layer1ApiAlertGuiMessage.builder()
+                    .setSource(Layer1ApiAlertDemo.class)
+                    .setGuiPanelsProvider(declaration -> {
+                        declareOrUpdateAlertPanel.setConfiguredDeclaration(declaration);
+                        return new StrategyPanel[]{declareOrUpdateAlertPanel};
+                    })
+                    .build();
+            }
+            provider.sendUserMessage(guiDeclarationMessage);
+        } else if (guiDeclarationMessage != null) {
+            Layer1ApiAlertGuiMessage removeGuiMessage = new Layer1ApiAlertGuiMessage.Builder(guiDeclarationMessage)
+                .setIsAdd(false)
+                .build();
+            provider.sendUserMessage(removeGuiMessage);
+        }
     }
     
     @Override

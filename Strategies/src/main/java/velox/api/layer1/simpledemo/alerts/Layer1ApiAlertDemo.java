@@ -3,6 +3,7 @@ package velox.api.layer1.simpledemo.alerts;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import velox.api.layer1.Layer1ApiAdminAdapter;
@@ -47,6 +48,7 @@ public class Layer1ApiAlertDemo implements
     private DeclareOrUpdateAlertPanel declareOrUpdateAlertPanel;
 
     private Set<String> instruments = new HashSet<>();
+    private CopyOnWriteArrayList<Layer1ApiSoundAlertDeclarationMessage> sentDeclarations = new CopyOnWriteArrayList<>();
     private Layer1ApiAlertGuiMessage guiDeclarationMessage;
     
     private AtomicBoolean isEnabled = new AtomicBoolean(false);
@@ -135,11 +137,18 @@ public class Layer1ApiAlertDemo implements
                     .build();
             }
             provider.sendUserMessage(guiDeclarationMessage);
-        } else if (guiDeclarationMessage != null) {
-            Layer1ApiAlertGuiMessage removeGuiMessage = new Layer1ApiAlertGuiMessage.Builder(guiDeclarationMessage)
-                .setIsAdd(false)
-                .build();
-            provider.sendUserMessage(removeGuiMessage);
+        } else {
+            if (guiDeclarationMessage != null) {
+                Layer1ApiAlertGuiMessage removeGuiMessage = new Layer1ApiAlertGuiMessage.Builder(guiDeclarationMessage)
+                    .setIsAdd(false)
+                    .build();
+                provider.sendUserMessage(removeGuiMessage);
+            }
+            
+            sentDeclarations.stream()
+                .map(message -> message.getClonedBuilder().setIsAdd(false).build())
+                .forEach(provider::sendUserMessage);
+            sentDeclarations.clear();
         }
     }
     
@@ -155,6 +164,7 @@ public class Layer1ApiAlertDemo implements
     
     @Override
     public void sendDeclarationMessage(Layer1ApiSoundAlertDeclarationMessage declarationMessage) {
+        sentDeclarations.add(declarationMessage);
         provider.sendUserMessage(declarationMessage);
     }
     

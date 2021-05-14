@@ -3,7 +3,7 @@ package velox.api.layer1.simpledemo.alerts;
 import java.util.HashSet;
 import java.util.Set;
 
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import velox.api.layer1.Layer1ApiAdminAdapter;
@@ -48,7 +48,7 @@ public class Layer1ApiAlertDemo implements
     private DeclareOrUpdateAlertPanel declareOrUpdateAlertPanel;
 
     private Set<String> instruments = new HashSet<>();
-    private CopyOnWriteArrayList<Layer1ApiSoundAlertDeclarationMessage> sentDeclarations = new CopyOnWriteArrayList<>();
+    private ConcurrentHashMap<String, Layer1ApiSoundAlertDeclarationMessage> registeredDeclarations = new ConcurrentHashMap<>();
     private Layer1ApiAlertGuiMessage guiDeclarationMessage;
     
     private AtomicBoolean isEnabled = new AtomicBoolean(false);
@@ -145,10 +145,9 @@ public class Layer1ApiAlertDemo implements
                 provider.sendUserMessage(removeGuiMessage);
             }
             
-            sentDeclarations.stream()
+            registeredDeclarations.values().stream()
                 .map(message -> message.getClonedBuilder().setIsAdd(false).build())
                 .forEach(provider::sendUserMessage);
-            sentDeclarations.clear();
         }
     }
     
@@ -164,7 +163,6 @@ public class Layer1ApiAlertDemo implements
     
     @Override
     public void sendDeclarationMessage(Layer1ApiSoundAlertDeclarationMessage declarationMessage) {
-        sentDeclarations.add(declarationMessage);
         provider.sendUserMessage(declarationMessage);
     }
     
@@ -173,9 +171,12 @@ public class Layer1ApiAlertDemo implements
         if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
             Layer1ApiSoundAlertDeclarationMessage message = (Layer1ApiSoundAlertDeclarationMessage) data;
             
-            sendAlertPanel.removeAlertDeclaration(message);
             if (message.isAdd) {
+                registeredDeclarations.put(message.declarationId, message);
                 sendAlertPanel.addAlertDeclaration(message);
+            } else {
+                registeredDeclarations.remove(message.declarationId);
+                sendAlertPanel.removeAlertDeclaration(message);
             }
         }
     }

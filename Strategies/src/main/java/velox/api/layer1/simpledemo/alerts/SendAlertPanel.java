@@ -289,7 +289,7 @@ class SendAlertPanel extends StrategyPanel {
         final String declarationId;
     
         public AlertDeclarationComboBoxOption(Layer1ApiSoundAlertDeclarationMessage message) {
-            this(message.triggerDescription, message.declarationId);
+            this(message.triggerDescription, message.id);
         }
     
         public AlertDeclarationComboBoxOption(String triggerDescription, String declarationId) {

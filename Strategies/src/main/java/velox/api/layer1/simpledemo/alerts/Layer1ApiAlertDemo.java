@@ -172,12 +172,12 @@ public class Layer1ApiAlertDemo implements
             Layer1ApiSoundAlertDeclarationMessage message = (Layer1ApiSoundAlertDeclarationMessage) data;
             
             if (message.isAdd) {
-                Layer1ApiSoundAlertDeclarationMessage previousMessage = registeredDeclarations.put(message.declarationId, message);
+                Layer1ApiSoundAlertDeclarationMessage previousMessage = registeredDeclarations.put(message.id, message);
                 if (previousMessage == null) {
                     sendAlertPanel.addAlertDeclaration(message);
                 }
             } else {
-                registeredDeclarations.remove(message.declarationId);
+                registeredDeclarations.remove(message.id);
                 sendAlertPanel.removeAlertDeclaration(message);
             }
         }

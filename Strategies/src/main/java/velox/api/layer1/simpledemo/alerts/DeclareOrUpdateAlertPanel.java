@@ -14,6 +14,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
+import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage.Builder;
 import velox.gui.StrategyPanel;
 
 public class DeclareOrUpdateAlertPanel extends StrategyPanel {
@@ -266,7 +267,7 @@ public class DeclareOrUpdateAlertPanel extends StrategyPanel {
             gbc_btnDeclareAlert.gridy = 0;
             bottomBtnsPanel.add(btnUpdateDeclaration, gbc_btnDeclareAlert);
             btnUpdateDeclaration.addActionListener(e -> {
-                Layer1ApiSoundAlertDeclarationMessage declarationMessage = updateMessageBuilder(declaration.getClonedBuilder());
+                Layer1ApiSoundAlertDeclarationMessage declarationMessage = updateMessageBuilder(new Builder(declaration));
                 callback.sendDeclarationMessage(declarationMessage);
             });
             

@@ -146,7 +146,7 @@ public class Layer1ApiAlertDemo implements
             }
             
             registeredDeclarations.values().stream()
-                .map(message -> message.getClonedBuilder().setIsAdd(false).build())
+                .map(message -> new Layer1ApiSoundAlertDeclarationMessage.Builder(message).setIsAdd(false).build())
                 .forEach(provider::sendUserMessage);
         }
     }

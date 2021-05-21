@@ -37,7 +37,10 @@ public class BarMidPriceNoHistory implements
 
     @Override
     public void onBar(OrderBook ob, Bar bar) {
-        midPrice.addPoint(ob.getMidPriceOrNan());
+        // Order book can be null if depth data starts a bit late
+        if (ob != null) {
+            midPrice.addPoint(ob.getMidPriceOrNan());
+        }
     }
 
     @Override

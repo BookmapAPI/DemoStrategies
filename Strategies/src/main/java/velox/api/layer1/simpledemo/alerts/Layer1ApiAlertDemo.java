@@ -19,6 +19,7 @@ import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.messages.Layer1ApiAlertGuiMessage;
+import velox.api.layer1.messages.Layer1ApiAlertGuiMessage.Builder;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.api.layer1.simpledemo.alerts.DeclareOrUpdateAlertPanel.DeclareAlertPanelCallback;
@@ -70,7 +71,7 @@ public class Layer1ApiAlertDemo implements
             }
         }
 
-        return new StrategyPanel[]{sendAlertPanel};
+        return new StrategyPanel[]{ sendAlertPanel };
     }
 
     @Override
@@ -105,9 +106,10 @@ public class Layer1ApiAlertDemo implements
             if (sendAlertPanel != null) {
                 sendAlertPanel.setEnabled(false);
             }
-            if (declareOrUpdateAlertPanel != null) {
-                declareOrUpdateAlertPanel.setEnabled(false);
-            }
+            provider.sendUserMessage(new Builder(guiDeclarationMessage)
+                .setIsAdd(false)
+                .build());
+            declareOrUpdateAlertPanel = null;
         }
     }
 
@@ -132,7 +134,7 @@ public class Layer1ApiAlertDemo implements
                     .setSource(Layer1ApiAlertDemo.class)
                     .setGuiPanelsProvider(declaration -> {
                         declareOrUpdateAlertPanel.setConfiguredDeclaration(declaration);
-                        return new StrategyPanel[]{declareOrUpdateAlertPanel};
+                        return new StrategyPanel[]{ declareOrUpdateAlertPanel };
                     })
                     .build();
             }

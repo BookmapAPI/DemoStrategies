@@ -172,15 +172,16 @@ public class Layer1ApiAlertDemo implements
     public void onUserMessage(Object data) {
         if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
             Layer1ApiSoundAlertDeclarationMessage message = (Layer1ApiSoundAlertDeclarationMessage) data;
-            
-            if (message.isAdd) {
-                Layer1ApiSoundAlertDeclarationMessage previousMessage = registeredDeclarations.put(message.id, message);
-                if (previousMessage == null) {
-                    sendAlertPanel.addAlertDeclaration(message);
+            if (message.source == Layer1ApiAlertDemo.class) {
+                if (message.isAdd) {
+                    Layer1ApiSoundAlertDeclarationMessage previousMessage = registeredDeclarations.put(message.id, message);
+                    if (previousMessage == null) {
+                        sendAlertPanel.addAlertDeclaration(message);
+                    }
+                } else {
+                    registeredDeclarations.remove(message.id);
+                    sendAlertPanel.removeAlertDeclaration(message);
                 }
-            } else {
-                registeredDeclarations.remove(message.id);
-                sendAlertPanel.removeAlertDeclaration(message);
             }
         }
     }

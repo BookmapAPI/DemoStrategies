@@ -143,8 +143,8 @@ public class DeclareOrUpdateAlertPanel extends StrategyPanel {
         return builder
             .setIsAdd(true)
             .setTriggerDescription(textFieldDescription.getText())
-            .setPopup(chckbxPopup.isSelected())
-            .setSound(chckbxSound.isSelected())
+            .setPopupAllowed(chckbxPopup.isSelected())
+            .setSoundAllowed(chckbxSound.isSelected())
             .setRepeated(chckbxIsRepeated.isSelected())
             .setSource(Layer1ApiAlertDemo.class)
             .setAliasMatcher((alias) -> selectedAlias == null || selectedAlias.equals(alias))
@@ -276,12 +276,12 @@ public class DeclareOrUpdateAlertPanel extends StrategyPanel {
     
         @Override
         public boolean popup() {
-            return declaration.popup;
+            return declaration.isPopupAllowed;
         }
     
         @Override
         public boolean sound() {
-            return declaration.sound;
+            return declaration.isSoundAllowed;
         }
     
         @Override

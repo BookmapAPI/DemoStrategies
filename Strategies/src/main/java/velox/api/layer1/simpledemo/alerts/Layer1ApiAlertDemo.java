@@ -20,6 +20,7 @@ import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.messages.Layer1ApiAlertGuiMessage;
 import velox.api.layer1.messages.Layer1ApiAlertGuiMessage.Builder;
+import velox.api.layer1.messages.Layer1ApiAlertSettingsMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.api.layer1.simpledemo.alerts.DeclareOrUpdateAlertPanel.DeclareAlertPanelCallback;
@@ -50,6 +51,7 @@ public class Layer1ApiAlertDemo implements
 
     private Set<String> instruments = new HashSet<>();
     private ConcurrentHashMap<String, Layer1ApiSoundAlertDeclarationMessage> registeredDeclarations = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, Layer1ApiAlertSettingsMessage> declarationIdPerAlertSettings = new ConcurrentHashMap<>();
     private Layer1ApiAlertGuiMessage guiDeclarationMessage;
     
     private AtomicBoolean isEnabled = new AtomicBoolean(false);
@@ -164,23 +166,29 @@ public class Layer1ApiAlertDemo implements
     }
     
     @Override
-    public void sendDeclarationMessage(Layer1ApiSoundAlertDeclarationMessage declarationMessage) {
-        provider.sendUserMessage(declarationMessage);
+    public void sendDeclarationMessage(Layer1ApiSoundAlertDeclarationMessage message) {
+        synchronized (instruments) {
+            registeredDeclarations.put(message.id, message);
+            sendAlertPanel.addAlertDeclaration(message);
+            provider.sendUserMessage(message);
+        }
     }
     
     @Override
     public void onUserMessage(Object data) {
         if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
             Layer1ApiSoundAlertDeclarationMessage message = (Layer1ApiSoundAlertDeclarationMessage) data;
-            if (message.source == Layer1ApiAlertDemo.class) {
-                if (message.isAdd) {
-                    Layer1ApiSoundAlertDeclarationMessage previousMessage = registeredDeclarations.put(message.id, message);
-                    if (previousMessage == null) {
-                        sendAlertPanel.addAlertDeclaration(message);
-                    }
-                } else {
+            if (message.source == Layer1ApiAlertDemo.class && !message.isAdd) {
+                synchronized (instruments) {
                     registeredDeclarations.remove(message.id);
                     sendAlertPanel.removeAlertDeclaration(message);
+                }
+            }
+        } else if (data instanceof Layer1ApiAlertSettingsMessage) {
+            Layer1ApiAlertSettingsMessage message = (Layer1ApiAlertSettingsMessage) data;
+            if (message.source == Layer1ApiAlertDemo.class) {
+                synchronized (instruments) {
+                    sendAlertPanel.updateAlertSettings(message);
                 }
             }
         }

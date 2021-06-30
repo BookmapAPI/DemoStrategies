@@ -313,9 +313,9 @@ class SendAlertPanel extends StrategyPanel {
         settingsPerDeclarationId.put(settings.declarationId, settings);
         Optional
             .ofNullable((AlertDeclarationComboBoxOption) comboBoxAlertDeclarations.getSelectedItem())
-            .filter(selectedOption -> selectedOption.declarationId.equals(settings.declarationId))
-            .map(selectedOption -> settings)
-            .ifPresent(this::updateSettingCheckboxes);
+            .map(selectedOption -> selectedOption.declarationId)
+            .filter(declarationId -> declarationId.equals(settings.declarationId))
+            .ifPresent(declarationId -> this.updateSettingCheckboxes(settings));
     }
  
     

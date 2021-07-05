@@ -108,9 +108,11 @@ public class Layer1ApiAlertDemo implements
             if (sendAlertPanel != null) {
                 sendAlertPanel.setEnabled(false);
             }
-            provider.sendUserMessage(new Builder(guiDeclarationMessage)
-                .setIsAdd(false)
-                .build());
+            if (guiDeclarationMessage != null) {
+                provider.sendUserMessage(new Builder(guiDeclarationMessage)
+                    .setIsAdd(false)
+                    .build());
+            }
             declareOrUpdateAlertPanel = null;
         }
     }

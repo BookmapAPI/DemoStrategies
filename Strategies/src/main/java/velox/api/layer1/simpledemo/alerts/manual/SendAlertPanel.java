@@ -1,4 +1,4 @@
-package velox.api.layer1.simpledemo.alerts;
+package velox.api.layer1.simpledemo.alerts.manual;
 
 import java.awt.Image;
 import java.util.Map;

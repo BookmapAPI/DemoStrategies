@@ -1,4 +1,4 @@
-package velox.api.layer1.simpledemo.alerts;
+package velox.api.layer1.simpledemo.alerts.manual;
 
 import java.awt.BorderLayout;
 import java.awt.GridBagConstraints;

@@ -1,4 +1,4 @@
-package velox.api.layer1.simpledemo.alerts;
+package velox.api.layer1.simpledemo.alerts.manual;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -23,8 +23,8 @@ import velox.api.layer1.messages.Layer1ApiAlertGuiMessage.Builder;
 import velox.api.layer1.messages.Layer1ApiAlertSettingsMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
-import velox.api.layer1.simpledemo.alerts.DeclareOrUpdateAlertPanel.DeclareAlertPanelCallback;
-import velox.api.layer1.simpledemo.alerts.SendAlertPanel.SendAlertPanelCallback;
+import velox.api.layer1.simpledemo.alerts.manual.DeclareOrUpdateAlertPanel.DeclareAlertPanelCallback;
+import velox.api.layer1.simpledemo.alerts.manual.SendAlertPanel.SendAlertPanelCallback;
 import velox.gui.StrategyPanel;
 
 /**

@@ -16,6 +16,14 @@ import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage.Builder;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 
+/**
+ * This addon is part of Bookmap notification system API examples. It shows
+ * how to send a simple alert from an addon, based on some market event, in this
+ * case - when the trade with price < 10 occurs.
+ *
+ * For more information on notification API check out {@link Layer1ApiSoundAlertMessage}
+ * javadoc.
+ */
 @Layer1Attachable
 @Layer1StrategyName("Price alert demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)

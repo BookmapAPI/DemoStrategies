@@ -18,8 +18,8 @@ import velox.gui.StrategyPanel;
  * are sent/configured here.
  * </p>
  * <p>
- * To test it, load this addon into Bookmap and open <em>File -> Alerts -> Configure alerts
- * -> Add alert...</em>. You should see this addon in the list, and be able to open
+ * To test it, load this addon into Bookmap and open <em>File -&gt; Alerts -&gt; Configure alerts
+ * -&gt; Add alert...</em>. You should see this addon in the list, and be able to open
  * the GUI panel (which only has a text message)
  * </p>
  */

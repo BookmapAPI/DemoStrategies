@@ -1,12 +1,15 @@
-package velox.api.layer1.simpledemo.alerts;
+package velox.api.layer1.simpledemo.alerts.manual;
 
 import java.awt.Image;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.DefaultComboBoxModel;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.gui.Layer1DefaultAlertIcons;
 import velox.api.layer1.layers.utils.SoundSynthHelper;
+import velox.api.layer1.messages.Layer1ApiAlertSettingsMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
 import velox.gui.StrategyPanel;
@@ -38,6 +41,10 @@ class SendAlertPanel extends StrategyPanel {
     private final JSpinner delaySpinner = new JSpinner();
     private final JTextField textFieldAlertMsg;
     private final JTextField textFieldAlertAdditionalInfo;
+    private final JCheckBox chckbxPopup;
+    private final JCheckBox chckbxSound;
+    
+    private final Map<String, Layer1ApiAlertSettingsMessage> settingsPerDeclarationId = new ConcurrentHashMap<>();
 
     static interface SendAlertPanelCallback {
         void sendCustomAlert(Layer1ApiSoundAlertMessage message);
@@ -219,11 +226,11 @@ class SendAlertPanel extends StrategyPanel {
         add(panel, gbc_panel);
         panel.setLayout(new GridLayout(0, 2, 0, 0));
         
-        JCheckBox chckbxPopup = new JCheckBox("Popup");
+        chckbxPopup = new JCheckBox("Popup");
         chckbxPopup.setSelected(true);
         panel.add(chckbxPopup);
         
-        JCheckBox chckbxSound = new JCheckBox("Sound");
+        chckbxSound = new JCheckBox("Sound");
         panel.add(chckbxSound);
     
         JButton btnSendCustomAlert = new JButton("Send custom alert");
@@ -257,6 +264,22 @@ class SendAlertPanel extends StrategyPanel {
         gbc_btnSendCustomAlert.gridx = 1;
         gbc_btnSendCustomAlert.gridy = 9;
         add(btnSendCustomAlert, gbc_btnSendCustomAlert);
+    
+        comboBoxAlertDeclarations.addActionListener(e -> {
+            Optional
+                .ofNullable((AlertDeclarationComboBoxOption) comboBoxAlertDeclarations.getSelectedItem())
+                .map(option -> option.declarationId)
+                .map(settingsPerDeclarationId::get)
+                .or(() -> Optional.of(Layer1ApiAlertSettingsMessage.defaultSettings(null, Layer1ApiAlertDemo.class)))
+                .ifPresent(this::updateSettingCheckboxes);
+        });
+    }
+    
+    private void updateSettingCheckboxes(Layer1ApiAlertSettingsMessage settingsMessage) {
+        SwingUtilities.invokeLater(() -> {
+            chckbxPopup.setSelected(settingsMessage.popup);
+            chckbxSound.setSelected(settingsMessage.sound);
+        });
     }
 
     public void addAlias(String alias) {
@@ -280,7 +303,19 @@ class SendAlertPanel extends StrategyPanel {
     }
     
     public void removeAlertDeclaration(Layer1ApiSoundAlertDeclarationMessage declaration) {
-        SwingUtilities.invokeLater(() -> comboBoxAlertDeclarations.removeItem(new AlertDeclarationComboBoxOption(declaration)));
+        SwingUtilities.invokeLater(() -> {
+            settingsPerDeclarationId.remove(declaration.id);
+            comboBoxAlertDeclarations.removeItem(new AlertDeclarationComboBoxOption(declaration));
+        });
+    }
+    
+    public void updateAlertSettings(Layer1ApiAlertSettingsMessage settings) {
+        settingsPerDeclarationId.put(settings.declarationId, settings);
+        Optional
+            .ofNullable((AlertDeclarationComboBoxOption) comboBoxAlertDeclarations.getSelectedItem())
+            .map(selectedOption -> selectedOption.declarationId)
+            .filter(declarationId -> declarationId.equals(settings.declarationId))
+            .ifPresent(declarationId -> this.updateSettingCheckboxes(settings));
     }
  
     

@@ -275,4 +275,6 @@ In general it's not recommended, unless you have a very specific reason to do so
 - Make sure you unload your native code when your module is unloaded.
 - You might want to use JNA for loading your library. It is part of Bookmap installer, so you can include it as compileOnly dependency.
 
+## Notification system
 
+For details on notification system, take a look at the [Notification system README](./Strategies/src/main/java/velox/api/layer1/simpledemo/alerts/README.md)

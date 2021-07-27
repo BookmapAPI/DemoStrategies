@@ -49,7 +49,7 @@ public class SimplePriceAlertDemo implements
             .setTriggerDescription("Trade price > 10")
             .setSource(SimplePriceAlertDemo.class)
             .setPopupAllowed(true)
-            .setAliasMatcher(Layer1ApiSoundAlertDeclarationMessage.ALIAS_MATCH_ALL)
+            .setAliasMatcher(alias -> true)
             .build();
         provider.sendUserMessage(declarationMessage);
     

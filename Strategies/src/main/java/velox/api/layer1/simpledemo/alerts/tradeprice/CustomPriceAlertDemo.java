@@ -135,7 +135,7 @@ public class CustomPriceAlertDemo implements
          */
         Layer1ApiSoundAlertDeclarationMessage declarationMessage = Layer1ApiSoundAlertDeclarationMessage
             .builder()
-            .setAliasMatcher(Layer1ApiSoundAlertDeclarationMessage.ALIAS_MATCH_ALL)
+            .setAliasMatcher(alias -> true)
             .setSource(CustomPriceAlertDemo.class)
             .setPopupAllowed(declarationSettings.withPopup)
             .setTriggerDescription(getTriggerDescription(declarationSettings))

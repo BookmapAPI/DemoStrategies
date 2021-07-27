@@ -24,7 +24,7 @@ project's jar into Bookmap as an addon, select **Alert Demo** from the list of a
 
 ### How do I start working with the notification system API?
 
-This API is a part of Bookmap Core API, so make sure that it is available in your addon project.
+This API is a part of Bookmap Layer1 API, so make sure that it is available in your addon project.
 Also, it will be helpful to take a look at `velox.api.layer1.simpledemo.alerts.Layer1ApiAlertDemo` -
 you may load it into Bookmap and manually send alerts and see how it works under the hood.
 

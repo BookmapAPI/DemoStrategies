@@ -1,9 +1,12 @@
 package velox.api.layer1.simpledemo.alerts.tradeprice;
 
 
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiDataAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
+import velox.api.layer1.Layer1ApiInstrumentAdapter;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
@@ -11,6 +14,7 @@ import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.Log;
+import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.messages.Layer1ApiAlertSettingsMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
@@ -31,11 +35,15 @@ import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 public class SimplePriceAlertDemo implements
     Layer1ApiAdminAdapter,
     Layer1ApiDataAdapter,
+    Layer1ApiInstrumentAdapter,
     Layer1ApiFinishable {
     
     private Layer1ApiProvider provider;
     private Layer1ApiSoundAlertDeclarationMessage declarationMessage;
     private Layer1ApiAlertSettingsMessage settingsMessage;
+    
+    private final Map<String, InstrumentInfo> aliasToInstrumentInfo = new ConcurrentHashMap<>();
+    
     
     public SimplePriceAlertDemo(Layer1ApiProvider provider) {
         this.provider = provider;
@@ -69,8 +77,16 @@ public class SimplePriceAlertDemo implements
     
     @Override
     public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-        if (price > 10) {
-            Log.info(String.format("Trade of price > 10 occurred, actual price={%.2f}, size={%d}%n", price, size));
+        /*
+         * Here, price and size are not the "real" values - Bookmap passes them
+         * as a number of increments. Thus, we need to transform it using
+         * the pips and sizeMultiplier for a given instrument.
+         */
+        InstrumentInfo instrumentInfo = aliasToInstrumentInfo.get(alias);
+        double realPrice = price * instrumentInfo.pips;
+        double realSize = size * (1 / instrumentInfo.sizeMultiplier);
+        if (realSize != 0 && realPrice > 10) {
+            Log.info(String.format("Trade of price > 10 occurred, actual price={%.2f}, size={%.2f}", realPrice, realSize));
             
             /*
              * The actual alert is sent here. Note that it is connected to the
@@ -87,7 +103,7 @@ public class SimplePriceAlertDemo implements
             if (declarationMessage != null) {
                 Layer1ApiSoundAlertMessage soundAlertMessage = Layer1ApiSoundAlertMessage.builder()
                     .setAlias(alias)
-                    .setTextInfo(String.format("Trade actual price={%.2f}, size={%d}%n", price, size))
+                    .setTextInfo(String.format("Trade actual price={%.2f}, size={%.2f}", realPrice, realSize))
                     .setAdditionalInfo("Trade of price > 10")
                     .setShowPopup(settingsMessage.popup)
                     .setAlertDeclarationId(declarationMessage.id)
@@ -134,5 +150,16 @@ public class SimplePriceAlertDemo implements
                 .build();
             provider.sendUserMessage(removeDeclarationMessage);
         }
+        aliasToInstrumentInfo.clear();
+    }
+    
+    @Override
+    public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
+        aliasToInstrumentInfo.put(alias, instrumentInfo);
+    }
+    
+    @Override
+    public void onInstrumentRemoved(String alias) {
+        aliasToInstrumentInfo.remove(alias);
     }
 }

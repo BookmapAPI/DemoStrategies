@@ -10,6 +10,7 @@ import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
+import velox.api.layer1.common.Log;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.messages.Layer1ApiAlertSettingsMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
@@ -69,7 +70,7 @@ public class SimplePriceAlertDemo implements
     @Override
     public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
         if (price > 10) {
-            System.out.printf("Trade of price > 10 occurred, actual price={%.2f}, size={%d}%n", price, size);
+            Log.info(String.format("Trade of price > 10 occurred, actual price={%.2f}, size={%d}%n", price, size));
             
             /*
              * The actual alert is sent here. Note that it is connected to the

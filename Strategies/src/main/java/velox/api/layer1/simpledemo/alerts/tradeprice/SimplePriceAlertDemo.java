@@ -30,7 +30,7 @@ import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
  * javadoc.
  */
 @Layer1Attachable
-@Layer1StrategyName("Price alert demo")
+@Layer1StrategyName("Simple price alert demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class SimplePriceAlertDemo implements
     Layer1ApiAdminAdapter,
@@ -43,6 +43,12 @@ public class SimplePriceAlertDemo implements
     private Layer1ApiAlertSettingsMessage settingsMessage;
     
     private final Map<String, InstrumentInfo> aliasToInstrumentInfo = new ConcurrentHashMap<>();
+    
+    /**
+     * declarationMessage is updated and read from #onUserMessage, #onTrade and #finish,
+     * which are executed in different threads
+     */
+    private final Object declarationLock = new Object();
     
     
     public SimplePriceAlertDemo(Layer1ApiProvider provider) {
@@ -100,16 +106,18 @@ public class SimplePriceAlertDemo implements
              * this field is nullified if the arrived declaration message has flag
              * isAdd = false
              */
-            if (declarationMessage != null) {
-                Layer1ApiSoundAlertMessage soundAlertMessage = Layer1ApiSoundAlertMessage.builder()
-                    .setAlias(alias)
-                    .setTextInfo(String.format("Trade actual price={%.2f}, size={%.2f}", realPrice, realSize))
-                    .setAdditionalInfo("Trade of price > 10")
-                    .setShowPopup(settingsMessage.popup)
-                    .setAlertDeclarationId(declarationMessage.id)
-                    .setSource(SimplePriceAlertDemo.class)
-                    .build();
-                provider.sendUserMessage(soundAlertMessage);
+            synchronized (declarationLock) {
+                if (declarationMessage != null) {
+                    Layer1ApiSoundAlertMessage soundAlertMessage = Layer1ApiSoundAlertMessage.builder()
+                        .setAlias(alias)
+                        .setTextInfo(String.format("Trade actual price={%.2f}, size={%.2f}", realPrice, realSize))
+                        .setAdditionalInfo("Trade of price > 10")
+                        .setShowPopup(settingsMessage.popup)
+                        .setAlertDeclarationId(declarationMessage.id)
+                        .setSource(SimplePriceAlertDemo.class)
+                        .build();
+                    provider.sendUserMessage(soundAlertMessage);
+                }
             }
 
         }
@@ -124,9 +132,11 @@ public class SimplePriceAlertDemo implements
          * by the user
          */
         if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
-            Layer1ApiSoundAlertDeclarationMessage obtainedDeclarationMessage = (Layer1ApiSoundAlertDeclarationMessage) data;
-            if (obtainedDeclarationMessage.source == SimplePriceAlertDemo.class && !obtainedDeclarationMessage.isAdd) {
-                declarationMessage = null;
+            synchronized (declarationLock) {
+                Layer1ApiSoundAlertDeclarationMessage obtainedDeclarationMessage = (Layer1ApiSoundAlertDeclarationMessage) data;
+                if (obtainedDeclarationMessage.source == SimplePriceAlertDemo.class && !obtainedDeclarationMessage.isAdd) {
+                    declarationMessage = null;
+                }
             }
         } else if (data instanceof Layer1ApiAlertSettingsMessage) {
             Layer1ApiAlertSettingsMessage obtainedSettingsMessage = (Layer1ApiAlertSettingsMessage) data;
@@ -144,11 +154,13 @@ public class SimplePriceAlertDemo implements
          * resources you used.
          * Also, it is a suitable place to show how you can remove the alert declaration
          */
-        if (declarationMessage != null) {
-            Layer1ApiSoundAlertDeclarationMessage removeDeclarationMessage = new Builder(declarationMessage)
-                .setIsAdd(false)
-                .build();
-            provider.sendUserMessage(removeDeclarationMessage);
+        synchronized (declarationLock) {
+            if (declarationMessage != null) {
+                Layer1ApiSoundAlertDeclarationMessage removeDeclarationMessage = new Builder(declarationMessage)
+                    .setIsAdd(false)
+                    .build();
+                provider.sendUserMessage(removeDeclarationMessage);
+            }
         }
         aliasToInstrumentInfo.clear();
     }

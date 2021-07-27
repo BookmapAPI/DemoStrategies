@@ -96,8 +96,7 @@ the `Layer1ApiSoundAlertDeclarationMessage`. This creates a new record in the _S
 
 As you may see, declaration #1 has 2 buttons, and declaration #2 - only 1. *Here is a major note:*
 The `Layer1ApiSoundAlertDeclarationMessage` indicates whether a linked alert **can** have a
-sound/popup notification, but the actual state (on/off) is defined by another message
-- `Layer1ApiAlertSettingsMessage`
+sound/popup notification, but the actual state (on/off) is defined by another message - `Layer1ApiAlertSettingsMessage`
 
 Also, take a look at the "cancel" button on the image above. When a user clicks it, your addon will
 obtain the same `Layer1ApiSoundAlertDeclarationMessage` for which this event occurred, but with a

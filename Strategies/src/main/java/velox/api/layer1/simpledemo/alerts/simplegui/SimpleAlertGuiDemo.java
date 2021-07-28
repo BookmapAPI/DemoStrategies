@@ -50,7 +50,7 @@ public class SimpleAlertGuiDemo implements Layer1ApiFinishable {
     @Override
     public void finish() {
         /*
-         * Ypu can remove the GUI at any point
+         * You can remove the GUI at any point
          */
         if (guiMessage != null) {
             Layer1ApiAlertGuiMessage removeGuiMessage = new Builder(guiMessage)

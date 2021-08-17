@@ -3,15 +3,18 @@ package velox.api.layer1.simpledemo.alerts.tradeprice;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiDataAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
+import velox.api.layer1.Layer1ApiInstrumentAdapter;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
+import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.messages.Layer1ApiAlertGuiMessage;
 import velox.api.layer1.messages.Layer1ApiAlertSettingsMessage;
@@ -39,6 +42,7 @@ import velox.gui.StrategyPanel;
 public class CustomPriceAlertDemo implements
     Layer1ApiAdminAdapter,
     Layer1ApiDataAdapter,
+    Layer1ApiInstrumentAdapter,
     Layer1ApiFinishable,
     PriceAlertPanelCallback {
     
@@ -47,6 +51,7 @@ public class CustomPriceAlertDemo implements
     private final Map<String, CustomDeclarationSettings> declarationIdToDeclarationSettings = new ConcurrentHashMap<>();
     private final Map<String, Layer1ApiSoundAlertDeclarationMessage> declarationIdToDeclarationMessage = new ConcurrentHashMap<>();
     private final Map<String, Layer1ApiAlertSettingsMessage> declarationIdToAlertSettingsMessage = new ConcurrentHashMap<>();
+    private final Map<String, InstrumentInfo> aliasToInstrumentInfo = new ConcurrentHashMap<>();
     private final Layer1ApiAlertGuiMessage guiMessage;
     
     private final Object alertCreationLock = new Object();
@@ -75,7 +80,15 @@ public class CustomPriceAlertDemo implements
     
     @Override
     public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-        declarationIdToTradeMatcher.values().forEach(tradeMatcher -> tradeMatcher.tryMatch(alias, price, size));
+        /*
+         * Here, the price and size are not the "real" values - Bookmap passes them
+         * as a number of increments. Thus, we need to transform it using
+         * the pips and sizeMultiplier for a given instrument.
+         */
+        InstrumentInfo instrumentInfo = aliasToInstrumentInfo.get(alias);
+        declarationIdToTradeMatcher.values().forEach(tradeMatcher -> {
+            tradeMatcher.tryMatch(alias, price * instrumentInfo.pips, size / instrumentInfo.sizeMultiplier);
+        });
     }
     
     @Override
@@ -124,6 +137,7 @@ public class CustomPriceAlertDemo implements
             declarationIdToDeclarationMessage.clear();
             declarationIdToTradeMatcher.clear();
             declarationIdToAlertSettingsMessage.clear();
+            aliasToInstrumentInfo.clear();
         }
     }
     
@@ -135,7 +149,7 @@ public class CustomPriceAlertDemo implements
          */
         Layer1ApiSoundAlertDeclarationMessage declarationMessage = Layer1ApiSoundAlertDeclarationMessage
             .builder()
-            .setAliasMatcher(Layer1ApiSoundAlertDeclarationMessage.ALIAS_MATCH_ALL)
+            .setAliasMatcher(alias -> true)
             .setSource(CustomPriceAlertDemo.class)
             .setPopupAllowed(declarationSettings.withPopup)
             .setTriggerDescription(getTriggerDescription(declarationSettings))
@@ -174,19 +188,21 @@ public class CustomPriceAlertDemo implements
                 .build();
             declarationIdToAlertSettingsMessage.put(declarationMessage.id, settingsMessage);
         
-            TradePredicate tradePredicate;
+            Predicate<Double> pricePredicate;
             switch (comparisonSymbol) {
-                case "<": tradePredicate = (alias, price, size) -> price < selectedPrice; break;
-                case "=": tradePredicate = (alias, price, size) -> price == selectedPrice; break;
-                case ">": tradePredicate = (alias, price, size) -> price > selectedPrice; break;
+                case "<": pricePredicate = price -> price < selectedPrice; break;
+                case "=": pricePredicate = price -> price == selectedPrice; break;
+                case ">": pricePredicate = price -> price > selectedPrice; break;
                 default: throw new IllegalArgumentException("Unknown comparison symbol: " + comparisonSymbol);
             }
+            // We are not interested in trades with size == 0, as in that case the size < size granularity
+            TradePredicate tradePredicate = (alias, price, size) -> size != 0 && pricePredicate.test(price);
         
             OnMatchCallback onMatchCallback = (alias, price, size) -> {
                 Layer1ApiSoundAlertMessage soundAlertMessage = Layer1ApiSoundAlertMessage.builder()
                     .setAlias(alias)
                     .setAlertDeclarationId(declarationMessage.id)
-                    .setTextInfo(String.format("Trade actual price={%.2f}, size={%d}%n", price, size))
+                    .setTextInfo(String.format("Trade actual price={%.2f}, size={%.2f}%n", price, size))
                     .setAdditionalInfo(getTriggerDescription(declarationSettings))
                     .setSource(CustomPriceAlertDemo.class)
                     .setShowPopup(declarationIdToAlertSettingsMessage.get(declarationMessage.id).popup)
@@ -205,5 +221,15 @@ public class CustomPriceAlertDemo implements
         return String.format("Trade with price %s %d",
             declarationSettings.comparisonSymbol,
             declarationSettings.selectedPrice);
+    }
+    
+    @Override
+    public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
+        aliasToInstrumentInfo.put(alias, instrumentInfo);
+    }
+    
+    @Override
+    public void onInstrumentRemoved(String alias) {
+        aliasToInstrumentInfo.remove(alias);
     }
 }

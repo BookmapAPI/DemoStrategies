@@ -4,12 +4,10 @@ import java.util.HashSet;
 import java.util.Set;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
 import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiInstrumentAdapter;
-import velox.api.layer1.Layer1ApiInstrumentSpecificEnabledStateProvider;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.Layer1CustomPanelsGetter;
 import velox.api.layer1.annotations.Layer1ApiVersion;
@@ -19,10 +17,10 @@ import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.messages.Layer1ApiAlertGuiMessage;
-import velox.api.layer1.messages.Layer1ApiAlertGuiMessage.Builder;
 import velox.api.layer1.messages.Layer1ApiAlertSettingsMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.api.layer1.messages.Layer1ApiSoundAlertDeclarationMessage;
+import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 import velox.api.layer1.simpledemo.alerts.manual.DeclareOrUpdateAlertPanel.DeclareAlertPanelCallback;
 import velox.api.layer1.simpledemo.alerts.manual.SendAlertPanel.SendAlertPanelCallback;
 import velox.gui.StrategyPanel;
@@ -41,8 +39,7 @@ public class Layer1ApiAlertDemo implements
     SendAlertPanelCallback,
     DeclareAlertPanelCallback,
     Layer1ApiInstrumentAdapter,
-    Layer1ApiAdminAdapter,
-    Layer1ApiInstrumentSpecificEnabledStateProvider {
+    Layer1ApiAdminAdapter {
 
     private final Layer1ApiProvider provider;
 
@@ -51,26 +48,22 @@ public class Layer1ApiAlertDemo implements
 
     private Set<String> instruments = new HashSet<>();
     private ConcurrentHashMap<String, Layer1ApiSoundAlertDeclarationMessage> registeredDeclarations = new ConcurrentHashMap<>();
-    private ConcurrentHashMap<String, Layer1ApiAlertSettingsMessage> declarationIdPerAlertSettings = new ConcurrentHashMap<>();
     private Layer1ApiAlertGuiMessage guiDeclarationMessage;
-    
-    private AtomicBoolean isEnabled = new AtomicBoolean(false);
 
     public Layer1ApiAlertDemo(Layer1ApiProvider provider) {
         super();
         this.provider = provider;
-
+        
+        sendAlertPanel = new SendAlertPanel(this);
+        sendAlertPanel.setEnabled(false);
+        
         ListenableHelper.addListeners(provider, this);
     }
 
     @Override
     public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
         synchronized (instruments) {
-            if (sendAlertPanel == null) {
-                sendAlertPanel = new SendAlertPanel(this);
-                sendAlertPanel.setEnabled(false);
-                instruments.forEach(sendAlertPanel::addAlias);
-            }
+            instruments.forEach(sendAlertPanel::addAlias);
         }
 
         return new StrategyPanel[]{ sendAlertPanel };
@@ -104,62 +97,46 @@ public class Layer1ApiAlertDemo implements
 
     @Override
     public void finish() {
-        synchronized (instruments) {
-            if (sendAlertPanel != null) {
-                sendAlertPanel.setEnabled(false);
-            }
-            if (guiDeclarationMessage != null) {
-                provider.sendUserMessage(new Builder(guiDeclarationMessage)
-                    .setIsAdd(false)
-                    .build());
-            }
-            declareOrUpdateAlertPanel = null;
-        }
+        addonStateChanged(false);
     }
 
-    @Override
-    public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
+    private void addonStateChanged(boolean isEnabled) {
         synchronized (instruments) {
-            this.isEnabled.set(isEnabled);
             SwingUtilities.invokeLater(() -> {
+                if (isEnabled && declareOrUpdateAlertPanel == null) {
+                    declareOrUpdateAlertPanel = new DeclareOrUpdateAlertPanel(this);
+                    instruments.forEach(declareOrUpdateAlertPanel::addAlias);
+                }
                 sendAlertPanel.setEnabled(isEnabled);
-                declareOrUpdateAlertPanel.setEnabled(isEnabled);
             });
-        
-            if (isEnabled && declareOrUpdateAlertPanel == null) {
-                declareOrUpdateAlertPanel = new DeclareOrUpdateAlertPanel(this);
-                instruments.forEach(declareOrUpdateAlertPanel::addAlias);
-            }
-        }
-    
-        if (isEnabled) {
-            if (guiDeclarationMessage == null) {
-                guiDeclarationMessage = Layer1ApiAlertGuiMessage.builder()
-                    .setSource(Layer1ApiAlertDemo.class)
-                    .setGuiPanelsProvider(declaration -> {
-                        declareOrUpdateAlertPanel.setConfiguredDeclaration(declaration);
-                        return new StrategyPanel[]{ declareOrUpdateAlertPanel };
-                    })
-                    .build();
-            }
-            provider.sendUserMessage(guiDeclarationMessage);
-        } else {
-            if (guiDeclarationMessage != null) {
-                Layer1ApiAlertGuiMessage removeGuiMessage = new Layer1ApiAlertGuiMessage.Builder(guiDeclarationMessage)
-                    .setIsAdd(false)
-                    .build();
-                provider.sendUserMessage(removeGuiMessage);
-            }
             
-            registeredDeclarations.values().stream()
-                .map(message -> new Layer1ApiSoundAlertDeclarationMessage.Builder(message).setIsAdd(false).build())
-                .forEach(provider::sendUserMessage);
-        }
-    }
+            if (isEnabled) {
+                if (guiDeclarationMessage == null) {
+                    guiDeclarationMessage = Layer1ApiAlertGuiMessage.builder()
+                        .setSource(Layer1ApiAlertDemo.class)
+                        .setGuiPanelsProvider(declaration -> {
+                            declareOrUpdateAlertPanel.setConfiguredDeclaration(declaration);
+                            return new StrategyPanel[]{declareOrUpdateAlertPanel};
+                        })
+                        .build();
+                }
+                provider.sendUserMessage(guiDeclarationMessage);
+            } else {
+                if (guiDeclarationMessage != null) {
+                    Layer1ApiAlertGuiMessage removeGuiMessage = new Layer1ApiAlertGuiMessage.Builder(
+                        guiDeclarationMessage)
+                        .setIsAdd(false)
+                        .build();
+                    provider.sendUserMessage(removeGuiMessage);
+                }
+                
+                registeredDeclarations.values().stream()
+                    .map(message -> new Layer1ApiSoundAlertDeclarationMessage.Builder(message).setIsAdd(false).build())
+                    .forEach(provider::sendUserMessage);
     
-    @Override
-    public boolean isStrategyEnabled(String alias) {
-        return isEnabled.get();
+                declareOrUpdateAlertPanel = null;
+            }
+        }
     }
     
     @Override
@@ -192,6 +169,11 @@ public class Layer1ApiAlertDemo implements
                 synchronized (instruments) {
                     sendAlertPanel.updateAlertSettings(message);
                 }
+            }
+        } else if (data instanceof UserMessageLayersChainCreatedTargeted) {
+            UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
+            if (message.targetClass == Layer1ApiAlertDemo.class) {
+                addonStateChanged(true);
             }
         }
     }

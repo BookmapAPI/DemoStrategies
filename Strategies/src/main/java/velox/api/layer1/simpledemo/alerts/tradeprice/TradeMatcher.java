@@ -27,12 +27,12 @@ public class TradeMatcher {
      * Invokes the {@link OnMatchCallback} if {@link TradePredicate} returns true
      * for these arguments
      * @param alias instrument
-     * @param realPrice Bookmap stores price as a number of pips, e. g. for pips = 5
+     * @param realPrice Bookmap stores price as a number of pips, e.g. for pips = 5
      *                  and real price = 100, the price obtained from onTrade or onDepth
      *                  will be: <br>
      *                  <b>realPrice / pips = price</b>, or<br>
      *                  <b>100 / 5 = 20</b>
-     * @param realSize Bookmap stores size as a number of size increments, e. g. for
+     * @param realSize Bookmap stores size as a number of size increments, e.g. for
      *                 sizeMultiplier = 0.5 and real size = 100, the size obtained
      *                 from onTrade or onDepth will be: <br>
      *                 <b>realSize * (1 / sizeMultiplier) = size</b>, or <br>

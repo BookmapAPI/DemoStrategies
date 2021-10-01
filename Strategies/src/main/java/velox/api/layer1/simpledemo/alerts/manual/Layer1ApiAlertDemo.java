@@ -123,8 +123,7 @@ public class Layer1ApiAlertDemo implements
                 provider.sendUserMessage(guiDeclarationMessage);
             } else {
                 if (guiDeclarationMessage != null) {
-                    Layer1ApiAlertGuiMessage removeGuiMessage = new Layer1ApiAlertGuiMessage.Builder(
-                        guiDeclarationMessage)
+                    Layer1ApiAlertGuiMessage removeGuiMessage = new Layer1ApiAlertGuiMessage.Builder(guiDeclarationMessage)
                         .setIsAdd(false)
                         .build();
                     provider.sendUserMessage(removeGuiMessage);

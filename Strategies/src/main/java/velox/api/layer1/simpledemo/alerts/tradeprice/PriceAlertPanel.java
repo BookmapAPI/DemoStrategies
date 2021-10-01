@@ -36,7 +36,7 @@ public class PriceAlertPanel extends StrategyPanel {
             // Pre-populate fields for alert update
             comparisonSymbolCombBox.setSelectedItem(storedDeclarationSettings.comparisonSymbol);
             priceSpinner.setValue(storedDeclarationSettings.selectedPrice);
-            withPopupChckbx.setSelected(storedDeclarationSettings.withPopup);
+            withPopupChckbx.setSelected(storedDeclarationSettings.isPopupPossible);
         }
         
         JButton updateAlertBtn = new JButton("Update alert");

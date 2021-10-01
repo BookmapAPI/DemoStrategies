@@ -53,18 +53,17 @@ public class Layer1ApiAlertDemo implements
     public Layer1ApiAlertDemo(Layer1ApiProvider provider) {
         super();
         this.provider = provider;
-
+        
+        sendAlertPanel = new SendAlertPanel(this);
+        sendAlertPanel.setEnabled(false);
+        
         ListenableHelper.addListeners(provider, this);
     }
 
     @Override
     public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
         synchronized (instruments) {
-            if (sendAlertPanel == null) {
-                sendAlertPanel = new SendAlertPanel(this);
-                sendAlertPanel.setEnabled(false);
-                instruments.forEach(sendAlertPanel::addAlias);
-            }
+            instruments.forEach(sendAlertPanel::addAlias);
         }
 
         return new StrategyPanel[]{ sendAlertPanel };

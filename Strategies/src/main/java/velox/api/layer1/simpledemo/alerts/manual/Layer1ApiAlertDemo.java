@@ -149,6 +149,16 @@ public class Layer1ApiAlertDemo implements
             registeredDeclarations.put(message.id, message);
             sendAlertPanel.addAlertDeclaration(message);
             provider.sendUserMessage(message);
+
+            // Make popup and sound active if they are allowed by the declaration message
+            Layer1ApiAlertSettingsMessage settingsMessage = Layer1ApiAlertSettingsMessage
+                    .builder()
+                    .setSource(message.source)
+                    .setDeclarationId(message.id)
+                    .setPopup(message.isPopupAllowed)
+                    .setSound(message.isSoundAllowed)
+                    .build();
+            provider.sendUserMessage(settingsMessage);
         }
     }
     

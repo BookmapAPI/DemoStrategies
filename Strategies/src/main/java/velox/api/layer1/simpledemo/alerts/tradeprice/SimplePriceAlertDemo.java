@@ -102,7 +102,7 @@ public class SimplePriceAlertDemo implements
              * declaration message via alertDeclarationId, and the state of the
              * popup (on/off) is taken from the settingsMessage. And, the alert
              * message is sent AFTER the declaration and settings messages were sent
-             * (from the constructor).
+             * (from #initAlerts()).
              *
              * If the declarationMessage is null - it means that the alert was
              * removed by a user - take a look at #onUserMessage(Object), where

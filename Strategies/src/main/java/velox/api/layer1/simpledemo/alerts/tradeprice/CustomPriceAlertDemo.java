@@ -210,19 +210,15 @@ public class CustomPriceAlertDemo implements
             // We are not interested in trades with size == 0, as in that case the size < size granularity
             TradePredicate tradePredicate = (alias, price, size) -> size != 0 && pricePredicate.test(price);
 
-            Layer1ApiAlertSettingsMessage settingsMessage = Layer1ApiAlertSettingsMessage.builder()
-                    .setSource(CustomPriceAlertDemo.class)
-                    .setDeclarationId(declarationMessage.id)
-                    .setPopup(declarationSettings.isPopupActive)
-                    .build();
             OnMatchCallback onMatchCallback = (alias, price, size) -> {
+                CustomDeclarationSettings currentSettings = declarationIdToDeclarationSettings.get(declarationMessage.id);
                 Layer1ApiSoundAlertMessage soundAlertMessage = Layer1ApiSoundAlertMessage.builder()
                     .setAlias(alias)
                     .setAlertDeclarationId(declarationMessage.id)
                     .setTextInfo(String.format("Trade actual price={%.2f}, size={%.2f}%n", price, size))
                     .setAdditionalInfo(declarationMessage.triggerDescription)
                     .setSource(CustomPriceAlertDemo.class)
-                    .setShowPopup(settingsMessage.popup)
+                    .setShowPopup(currentSettings.isPopupActive)
                     .build();
                 provider.sendUserMessage(soundAlertMessage);
             };
@@ -231,7 +227,12 @@ public class CustomPriceAlertDemo implements
             declarationIdToTradeMatcher.put(declarationMessage.id, tradeMatcher);
 
             provider.sendUserMessage(declarationMessage);
-            provider.sendUserMessage(settingsMessage);
+            Layer1ApiAlertSettingsMessage initialSettingsMessage = Layer1ApiAlertSettingsMessage.builder()
+                    .setSource(CustomPriceAlertDemo.class)
+                    .setDeclarationId(declarationMessage.id)
+                    .setPopup(declarationSettings.isPopupActive)
+                    .build();
+            provider.sendUserMessage(initialSettingsMessage);
         }
     }
     

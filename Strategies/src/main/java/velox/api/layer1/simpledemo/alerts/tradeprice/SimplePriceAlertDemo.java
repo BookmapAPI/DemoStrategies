@@ -23,12 +23,13 @@ import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 
 /**
- * This addon is part of Bookmap notification system API examples. It shows
+ * <p>This addon is part of Bookmap notification system API examples. It shows
  * how to send a simple alert from an addon, based on some market event, in this
- * case - when the trade with price &gt; 10 occurs.
+ * case - when the trade with price &gt; 10 occurs.</p>
  *
- * For more information on notification API check out {@link Layer1ApiSoundAlertMessage}
- * javadoc.
+ * <p>For more information on notification API check out {@link Layer1ApiSoundAlertMessage}
+ * javadoc.</p>
+ * <b>If you change anything in this example - please, update the above mentioned javadoc</b>
  */
 @Layer1Attachable
 @Layer1StrategyName("Simple price alert demo")
@@ -137,23 +138,25 @@ public class SimplePriceAlertDemo implements
          * - Layer1ApiAlertSettingsMessage - as settings can be changed
          * by the user
          */
-        synchronized (declarationLock) {
-            if (data instanceof UserMessageLayersChainCreatedTargeted) {
-                UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
-                if (message.targetClass == SimplePriceAlertDemo.class) {
+        if (data instanceof UserMessageLayersChainCreatedTargeted) {
+            UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
+            if (message.targetClass == SimplePriceAlertDemo.class) {
+                synchronized (declarationLock) {
                     initAlerts();
                 }
-            } else if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
-                Layer1ApiSoundAlertDeclarationMessage obtainedDeclarationMessage = (Layer1ApiSoundAlertDeclarationMessage) data;
-                if (obtainedDeclarationMessage.source == SimplePriceAlertDemo.class
-                    && !obtainedDeclarationMessage.isAdd) {
+            }
+        } else if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
+            Layer1ApiSoundAlertDeclarationMessage obtainedDeclarationMessage = (Layer1ApiSoundAlertDeclarationMessage) data;
+            if (obtainedDeclarationMessage.source == SimplePriceAlertDemo.class
+                && !obtainedDeclarationMessage.isAdd) {
+                synchronized (declarationLock) {
                     declarationMessage = null;
                 }
-            } else if (data instanceof Layer1ApiAlertSettingsMessage) {
-                Layer1ApiAlertSettingsMessage obtainedSettingsMessage = (Layer1ApiAlertSettingsMessage) data;
-                if (obtainedSettingsMessage.source == SimplePriceAlertDemo.class) {
-                    settingsMessage = (Layer1ApiAlertSettingsMessage) data;
-                }
+            }
+        } else if (data instanceof Layer1ApiAlertSettingsMessage) {
+            Layer1ApiAlertSettingsMessage obtainedSettingsMessage = (Layer1ApiAlertSettingsMessage) data;
+            if (obtainedSettingsMessage.source == SimplePriceAlertDemo.class) {
+                settingsMessage = (Layer1ApiAlertSettingsMessage) data;
             }
         }
     }

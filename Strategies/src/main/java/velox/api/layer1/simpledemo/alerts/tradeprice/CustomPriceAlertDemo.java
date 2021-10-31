@@ -83,10 +83,10 @@ public class CustomPriceAlertDemo implements
     
     @Override
     public void onUserMessage(Object data) {
-        synchronized (alertCreationLock) {
-            if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
-                Layer1ApiSoundAlertDeclarationMessage declarationMessage = (Layer1ApiSoundAlertDeclarationMessage) data;
-                if (declarationMessage.source == CustomPriceAlertDemo.class && !declarationMessage.isAdd) {
+        if (data instanceof Layer1ApiSoundAlertDeclarationMessage) {
+            Layer1ApiSoundAlertDeclarationMessage declarationMessage = (Layer1ApiSoundAlertDeclarationMessage) data;
+            if (declarationMessage.source == CustomPriceAlertDemo.class && !declarationMessage.isAdd) {
+                synchronized (alertCreationLock) {
                     declarationIdToDeclarationMessage.remove(declarationMessage.id);
                     declarationIdToDeclarationSettings.remove(declarationMessage.id);
                     declarationIdToTradeMatcher.remove(declarationMessage.id);
@@ -99,31 +99,35 @@ public class CustomPriceAlertDemo implements
                         settingsChanged();
                     }
                 }
-            } else if (data instanceof Layer1ApiAlertSettingsMessage) {
-                Layer1ApiAlertSettingsMessage settingsMessage = (Layer1ApiAlertSettingsMessage) data;
-                if (settingsMessage.source == CustomPriceAlertDemo.class) {
+            }
+        } else if (data instanceof Layer1ApiAlertSettingsMessage) {
+            Layer1ApiAlertSettingsMessage settingsMessage = (Layer1ApiAlertSettingsMessage) data;
+            if (settingsMessage.source == CustomPriceAlertDemo.class) {
+                synchronized (alertCreationLock) {
                     CustomDeclarationSettings customDeclarationSettings = declarationIdToDeclarationSettings.get(settingsMessage.declarationId);
                     customDeclarationSettings.isPopupActive = settingsMessage.popup;
                     settingsChanged();
                 }
-            } else if (data instanceof UserMessageLayersChainCreatedTargeted) {
-                UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
-                if (message.targetClass == CustomPriceAlertDemo.class) {
+            }
+        } else if (data instanceof UserMessageLayersChainCreatedTargeted) {
+            UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
+            if (message.targetClass == CustomPriceAlertDemo.class) {
+                synchronized (alertCreationLock) {
                     isActive.set(true);
 
                     guiMessage = Layer1ApiAlertGuiMessage.builder()
-                            .setSource(CustomPriceAlertDemo.class)
-                            .setGuiPanelsProvider(declarationMessage -> {
-                                /* declarationMessage != null means that a user wants to update
-                                 * this declaration, otherwise they want to create a new one
-                                 */
-                                String declarationId = declarationMessage != null ? declarationMessage.id : null;
-                                CustomDeclarationSettings storedDeclarationSettings = declarationId != null
-                                        ? declarationIdToDeclarationSettings.get(declarationId)
-                                        : null;
-                                return new StrategyPanel[]{new PriceAlertPanel(this, storedDeclarationSettings, declarationId)};
-                            })
-                            .build();
+                        .setSource(CustomPriceAlertDemo.class)
+                        .setGuiPanelsProvider(declarationMessage -> {
+                            /* declarationMessage != null means that a user wants to update
+                             * this declaration, otherwise they want to create a new one
+                             */
+                            String declarationId = declarationMessage != null ? declarationMessage.id : null;
+                            CustomDeclarationSettings storedDeclarationSettings = declarationId != null
+                                ? declarationIdToDeclarationSettings.get(declarationId)
+                                : null;
+                            return new StrategyPanel[]{new PriceAlertPanel(this, storedDeclarationSettings, declarationId)};
+                        })
+                        .build();
                     provider.sendUserMessage(guiMessage);
                 }
             }

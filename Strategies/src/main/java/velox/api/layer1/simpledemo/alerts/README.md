@@ -14,7 +14,7 @@ popup notification looks like:
 
 The text message of the popup is defined by an addon. Notifications also can have a specific sound
 alert - you can add some melody, or transform a text to sound. You can also specify the repeats
-count and a delay between sounds for the sound alert - that is, if a user missed the first alert, he
+count and a delay between sounds for the sound alert - that is, if a user missed the first alert, they
 will be notified by the repeats.
 
 ### Where can I see the code examples?
@@ -32,7 +32,7 @@ you may load it into Bookmap and manually send alerts and see how it works under
 
 Just like in many other places across the Bookmap API, your addon communicates with the Bookmap by
 sending messages via `Layer1ApiAdminProvider#sendUserMessage(Object)` and obtaining them with
-`Layer1ApiAdminListener#sendUserMessage(Object)`. Alert system uses the following messages
+`Layer1ApiAdminListener#onUserMessage(Object)`. Alert system uses the following messages
 
 - `Layer1ApiSoundAlertMessage`
 - `Layer1ApiSoundAlertCancelMessage`
@@ -82,38 +82,37 @@ messages which have the same `source` field as your `Layer1ApiSoundAlertCancelMe
 
 ### Layer1ApiSoundAlertDeclarationMessage
 
-This message helps Bookmap create a centralized space for managing alerts. With this message, an
+This message helps Bookmap to create a centralized space for managing alerts. With this message, an
 addon declares its intention of sending `Layer1ApiSoundAlertMessage`'s of some form. Thus, before
 sending a
 `Layer1ApiSoundAlertMessage`, your addon should create and send
-the `Layer1ApiSoundAlertDeclarationMessage`. This creates a new record in the _Sound Alerts_ dialog
-
-- available via _File -> Alerts -> Configure alerts_. Below is an example of this dialog with 2
-  alert declarations - one capable of creating a popup and sound notifications, another - supporting
-  only popup alert.
+the `Layer1ApiSoundAlertDeclarationMessage`. This creates a new record in the _Sound Alerts_ dialog, 
+available via _File -> Alerts -> Configure alerts_. Below is an example of this dialog with 2
+alert declarations - one capable of creating a popup and sound notifications, another - supporting
+only popup alert.
 
 ![declarations-example.png](../../../../../../../../doc/img/declarations-example.png)
 
-As you may see, declaration #1 has 2 buttons, and declaration #2 - only 1. *Here is a major note:*
+As you may see, declaration #1 has 2 buttons, and declaration #2 - only 1. *Here is the major note:*
 The `Layer1ApiSoundAlertDeclarationMessage` indicates whether a linked alert **can** have a
 sound/popup notification, but the actual state (on/off) is defined by another message - `Layer1ApiAlertSettingsMessage`
 
 Also, take a look at the "cancel" button on the image above. When a user clicks it, your addon will
 obtain the same `Layer1ApiSoundAlertDeclarationMessage` for which this event occurred, but with a
 flag
-`Layer1ApiSoundAlertDeclarationMessage#isAdd = false`. _Bookmap expects that your addon will stop
-sending alerts described by this declaration._
+`Layer1ApiSoundAlertDeclarationMessage#isAdd = false`. **Bookmap expects that your addon will stop
+sending alerts described by this declaration.**
 
 Also, to the left you may see a "Filter" button - this allows a user to conveniently filter out alerts
 declarations based on its properties.
 
 Thus, if your addon declares alerts - it should also listen
-for `Layer1ApiSoundAlertDeclarationMessage`'s. As an example - take a look at the implementation
-of `Layer1ApiAlertDemo#onUserMessage(Object)`
+for `Layer1ApiSoundAlertDeclarationMessage`'s, as well as `Layer1ApiAlertSettingsMessage`'s. 
+As an example - take a look at the implementation of `Layer1ApiAlertDemo#onUserMessage(Object)`
 
 ### Layer1ApiAlertGuiMessage
 
-This message allows you to incorporate your control GUI for alerts into Bookmap. Usually an addon
+This message allows you to add your control GUI for alerts into Bookmap. Usually an addon
 would register this GUI after it's been activated - for example, check out
 `Layer1ApiAlertDemo#onStrategyCheckboxEnabled(String, boolean)`.
 _Note:_ if your addon doesn't implement the `Layer1ApiInstrumentSpecificEnabledStateProvider`, you
@@ -131,21 +130,21 @@ To the right, you may see the actual GUI panels. For the source code - take a lo
 The main field of `Layer1ApiAlertGuiMessage` that does all the job of passing GUI panels is
 `Layer1ApiAlertGuiMessage#guiPanelsProvider`. As you may see, it is
 a `Function<Layer1ApiSoundAlertDeclarationMessage, StrategyPanel[]>` - that is, Bookmap invokes the
-function with Layer1ApiSoundAlertDeclarationMessage **or null** as an argument and shows obtained
+function with `Layer1ApiSoundAlertDeclarationMessage` **or null** as an argument and shows obtained
 GUI.
 
 There are 2 possible intents of opening your GUI panels:
 
 - Create a new alert - your GUI was opened via the "Add alert..." button - in such case the arg is
   **null**
-- Update an existing alert - GUI opened by "configure alert" button - `guiPanelsProvider` obtains
+- Update an existing alert - GUI was opened by "configure alert" button - `guiPanelsProvider` obtains
   a `Layer1ApiSoundAlertDeclarationMessage`, which needs to be configured. In such a case, you can
   pre-populate the fields of your GUI with those provided by the declaration message.
 
 ### Layer1ApiAlertSettingsMessage
 
 This message specifies the status of sound/popup notifications for an alert. Alerts are connected
-with the `Layer1ApiAlertSettingsMessage` via `declarationId`. By default, Bookmap obtains a
+with the `Layer1ApiAlertSettingsMessage` via `declarationId`. By default, when Bookmap obtains a
 `Layer1ApiSoundAlertDeclarationMessage`, it assumes that there is a `Layer1ApiAlertSettingsMessage`
 with fields `sound = false`, `popup = false`. This also can be seen in _File -> Alerts -> Configure
 alerts_.
@@ -158,8 +157,8 @@ notifications. Also, if a user clicks on any of these buttons - your addon will 
 a `Layer1ApiAlertSettingsMessage`
 with updated fields. Thus, your addon has to listen to these messages and update its inner state
 accordingly. Later, it should send `Layer1ApiSoundAlertMessage` with correct `sound`/`popup` fields.
-If they diverge from those specified in the `Layer1ApiAlertSettingsMessage` registered in Bookmap
-- **an exception will be thrown, your addon will be unloaded**.
+If they diverge from those specified in the `Layer1ApiAlertSettingsMessage` registered in Bookmap -
+**an exception will be thrown, your addon will be unloaded**.
 
 ## Notification system workflow summed up
 

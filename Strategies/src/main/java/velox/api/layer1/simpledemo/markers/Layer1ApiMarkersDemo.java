@@ -174,6 +174,10 @@ public class Layer1ApiMarkersDemo implements
     @Override
     public void calculateValuesInRange(String indicatorName, String alias, long t0, long intervalWidth, int intervalsNumber,
             CalculatedResultListener listener) {
+        if (dataStructureInterface == null) {
+            listener.setCompleted();
+            return;
+        }
      
         String userName = indicatorsFullNameToUserName.get(indicatorName);
         
@@ -243,6 +247,10 @@ public class Layer1ApiMarkersDemo implements
     @Override
     public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String indicatorAlias, long time,
             Consumer<Object> listener, InvalidateInterface invalidateInterface) {
+        if (dataStructureInterface == null) {
+            return new OnlineValueCalculatorAdapter() {};
+        }
+        
         String userName = indicatorsFullNameToUserName.get(indicatorName);
         
         invalidateInterfaceMap.put(userName, invalidateInterface);

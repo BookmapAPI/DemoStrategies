@@ -226,6 +226,10 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     @Override
     public void calculateValuesInRange(String indicatorName, String alias, long t0, long intervalWidth,
             int intervalsNumber, CalculatedResultListener listener) {
+        if (dataStructureInterface == null) {
+            listener.setCompleted();
+            return;
+        }
         
         ArrayList<TreeResponseInterval> intervalResponse = dataStructureInterface.get(t0, intervalWidth,
                 intervalsNumber, alias, new StandardEvents[] { StandardEvents.ORDER });
@@ -257,6 +261,9 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     @Override
     public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String alias, long time,
             Consumer<Object> listener, InvalidateInterface invalidateInterface) {
+        if (dataStructureInterface == null) {
+            return new OnlineValueCalculatorAdapter() {};
+        }
         
         TreeResponseInterval treeResponse = dataStructureInterface.get(time, alias, new StandardEvents[] {StandardEvents.ORDER});
         

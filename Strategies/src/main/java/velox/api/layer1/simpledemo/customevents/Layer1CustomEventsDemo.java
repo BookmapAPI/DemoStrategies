@@ -192,6 +192,12 @@ public class Layer1CustomEventsDemo implements Layer1ApiFinishable, Layer1ApiAdm
     @Override
     public void calculateValuesInRange(String indicatorName, String alias, long t0, long intervalWidth,
             int intervalsNumber, CalculatedResultListener listener) {
+        
+        if (dataStructureInterface == null) {
+            listener.setCompleted();
+            return;
+        }
+        
         List<TreeResponseInterval> result = dataStructureInterface.get(Layer1CustomEventsDemo.class, TREE_NAME, t0,
                 intervalWidth, intervalsNumber, alias, INTERESTING_CUSTOM_EVENTS);
         
@@ -215,6 +221,10 @@ public class Layer1CustomEventsDemo implements Layer1ApiFinishable, Layer1ApiAdm
     @Override
     public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String indicatorAlias, long time,
             Consumer<Object> listener, InvalidateInterface invalidateInterface) {
+
+        if (dataStructureInterface == null) {
+            return new OnlineValueCalculatorAdapter() {};
+        }
         
         invalidateInterfaceMap.put(INDICATOR_NAME, invalidateInterface);
         

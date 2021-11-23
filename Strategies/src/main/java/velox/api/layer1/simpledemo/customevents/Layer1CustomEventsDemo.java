@@ -221,12 +221,11 @@ public class Layer1CustomEventsDemo implements Layer1ApiFinishable, Layer1ApiAdm
     @Override
     public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String indicatorAlias, long time,
             Consumer<Object> listener, InvalidateInterface invalidateInterface) {
+        invalidateInterfaceMap.put(INDICATOR_NAME, invalidateInterface);
 
         if (dataStructureInterface == null) {
             return new OnlineValueCalculatorAdapter() {};
         }
-        
-        invalidateInterfaceMap.put(INDICATOR_NAME, invalidateInterface);
         
         TreeResponseInterval startEvents = dataStructureInterface.get(Layer1CustomEventsDemo.class, TREE_NAME, time, indicatorAlias, INTERESTING_CUSTOM_EVENTS);
         final double startValue = getValueFromEvent(startEvents);
@@ -256,7 +255,11 @@ public class Layer1CustomEventsDemo implements Layer1ApiFinishable, Layer1ApiAdm
         if (data.getClass() == UserMessageLayersChainCreatedTargeted.class) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {
-                provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(dataStructureInterface -> this.dataStructureInterface = dataStructureInterface));
+                provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(
+                    dataStructureInterface -> {
+                        this.dataStructureInterface = dataStructureInterface;
+                        invalidateInterfaceMap.get(INDICATOR_NAME).invalidate();
+                    }));
                 provider.sendUserMessage(getGeneratorMessage(true));
                 provider.sendUserMessage(getIndicatorMessage(true));
             }

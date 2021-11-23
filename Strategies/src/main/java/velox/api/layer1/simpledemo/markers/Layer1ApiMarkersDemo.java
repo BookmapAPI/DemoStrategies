@@ -146,7 +146,11 @@ public class Layer1ApiMarkersDemo implements
         if (data.getClass() == UserMessageLayersChainCreatedTargeted.class) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {
-                provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(dataStructureInterface -> this.dataStructureInterface = dataStructureInterface));
+                provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(
+                    dataStructureInterface -> {
+                        this.dataStructureInterface = dataStructureInterface;
+                        invalidateInterfaceMap.values().forEach(InvalidateInterface::invalidate);
+                    }));
                 addIndicator(INDICATOR_NAME_TRADE);
                 addIndicator(INDICATOR_NAME_CIRCLES);
             }
@@ -247,13 +251,12 @@ public class Layer1ApiMarkersDemo implements
     @Override
     public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String indicatorAlias, long time,
             Consumer<Object> listener, InvalidateInterface invalidateInterface) {
+        String userName = indicatorsFullNameToUserName.get(indicatorName);
+        invalidateInterfaceMap.put(userName, invalidateInterface);
+        
         if (dataStructureInterface == null) {
             return new OnlineValueCalculatorAdapter() {};
         }
-        
-        String userName = indicatorsFullNameToUserName.get(indicatorName);
-        
-        invalidateInterfaceMap.put(userName, invalidateInterface);
         
         BufferedImage orderIcon = orderIcons.get(indicatorAlias);
         

@@ -211,6 +211,20 @@ public class CustomPriceAlertDemo implements
                 case ">": pricePredicate = price -> price > selectedPrice; break;
                 default: throw new IllegalArgumentException("Unknown comparison symbol: " + comparisonSymbol);
             }
+
+            /*
+             * Here we first notify Bookmap about future alerts, and only then
+             * put the newly created TradeMatcher instance into declarationIdToTradeMatcher Map.
+             * This ensures that no alert will be sent before it is registered
+             */
+            provider.sendUserMessage(declarationMessage);
+            Layer1ApiAlertSettingsMessage initialSettingsMessage = Layer1ApiAlertSettingsMessage.builder()
+                .setSource(CustomPriceAlertDemo.class)
+                .setDeclarationId(declarationMessage.id)
+                .setPopup(declarationSettings.isPopupActive)
+                .build();
+            provider.sendUserMessage(initialSettingsMessage);
+            
             // We are not interested in trades with size == 0, as in that case the size < size granularity
             TradePredicate tradePredicate = (alias, price, size) -> size != 0 && pricePredicate.test(price);
 
@@ -229,14 +243,6 @@ public class CustomPriceAlertDemo implements
         
             TradeMatcher tradeMatcher = new TradeMatcher(tradePredicate, onMatchCallback);
             declarationIdToTradeMatcher.put(declarationMessage.id, tradeMatcher);
-
-            provider.sendUserMessage(declarationMessage);
-            Layer1ApiAlertSettingsMessage initialSettingsMessage = Layer1ApiAlertSettingsMessage.builder()
-                    .setSource(CustomPriceAlertDemo.class)
-                    .setDeclarationId(declarationMessage.id)
-                    .setPopup(declarationSettings.isPopupActive)
-                    .build();
-            provider.sendUserMessage(initialSettingsMessage);
         }
     }
     

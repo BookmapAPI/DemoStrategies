@@ -110,7 +110,11 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
         if (data.getClass() == UserMessageLayersChainCreatedTargeted.class) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {
-                provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(dataStructureInterface -> this.dataStructureInterface = dataStructureInterface));
+                provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(
+                    dataStructureInterface -> {
+                        this.dataStructureInterface = dataStructureInterface;
+                        invalidateInterfaceMap.get(INDICATOR_NAME).invalidate();
+                    }));
                 provider.sendUserMessage(getUserMessageAdd());
             }
         }
@@ -226,6 +230,10 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     @Override
     public void calculateValuesInRange(String indicatorName, String alias, long t0, long intervalWidth,
             int intervalsNumber, CalculatedResultListener listener) {
+        if (dataStructureInterface == null) {
+            listener.setCompleted();
+            return;
+        }
         
         ArrayList<TreeResponseInterval> intervalResponse = dataStructureInterface.get(t0, intervalWidth,
                 intervalsNumber, alias, new StandardEvents[] { StandardEvents.ORDER });
@@ -257,10 +265,13 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     @Override
     public OnlineValueCalculatorAdapter createOnlineValueCalculator(String indicatorName, String alias, long time,
             Consumer<Object> listener, InvalidateInterface invalidateInterface) {
+        invalidateInterfaceMap.put(INDICATOR_NAME, invalidateInterface);
+        
+        if (dataStructureInterface == null) {
+            return new OnlineValueCalculatorAdapter() {};
+        }
         
         TreeResponseInterval treeResponse = dataStructureInterface.get(time, alias, new StandardEvents[] {StandardEvents.ORDER});
-        
-        invalidateInterfaceMap.put(INDICATOR_NAME, invalidateInterface);
         
         Double pips = pipsMap.get(alias);
         if (pips == null) {

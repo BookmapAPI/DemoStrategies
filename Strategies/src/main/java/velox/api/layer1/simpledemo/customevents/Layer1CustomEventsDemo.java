@@ -258,7 +258,10 @@ public class Layer1CustomEventsDemo implements Layer1ApiFinishable, Layer1ApiAdm
                 provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(
                     dataStructureInterface -> {
                         this.dataStructureInterface = dataStructureInterface;
-                        invalidateInterfaceMap.get(INDICATOR_NAME).invalidate();
+                        InvalidateInterface invalidateInterface = invalidateInterfaceMap.get(INDICATOR_NAME);
+                        if (invalidateInterface != null) {
+                            invalidateInterface.invalidate();
+                        }
                     }));
                 provider.sendUserMessage(getGeneratorMessage(true));
                 provider.sendUserMessage(getIndicatorMessage(true));

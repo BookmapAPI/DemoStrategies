@@ -4,7 +4,7 @@ import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.actions.Layer1ActionContainer;
 import velox.api.layer1.actions.Layer1ExternalAction;
-import velox.api.layer1.actions.annotations.Layer1ActionMapper;
+import velox.api.layer1.actions.Layer1ActionMapper;
 import velox.api.layer1.actions.annotations.Layer1ActionMetadata;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
@@ -24,7 +24,7 @@ import java.util.Set;
 @Layer1Injectable
 @Layer1StrategyName("Action Strategy 1")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class ActionStrategy1 extends Layer1ApiInjectorRelay implements Layer1ApiFinishable {
+public class ActionStrategy1 extends Layer1ApiInjectorRelay implements Layer1ApiFinishable, Layer1ActionMapper {
     private Layer1ApiProvider provider;
 
     public ActionStrategy1(Layer1ApiProvider provider) {
@@ -36,8 +36,8 @@ public class ActionStrategy1 extends Layer1ApiInjectorRelay implements Layer1Api
     public void finish() {}
 
     /** This method will register action when the strategy is loaded */
-    @Layer1ActionMapper
-    public Layer1ActionContainer registerActions() {
+    @Override
+    public Layer1ActionContainer getActionContainer() {
         Set<Layer1ExternalAction> actions = new HashSet<>();
         actions.add(new HelloWorldAction());
         actions.add(new ByeWorldAction());

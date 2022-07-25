@@ -3,8 +3,8 @@ package velox.api.layer1.simpledemo.actions;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.actions.Layer1ActionContainer;
+import velox.api.layer1.actions.Layer1ActionMapper;
 import velox.api.layer1.actions.Layer1ExternalAction;
-import velox.api.layer1.actions.annotations.Layer1ActionMapper;
 import velox.api.layer1.actions.annotations.Layer1ActionMetadata;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
@@ -34,7 +34,7 @@ import java.util.Set;
 @Layer1Injectable
 @Layer1StrategyName(ActionStrategy2.STRATEGY_NAME)
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class ActionStrategy2 extends Layer1ApiInjectorRelay implements Layer1ApiFinishable {
+public class ActionStrategy2 extends Layer1ApiInjectorRelay implements Layer1ApiFinishable, Layer1ActionMapper {
     static final String STRATEGY_NAME = "Action Strategy 2";
     private static final String NONE_ITEM = "---";
     
@@ -110,8 +110,8 @@ public class ActionStrategy2 extends Layer1ApiInjectorRelay implements Layer1Api
     }
 
     /** This method will register action when the strategy is loaded */
-    @Layer1ActionMapper
-    public Layer1ActionContainer registerActions() {
+    @Override
+    public Layer1ActionContainer getActionContainer() {
         Set<Layer1ExternalAction> actions = new HashSet<>();
         actions.add(new TestExternalWindowAction());
         return new Layer1ActionContainer(actions);

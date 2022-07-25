@@ -4,8 +4,8 @@ import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiInstrumentSpecificEnabledStateProvider;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.actions.Layer1ActionContainer;
+import velox.api.layer1.actions.Layer1ActionMapper;
 import velox.api.layer1.actions.Layer1ExternalAction;
-import velox.api.layer1.actions.annotations.Layer1ActionMapper;
 import velox.api.layer1.actions.annotations.Layer1ActionMetadata;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
@@ -19,10 +19,10 @@ import javax.swing.JLabel;
 import java.awt.Color;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Strategy that declares custom actions and executes them in its external window.
@@ -39,10 +39,10 @@ import java.util.Set;
 @Layer1Injectable
 @Layer1StrategyName("Action Strategy 3")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class ActionStrategy3 implements Layer1ApiFinishable, Layer1ApiInstrumentSpecificEnabledStateProvider {
+public class ActionStrategy3 implements Layer1ApiFinishable, Layer1ApiInstrumentSpecificEnabledStateProvider, Layer1ActionMapper {
     static final String STRATEGY_NAME = "Action Strategy 3";
     private Layer1ApiProvider provider;
-    private Map<String, JFrame> aliasToFrame = new HashMap<>();
+    private Map<String, JFrame> aliasToFrame = new ConcurrentHashMap<>();
 
     public ActionStrategy3(Layer1ApiProvider provider) {
         this.provider = provider;
@@ -56,8 +56,8 @@ public class ActionStrategy3 implements Layer1ApiFinishable, Layer1ApiInstrument
     }
 
     /** This method will register action when the strategy is loaded */
-    @Layer1ActionMapper
-    public Layer1ActionContainer registerActions() {
+    @Override
+    public Layer1ActionContainer getActionContainer() {
         Set<Layer1ExternalAction> actions = new HashSet<>();
         actions.add(new ColorAction());
         return new Layer1ActionContainer(actions);
@@ -70,7 +70,7 @@ public class ActionStrategy3 implements Layer1ApiFinishable, Layer1ApiInstrument
             aliasToFrame.put(alias, frame);
             frame.setVisible(true);
         } else {
-            JFrame frame = aliasToFrame.put(alias, null);
+            JFrame frame = aliasToFrame.remove(alias);
             if (frame != null) {
                 frame.dispose();
             }

@@ -2,7 +2,7 @@ package velox.api.layer1.simpledemo.actions;
 
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiProvider;
-import velox.api.layer1.actions.Layer1ActionContainer;
+import velox.api.layer1.actions.Layer1ActionsContainer;
 import velox.api.layer1.actions.Layer1ExternalAction;
 import velox.api.layer1.actions.Layer1ActionMapper;
 import velox.api.layer1.actions.annotations.Layer1ActionMetadata;
@@ -37,11 +37,11 @@ public class ActionStrategy1 extends Layer1ApiInjectorRelay implements Layer1Api
 
     /** This method will register action when the strategy is loaded */
     @Override
-    public Layer1ActionContainer getActionContainer() {
+    public Layer1ActionsContainer getActionContainer() {
         Set<Layer1ExternalAction> actions = new HashSet<>();
         actions.add(new HelloWorldAction());
         actions.add(new ByeWorldAction());
-        return new Layer1ActionContainer(actions);
+        return new Layer1ActionsContainer(actions);
     }
     
     @Layer1ActionMetadata(id = "action_strategy1.say_hi", name = "Hello World", groups = {"Alert Custom"})

@@ -49,6 +49,19 @@ import velox.api.layer1.messages.indicators.WidgetDisplayInfo.Type;
 import velox.api.layer1.reading.UserDataUserMessage;
 import velox.colors.ColorsChangedListener;
 
+/**
+ * An example of usage of UserDataUserMessage.<br>
+ * These messages are used to store arbitrary binary data (byte array) in tree structures/feeds/historical data. <br><br>
+ *
+ * In this example, DemoExternalRealtimeProvider (from L0ApiDemo) sends us messages with the tag "RandomData" which contains an integer
+ * represented as a byte array. There are two types of incoming messages - global (alias = null) and aliased (alias != null).<br>
+ * Aliased messages will be displayed only for instruments with specific alias (as a yellow line, "Aliased Random Data").<br>
+ * Global messages will be displayed for each instrument (on the same price level, as a blue line, "Global Random Data").<br><br>
+ *
+ * This demo will also display both global and aliased data in replay mode.<br>
+ * As for historical data - <b>only aliased data</b> will be displayed in it (resubscribe to the same instrument to see
+ * previous subscribed time as historical data).
+ */
 @Layer1Attachable
 @Layer1StrategyName("UserDataUserMessage Demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)

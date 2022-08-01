@@ -111,7 +111,7 @@ public class ActionStrategy2 extends Layer1ApiInjectorRelay implements Layer1Api
 
     /** This method will register action when the strategy is loaded */
     @Override
-    public Layer1ActionsContainer getActionContainer() {
+    public Layer1ActionsContainer getActionsContainer() {
         Set<Layer1ExternalAction> actions = new HashSet<>();
         actions.add(new TestExternalWindowAction());
         return new Layer1ActionsContainer(actions);

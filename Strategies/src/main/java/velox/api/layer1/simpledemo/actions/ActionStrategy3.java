@@ -57,7 +57,7 @@ public class ActionStrategy3 implements Layer1ApiFinishable, Layer1ApiInstrument
 
     /** This method will register action when the strategy is loaded */
     @Override
-    public Layer1ActionsContainer getActionContainer() {
+    public Layer1ActionsContainer getActionsContainer() {
         Set<Layer1ExternalAction> actions = new HashSet<>();
         actions.add(new ColorAction());
         return new Layer1ActionsContainer(actions);

@@ -67,8 +67,8 @@ public class ActionStrategy1 extends Layer1ApiInjectorRelay implements Layer1Api
     @Layer1ActionMetadata(id = ByeWorldAction.BYE_ID1, name ="Bye Bye", groups = {"Alert Custom"})
     @Layer1ActionMetadata(id = ByeWorldAction.BYE_ID2, name ="See you later", groups = {"Alert Custom"})
     public class ByeWorldAction implements Layer1ExternalAction {
-        private static final String BYE_ID1 = "action_strategy1.say_bye";
-        private static final String BYE_ID2 = "action_strategy1.say_bye2";
+        protected static final String BYE_ID1 = "action_strategy1.say_bye";
+        protected static final String BYE_ID2 = "action_strategy1.say_bye2";
 
         @Override
         public boolean performAction(String actionId, KeyEvent e) {

@@ -107,8 +107,8 @@ public class ActionStrategy3 implements Layer1ApiFinishable, Layer1ApiInstrument
     @Layer1ActionMetadata(id = ColorAction.RED_ACTION_ID, name = "Red Color")
     @Layer1ActionMetadata(id = ColorAction.BLUE_ACTION_ID, name = "Blue Color")
     public class ColorAction implements Layer1ExternalAction {
-        private static final String RED_ACTION_ID = "action_strategy3.red_color";
-        private static final String BLUE_ACTION_ID = "action_strategy3.blue_color";
+        protected static final String RED_ACTION_ID = "action_strategy3.red_color";
+        protected static final String BLUE_ACTION_ID = "action_strategy3.blue_color";
 
         @Override
         public boolean performAction(String actionId, KeyEvent e) {

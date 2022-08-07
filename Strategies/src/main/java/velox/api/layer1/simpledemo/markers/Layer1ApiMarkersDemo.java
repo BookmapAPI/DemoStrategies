@@ -296,7 +296,7 @@ public class Layer1ApiMarkersDemo implements
                 public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
                     if (orderInfoUpdate.instrumentAlias.equals(indicatorAlias)) {
                         if (orderInfoUpdate.status == OrderStatus.CANCELLED ||
-                        		orderInfoUpdate.status == OrderStatus.DISCONNECTED) {
+                                orderInfoUpdate.status == OrderStatus.DISCONNECTED) {
                             Double pips = pipsMap.get(orderInfoUpdate.instrumentAlias);
                             if (pips != null) {
                                 listener.accept(new Marker(getActivePrice(orderInfoUpdate) / pips, -orderIcon.getHeight() / 2, -orderIcon.getWidth() / 2, orderIcon));

@@ -42,9 +42,17 @@ import velox.api.layer1.messages.Layer1ApiHistoricalDataLoadedMessage;
 import velox.api.layer1.messages.Layer1ApiRequestCurrentTimeEvents;
 import velox.api.layer1.messages.Layer1ApiUserMessageAddStrategyUpdateGenerator;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
-import velox.api.layer1.messages.indicators.*;
+
+import velox.api.layer1.messages.indicators.DataStructureInterface;
 import velox.api.layer1.messages.indicators.DataStructureInterface.TreeResponseInterval;
+import velox.api.layer1.messages.indicators.StrategyUpdateGenerator;
+import velox.api.layer1.messages.indicators.StrategyUpdateGeneratorFilter;
+import velox.api.layer1.messages.indicators.IndicatorColorScheme;
+import velox.api.layer1.messages.indicators.IndicatorLineStyle;
+import velox.api.layer1.messages.indicators.Layer1ApiDataInterfaceRequestMessage;
+import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
+import velox.api.layer1.messages.indicators.WidgetDisplayInfo;
 import velox.api.layer1.messages.indicators.WidgetDisplayInfo.Type;
 import velox.api.layer1.reading.UserDataUserMessage;
 import velox.colors.ColorsChangedListener;
@@ -53,8 +61,9 @@ import velox.colors.ColorsChangedListener;
  * An example of usage of UserDataUserMessage.<br>
  * These messages are used to store arbitrary binary data (byte array) in tree structures/feeds/historical data. <br><br>
  *
- * In this example, DemoExternalRealtimeProvider (from L0ApiDemo) sends us messages with the tag "RandomData" which contains an integer
- * represented as a byte array. There are two types of incoming messages - global (alias = null) and aliased (alias != null).<br>
+ * In this example, DemoExternalRealtimeProvider (from <b><a href="https://github.com/BookmapAPI/Layer0ApiDemo">Layer0ApiDemo</a></b>)
+ * sends us messages with the tag "RandomData" which contains an integer represented as a byte array. There are two types of incoming
+ * messages - global (alias = null) and aliased (alias != null).<br>
  * Aliased messages will be displayed only for instruments with specific alias (as a yellow line, "Aliased Random Data").<br>
  * Global messages will be displayed for each instrument (on the same price level, as a blue line, "Global Random Data").<br><br>
  *
@@ -66,10 +75,6 @@ import velox.colors.ColorsChangedListener;
 @Layer1StrategyName("UserDataUserMessage Demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1ApiInstrumentAdapter, Layer1ApiFinishable {
-
-    //===============================================================================================================
-    //===========================================Custom Events Part==================================================
-    //===============================================================================================================
 
     public static class CustomEvent implements CustomGeneratedEvent {
         private static final long serialVersionUID = 1L;
@@ -143,10 +148,6 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
             aggregationEvent1.indicatorValues.putAll(aggregationEvent2.indicatorValues);
         }
     };
-
-    //===============================================================================================================
-    //=============================================Indicator Part====================================================
-    //===============================================================================================================
 
     private class Indicator implements OnlineCalculatable {
 
@@ -279,10 +280,6 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
         return message;
     }
 
-    //===============================================================================================================
-    //=============================================Generator Part====================================================
-    //===============================================================================================================
-
     static class CustomStrategyUpdateGenerator implements StrategyUpdateGenerator, StrategyUpdateGeneratorFilter {
         private long time;
         private final String generatorAlias;
@@ -402,10 +399,6 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
                 getGeneratorName(alias), isAdd, true, true, new CustomStrategyUpdateGenerator(alias), new GeneratedEventInfo[] { new GeneratedEventInfo(CustomEvent.class, CustomAggregationEvent.class,
                 CUSTOM_EVENTS_AGGREGATOR) });
     }
-
-    //===============================================================================================================
-    //=============================================Demo Class Part===================================================
-    //===============================================================================================================
 
     private static final String GENERATOR_NAME_PREFIX = "RandomDataGenerator ";
 

@@ -1,6 +1,6 @@
 package velox.api.layer1.layers.tradinghelper;
 
-public class OrderRequest implements Comparable<OrderRequest>{
+public class OrderRequest implements Comparable<OrderRequest> {
     public final String orderId;
     public final Integer requestLevel;
     

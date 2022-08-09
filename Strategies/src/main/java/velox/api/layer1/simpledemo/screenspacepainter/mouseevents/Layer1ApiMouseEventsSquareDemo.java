@@ -14,7 +14,6 @@ import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.Log;
-import velox.api.layer1.common.Utils;
 import velox.api.layer1.layers.Layer1ApiRelay;
 import velox.api.layer1.layers.strategies.interfaces.CanvasContextMenuProvider;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
@@ -52,30 +51,24 @@ public class Layer1ApiMouseEventsSquareDemo extends Layer1ApiRelay implements La
         if (data instanceof UserMessageLayersChainCreatedTargeted) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == this.getClass()) {
-                modifyScreenSpacePainter(true);
+                Layer1ApiUserMessageModifyScreenSpacePainter addSspMessage = Layer1ApiUserMessageModifyScreenSpacePainter
+                    .builder(this.getClass(), "SSP square painter mouse events")
+                    .setScreenSpacePainterFactory((indicatorName, indicatorAlias, screenSpaceCanvasFactory) ->
+                        new SquarePainter(screenSpaceCanvasFactory.createCanvas(ScreenSpaceCanvasType.HEATMAP)))
+                    .setIsAdd(true)
+                    .build();
+    
+                SwingUtilities.invokeLater(() -> {
+                    provider.sendUserMessage(addSspMessage);
+                });
             }
         }
         super.onUserMessage(data);
     }
     
-    private void modifyScreenSpacePainter(boolean isAdd) {
-        Layer1ApiUserMessageModifyScreenSpacePainter message = Layer1ApiUserMessageModifyScreenSpacePainter
-            .builder(this.getClass(), "SSP square painter mouse events")
-            .setScreenSpacePainterFactory((indicatorName, indicatorAlias, screenSpaceCanvasFactory) ->
-                new SquarePainter(screenSpaceCanvasFactory.createCanvas(ScreenSpaceCanvasType.HEATMAP)))
-            .setIsAdd(isAdd)
-            .build();
-    
-        Utils.invokeInEdtDirectlyOrLater(() -> {
-            provider.sendUserMessage(message);
-        });
-    }
-    
     @Override
     public void finish() {
-        modifyScreenSpacePainter(false);
     }
-    
     
     static class SquarePainter implements ScreenSpacePainterAdapter, CanvasMouseListener, CanvasContextMenuProvider {
     

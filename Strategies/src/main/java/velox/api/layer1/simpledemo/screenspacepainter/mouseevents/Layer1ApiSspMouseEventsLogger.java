@@ -14,7 +14,6 @@ import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.Log;
-import velox.api.layer1.common.Utils;
 import velox.api.layer1.layers.Layer1ApiRelay;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent.CoordinateRequestType;
@@ -189,7 +188,7 @@ public class Layer1ApiSspMouseEventsLogger extends Layer1ApiRelay implements Lay
             .builder(this.getClass(), getUserName(listenerCanvasType))
             .setIsAdd(false)
             .build();
-        Utils.invokeInEdtDirectlyOrLater(() -> {
+        SwingUtilities.invokeLater(() -> {
             provider.sendUserMessage(removeMessage);
         });
     }

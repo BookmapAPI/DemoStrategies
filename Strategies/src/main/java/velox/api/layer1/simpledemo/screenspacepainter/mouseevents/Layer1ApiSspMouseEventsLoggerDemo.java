@@ -35,13 +35,13 @@ import velox.gui.utils.GuiUtils;
 @Layer1Attachable
 @Layer1StrategyName("SSP mouse events logger")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class Layer1ApiSspMouseEventsLogger extends Layer1ApiRelay implements Layer1ApiFinishable, Layer1CustomPanelsGetter {
+public class Layer1ApiSspMouseEventsLoggerDemo extends Layer1ApiRelay implements Layer1ApiFinishable, Layer1CustomPanelsGetter {
     
     private StrategyPanel strategyPanel;
     
     private volatile boolean isEnabled = false;
     
-    public Layer1ApiSspMouseEventsLogger(Layer1ApiProvider provider) {
+    public Layer1ApiSspMouseEventsLoggerDemo(Layer1ApiProvider provider) {
         super(provider);
     }
     

@@ -1,0 +1,242 @@
+package velox.api.layer1.simpledemo.screenspacepainter.mouseevents;
+
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.event.ActionListener;
+import java.awt.image.BufferedImage;
+import javax.swing.BoxLayout;
+import javax.swing.ButtonGroup;
+import javax.swing.JCheckBox;
+import javax.swing.JLabel;
+import javax.swing.JRadioButton;
+import javax.swing.JSeparator;
+import javax.swing.SwingUtilities;
+import velox.api.layer1.Layer1ApiFinishable;
+import velox.api.layer1.Layer1ApiProvider;
+import velox.api.layer1.Layer1CustomPanelsGetter;
+import velox.api.layer1.annotations.Layer1ApiVersion;
+import velox.api.layer1.annotations.Layer1ApiVersionValue;
+import velox.api.layer1.annotations.Layer1Attachable;
+import velox.api.layer1.annotations.Layer1StrategyName;
+import velox.api.layer1.common.Log;
+import velox.api.layer1.layers.Layer1ApiRelay;
+import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
+import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent.CoordinateRequestType;
+import velox.api.layer1.layers.strategies.interfaces.CanvasMouseListener;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.CanvasIcon;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.CompositeCoordinateBase;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.CompositeHorizontalCoordinate;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.CompositeVerticalCoordinate;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.HorizontalCoordinate;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.PreparedImage;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.RelativePixelHorizontalCoordinate;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.RelativePixelVerticalCoordinate;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.VerticalCoordinate;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvasFactory.ScreenSpaceCanvasType;
+import velox.api.layer1.layers.strategies.interfaces.ScreenSpacePainterAdapter;
+import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
+import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyScreenSpacePainter;
+import velox.gui.StrategyPanel;
+import velox.gui.utils.GuiUtils;
+
+/**
+ * Paint-like pencil painting example.
+ * Note that you can paint in DATA or PIXEL coordinates - in the first case
+ * your image is fixed in chart coordinates (time and price), while in the
+ * latter case it stays fixed relative to the screen boundaries.
+ */
+@Layer1Attachable
+@Layer1StrategyName("SSP paint")
+@Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
+public class Layer1ApiSspPaintDemo extends Layer1ApiRelay implements Layer1ApiFinishable, Layer1CustomPanelsGetter {
+    
+    private StrategyPanel strategyPanel;
+    private JCheckBox heatmapCanvasState;
+    private JCheckBox rightOfTimelineCanvasState;
+    
+    private ButtonGroup basisCoordinate;
+    private ButtonGroup coordinateRequestType;
+    
+    volatile boolean isEnabled = false;
+    private JLabel warnMsgText;
+    
+    public Layer1ApiSspPaintDemo(Layer1ApiProvider provider) {
+        super(provider);
+    }
+    
+    @Override
+    public void onUserMessage(Object data) {
+        if (data instanceof UserMessageLayersChainCreatedTargeted) {
+            UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
+            if (message.targetClass == this.getClass()) {
+                isEnabled = true;
+                if (strategyPanel != null) {
+                    SwingUtilities.invokeLater(() -> {
+                        GuiUtils.setPanelEnabled(strategyPanel, true);
+                    });
+                }
+            }
+        }
+        super.onUserMessage(data);
+    }
+    
+    private void modifyScreenSpacePainter(ScreenSpaceCanvasType canvasType, boolean isAdd) {
+        Layer1ApiUserMessageModifyScreenSpacePainter message = Layer1ApiUserMessageModifyScreenSpacePainter
+            .builder(this.getClass(), "SSP paint--" + canvasType)
+            .setScreenSpacePainterFactory((indicatorName, indicatorAlias, screenSpaceCanvasFactory) -> {
+                return new PaintScreenSpacePainter(
+                    screenSpaceCanvasFactory.createCanvas(canvasType),
+                    canvasType == ScreenSpaceCanvasType.HEATMAP ? Color.GREEN : Color.BLUE);
+            })
+            .setIsAdd(isAdd)
+            .build();
+        SwingUtilities.invokeLater(() -> {
+            if (isEnabled) {
+                provider.sendUserMessage(message);
+            }
+        });
+    }
+    
+    @Override
+    public void finish() {
+        isEnabled = false;
+        if (strategyPanel != null) {
+            GuiUtils.setPanelEnabled(strategyPanel, false);
+        }
+    }
+    
+    
+    @Override
+    public StrategyPanel[] getCustomGuiFor(String s, String s1) {
+        if (strategyPanel == null) {
+            strategyPanel = new StrategyPanel("Paint with SSP");
+            strategyPanel.setLayout(new BoxLayout(strategyPanel, BoxLayout.Y_AXIS));
+            strategyPanel.add(new JLabel("Hold Ctrl and drag the mouse to paint"));
+            heatmapCanvasState = new JCheckBox("Heatmap canvas painting");
+            heatmapCanvasState.addActionListener(e -> {
+                modifyScreenSpacePainter(ScreenSpaceCanvasType.HEATMAP, heatmapCanvasState.isSelected());
+            });
+            rightOfTimelineCanvasState = new JCheckBox("Right of timeline canvas painting");
+            rightOfTimelineCanvasState.addActionListener(e -> {
+                modifyScreenSpacePainter(ScreenSpaceCanvasType.RIGHT_OF_TIMELINE, rightOfTimelineCanvasState.isSelected());
+            });
+            strategyPanel.add(heatmapCanvasState);
+            strategyPanel.add(rightOfTimelineCanvasState);
+            
+            strategyPanel.add(new JSeparator());
+            
+            strategyPanel.add(new JLabel("Resolve coordinates relative to:"));
+            basisCoordinate = new ButtonGroup();
+    
+
+            JRadioButton pixelZeroCoordsBtn = new JRadioButton(CompositeCoordinateBase.PIXEL_ZERO.name());
+            pixelZeroCoordsBtn.setSelected(true);
+            pixelZeroCoordsBtn.setActionCommand(CompositeCoordinateBase.PIXEL_ZERO.name());
+            strategyPanel.add(pixelZeroCoordsBtn);
+            basisCoordinate.add(pixelZeroCoordsBtn);
+            
+            JRadioButton dataZeroBtn = new JRadioButton(CompositeCoordinateBase.DATA_ZERO.name());
+            dataZeroBtn.setActionCommand(CompositeCoordinateBase.DATA_ZERO.name());
+            basisCoordinate.add(dataZeroBtn);
+            strategyPanel.add(dataZeroBtn);
+    
+            strategyPanel.add(new JSeparator());
+            
+            strategyPanel.add(new JLabel("Request coordinates in coordinate type:"));
+            coordinateRequestType = new ButtonGroup();
+            JRadioButton pixelRequestBtn = new JRadioButton(CoordinateRequestType.PIXELS.name());
+            pixelRequestBtn.setSelected(true);
+            pixelRequestBtn.setActionCommand(CoordinateRequestType.PIXELS.name());
+            coordinateRequestType.add(pixelRequestBtn);
+            strategyPanel.add(pixelRequestBtn);
+            
+            JRadioButton dataRequestBtn = new JRadioButton(CoordinateRequestType.DATA.name());
+            dataRequestBtn.setActionCommand(CoordinateRequestType.DATA.name());
+    
+
+            coordinateRequestType.add(dataRequestBtn);
+            strategyPanel.add(dataRequestBtn);
+    
+            strategyPanel.add(new JSeparator());
+            warnMsgText = new JLabel();
+            strategyPanel.add(warnMsgText);
+    
+            // Show warn message if request coords in PIXELS from DATA_ZERO
+            ActionListener warnMessageListener = e -> {
+                Log.info("action, result: " + (dataZeroBtn.isSelected() && pixelRequestBtn.isSelected()));
+                if (dataZeroBtn.isSelected() && pixelRequestBtn.isSelected()) {
+                    warnMsgText.setText("<html>It is not recommended to request data from DATA_ZERO in PIXELS,"
+                        + " almost certainly this isn't what you want to do.</html>");
+                } else {
+                    warnMsgText.setText("");
+                }
+            };
+            pixelZeroCoordsBtn.addActionListener(warnMessageListener);
+            dataZeroBtn.addActionListener(warnMessageListener);
+            pixelRequestBtn.addActionListener(warnMessageListener);
+            dataRequestBtn.addActionListener(warnMessageListener);
+        }
+        
+        GuiUtils.setPanelEnabled(strategyPanel, isEnabled);
+        return new StrategyPanel[]{strategyPanel};
+    }
+    
+    class PaintScreenSpacePainter implements ScreenSpacePainterAdapter, CanvasMouseListener {
+        
+        private static final int PAINT_WIDTH = 4;
+        
+        ScreenSpaceCanvas canvas;
+        
+        PreparedImage pointImage;
+    
+    
+        public PaintScreenSpacePainter(ScreenSpaceCanvas canvas, Color drawingColor) {
+            this.canvas = canvas;
+            canvas.addMouseListener(this);
+        
+            BufferedImage texture = new BufferedImage(PAINT_WIDTH, PAINT_WIDTH, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D graph = texture.createGraphics();
+            graph.setColor(drawingColor);
+            graph.fillRect(0, 0, PAINT_WIDTH * 2, PAINT_WIDTH * 2);
+            graph.dispose();
+            pointImage = new PreparedImage(texture);
+        }
+        
+        private void paintPoint(CompositeHorizontalCoordinate x, CompositeVerticalCoordinate y) {
+            CanvasIcon pointIcon = new CanvasIcon(pointImage,
+                new RelativePixelHorizontalCoordinate(x, -PAINT_WIDTH),
+                new RelativePixelVerticalCoordinate(y, -PAINT_WIDTH),
+                new RelativePixelHorizontalCoordinate(x, PAINT_WIDTH),
+                new RelativePixelVerticalCoordinate(y, PAINT_WIDTH));
+            canvas.addShape(pointIcon);
+        }
+        
+
+        @Override
+        public int getEventScore(CanvasMouseEvent e) {
+            return e.sourceEvent.isControlDown() ? CanvasMouseListener.MAX_SCORE : 0;
+        }
+    
+        @Override
+        public void mouseDragged(CanvasMouseEvent e) {
+            // .getActionCommand() returns values of CompositeCoordinateBase enum
+            CompositeCoordinateBase base = CompositeCoordinateBase.valueOf(basisCoordinate.getSelection().getActionCommand());
+            HorizontalCoordinate basisX = new CompositeHorizontalCoordinate(base, 0, 0);
+            VerticalCoordinate basisY = new CompositeVerticalCoordinate(base, 0, 0);
+
+            CoordinateRequestType requestType = CoordinateRequestType.valueOf(
+                coordinateRequestType.getSelection().getActionCommand());
+            CompositeHorizontalCoordinate x = e.getX(basisX, requestType);
+            CompositeVerticalCoordinate y = e.getY(basisY, requestType);
+            
+            // Draw the point in the same coordinate
+            paintPoint(x, y);
+        }
+    
+        @Override
+        public void dispose() {
+            canvas.dispose();
+        }
+    }
+}

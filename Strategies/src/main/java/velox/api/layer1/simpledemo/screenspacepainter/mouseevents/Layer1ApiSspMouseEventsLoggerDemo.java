@@ -175,7 +175,7 @@ public class Layer1ApiSspMouseEventsLoggerDemo extends Layer1ApiRelay implements
         }
     }
     
-    private void changeSSPListenerState(ScreenSpaceCanvasType listenerCanvasType, boolean enabled) {
+    private void modifyScreenSpacePainter(ScreenSpaceCanvasType listenerCanvasType, boolean enabled) {
         if (enabled) {
             addScreenSpacePainter(listenerCanvasType);
         } else {
@@ -204,7 +204,7 @@ public class Layer1ApiSspMouseEventsLoggerDemo extends Layer1ApiRelay implements
                     continue;
                 }
                 JCheckBox checkBox = new JCheckBox(canvasType.toString().toLowerCase() + " mouse listener");
-                checkBox.addActionListener(e -> changeSSPListenerState(canvasType, checkBox.isSelected()));
+                checkBox.addActionListener(e -> modifyScreenSpacePainter(canvasType, checkBox.isSelected()));
                 strategyPanel.add(checkBox);
             }
             

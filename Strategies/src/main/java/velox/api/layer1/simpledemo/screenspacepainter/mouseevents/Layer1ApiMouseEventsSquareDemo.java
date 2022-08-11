@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
+import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.annotations.Layer1ApiVersion;
@@ -39,11 +40,15 @@ import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyScreenSpac
 @Layer1Attachable
 @Layer1StrategyName("SSP mouse events on square")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class Layer1ApiMouseEventsSquareDemo extends Layer1ApiRelay implements Layer1ApiFinishable {
+public class Layer1ApiMouseEventsSquareDemo implements
+    Layer1ApiAdminAdapter,
+    Layer1ApiFinishable {
+    
+    private final Layer1ApiProvider provider;
     
     
     public Layer1ApiMouseEventsSquareDemo(Layer1ApiProvider provider) {
-        super(provider);
+        this.provider = provider;
     }
     
     @Override
@@ -63,7 +68,6 @@ public class Layer1ApiMouseEventsSquareDemo extends Layer1ApiRelay implements La
                 });
             }
         }
-        super.onUserMessage(data);
     }
     
     @Override

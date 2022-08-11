@@ -11,6 +11,7 @@ import javax.swing.JLabel;
 import javax.swing.JRadioButton;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.Layer1CustomPanelsGetter;
@@ -49,7 +50,12 @@ import velox.gui.utils.GuiUtils;
 @Layer1Attachable
 @Layer1StrategyName("SSP paint")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class Layer1ApiSspPaintDemo extends Layer1ApiRelay implements Layer1ApiFinishable, Layer1CustomPanelsGetter {
+public class Layer1ApiSspPaintDemo implements
+    Layer1ApiAdminAdapter,
+    Layer1ApiFinishable,
+    Layer1CustomPanelsGetter {
+    
+    private final Layer1ApiProvider provider;
     
     private StrategyPanel strategyPanel;
     private JCheckBox heatmapCanvasState;
@@ -62,7 +68,7 @@ public class Layer1ApiSspPaintDemo extends Layer1ApiRelay implements Layer1ApiFi
     private JLabel warnMsgText;
     
     public Layer1ApiSspPaintDemo(Layer1ApiProvider provider) {
-        super(provider);
+        this.provider = provider;
     }
     
     @Override
@@ -78,7 +84,6 @@ public class Layer1ApiSspPaintDemo extends Layer1ApiRelay implements Layer1ApiFi
                 }
             }
         }
-        super.onUserMessage(data);
     }
     
     private void modifyScreenSpacePainter(ScreenSpaceCanvasType canvasType, boolean isAdd) {

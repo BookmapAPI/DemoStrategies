@@ -6,6 +6,7 @@ import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
+import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.Layer1CustomPanelsGetter;
@@ -35,14 +36,19 @@ import velox.gui.utils.GuiUtils;
 @Layer1Attachable
 @Layer1StrategyName("SSP mouse events logger")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class Layer1ApiSspMouseEventsLoggerDemo extends Layer1ApiRelay implements Layer1ApiFinishable, Layer1CustomPanelsGetter {
+public class Layer1ApiSspMouseEventsLoggerDemo implements
+    Layer1ApiAdminAdapter,
+    Layer1ApiFinishable,
+    Layer1CustomPanelsGetter {
+    
+    private final Layer1ApiProvider provider;
     
     private StrategyPanel strategyPanel;
     
     private volatile boolean isEnabled = false;
     
     public Layer1ApiSspMouseEventsLoggerDemo(Layer1ApiProvider provider) {
-        super(provider);
+        this.provider = provider;
     }
     
     enum MouseEventType {
@@ -164,7 +170,6 @@ public class Layer1ApiSspMouseEventsLoggerDemo extends Layer1ApiRelay implements
                 }
             }
         }
-        super.onUserMessage(data);
     }
     
     @Override

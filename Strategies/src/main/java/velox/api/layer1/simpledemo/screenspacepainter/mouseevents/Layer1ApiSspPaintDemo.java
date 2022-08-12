@@ -4,6 +4,9 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.JCheckBox;
@@ -57,15 +60,16 @@ public class Layer1ApiSspPaintDemo implements
     
     private final Layer1ApiProvider provider;
     
+    private final Set<ScreenSpaceCanvasType> activeCanvases = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    
     private StrategyPanel strategyPanel;
     private JCheckBox heatmapCanvasState;
     private JCheckBox rightOfTimelineCanvasState;
-    
     private ButtonGroup basisCoordinate;
     private ButtonGroup coordinateRequestType;
+    private JLabel warnMsgText;
     
     volatile boolean isEnabled = false;
-    private JLabel warnMsgText;
     
     public Layer1ApiSspPaintDemo(Layer1ApiProvider provider) {
         this.provider = provider;
@@ -96,19 +100,25 @@ public class Layer1ApiSspPaintDemo implements
             })
             .setIsAdd(isAdd)
             .build();
-        SwingUtilities.invokeLater(() -> {
-            if (isEnabled) {
-                provider.sendUserMessage(message);
-            }
-        });
+        
+        if (isAdd) {
+            activeCanvases.add(canvasType);
+        } else {
+            activeCanvases.remove(canvasType);
+        }
+        
+        provider.sendUserMessage(message);
     }
     
     @Override
     public void finish() {
-        isEnabled = false;
+        for (ScreenSpaceCanvasType canvas : activeCanvases) {
+            modifyScreenSpacePainter(canvas, false);
+        }
         if (strategyPanel != null) {
             GuiUtils.setPanelEnabled(strategyPanel, false);
         }
+        isEnabled = false;
     }
     
     

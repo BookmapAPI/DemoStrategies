@@ -1,7 +1,10 @@
 package velox.api.layer1.simpledemo.screenspacepainter.mouseevents;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -43,6 +46,8 @@ public class Layer1ApiSspMouseEventsLoggerDemo implements
     
     private final Layer1ApiProvider provider;
     
+    private final Set<ScreenSpaceCanvasType> activeCanvases = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    
     private StrategyPanel strategyPanel;
     
     private volatile boolean isEnabled = false;
@@ -57,7 +62,7 @@ public class Layer1ApiSspMouseEventsLoggerDemo implements
     
     Map<MouseEventType, JCheckBox> checkboxesPerType = new HashMap<>();
     
-    private void addScreenSpacePainter(ScreenSpaceCanvasType canvasType) {
+    private void modifyScreenSpacePainter(ScreenSpaceCanvasType canvasType, boolean isAdd) {
         Layer1ApiUserMessageModifyScreenSpacePainter message = Layer1ApiUserMessageModifyScreenSpacePainter
             .builder(this.getClass(), getUserName(canvasType))
             .setScreenSpacePainterFactory((indicatorName, indicatorAlias, screenSpaceCanvasFactory) -> {
@@ -147,12 +152,17 @@ public class Layer1ApiSspMouseEventsLoggerDemo implements
                     }
                 };
             })
-            .setIsAdd(true)
+            .setIsAdd(isAdd)
             .build();
-        
-        SwingUtilities.invokeLater(() -> {
-            provider.sendUserMessage(message);
-        });
+    
+
+        if (isAdd) {
+            activeCanvases.add(canvasType);
+        } else {
+            activeCanvases.remove(canvasType);
+        }
+    
+        provider.sendUserMessage(message);
     }
     
     private String getUserName(ScreenSpaceCanvasType canvasType) {
@@ -174,30 +184,14 @@ public class Layer1ApiSspMouseEventsLoggerDemo implements
     
     @Override
     public void finish() {
-        isEnabled = false;
+        for (ScreenSpaceCanvasType canvas : activeCanvases) {
+            modifyScreenSpacePainter(canvas, false);
+        }
         if (strategyPanel != null) {
             GuiUtils.setPanelEnabled(strategyPanel, false);
         }
+        isEnabled = false;
     }
-    
-    private void modifyScreenSpacePainter(ScreenSpaceCanvasType listenerCanvasType, boolean enabled) {
-        if (enabled) {
-            addScreenSpacePainter(listenerCanvasType);
-        } else {
-            removeScreenSpacePainter(listenerCanvasType);
-        }
-    }
-    
-    private void removeScreenSpacePainter(ScreenSpaceCanvasType listenerCanvasType) {
-        Layer1ApiUserMessageModifyScreenSpacePainter removeMessage = Layer1ApiUserMessageModifyScreenSpacePainter
-            .builder(this.getClass(), getUserName(listenerCanvasType))
-            .setIsAdd(false)
-            .build();
-        SwingUtilities.invokeLater(() -> {
-            provider.sendUserMessage(removeMessage);
-        });
-    }
-    
     
     @Override
     public StrategyPanel[] getCustomGuiFor(String s, String s1) {

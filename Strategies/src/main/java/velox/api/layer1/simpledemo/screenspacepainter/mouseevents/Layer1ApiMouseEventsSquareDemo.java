@@ -72,6 +72,11 @@ public class Layer1ApiMouseEventsSquareDemo implements
     
     @Override
     public void finish() {
+        Layer1ApiUserMessageModifyScreenSpacePainter removeSspMessage = Layer1ApiUserMessageModifyScreenSpacePainter
+            .builder(this.getClass(), "SSP square painter mouse events")
+            .setIsAdd(false)
+            .build();
+        provider.sendUserMessage(removeSspMessage);
     }
     
     static class SquarePainter implements ScreenSpacePainterAdapter, CanvasMouseListener, CanvasContextMenuProvider {

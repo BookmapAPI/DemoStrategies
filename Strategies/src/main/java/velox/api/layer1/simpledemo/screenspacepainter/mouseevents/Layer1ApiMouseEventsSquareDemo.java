@@ -14,6 +14,7 @@ import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
+import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.layers.strategies.interfaces.CanvasContextMenuProvider;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
@@ -48,6 +49,7 @@ public class Layer1ApiMouseEventsSquareDemo implements
     
     public Layer1ApiMouseEventsSquareDemo(Layer1ApiProvider provider) {
         this.provider = provider;
+        ListenableHelper.addListeners(provider,this);
     }
     
     @Override

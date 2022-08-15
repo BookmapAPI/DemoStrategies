@@ -22,6 +22,7 @@ import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
+import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent.CoordinateRequestType;
@@ -72,6 +73,7 @@ public class Layer1ApiSspPaintDemo implements
     
     public Layer1ApiSspPaintDemo(Layer1ApiProvider provider) {
         this.provider = provider;
+        ListenableHelper.addListeners(provider,this);
     }
     
     @Override

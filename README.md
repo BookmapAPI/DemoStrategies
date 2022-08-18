@@ -234,17 +234,38 @@ Note that repository also contains javadoc, and while it's far from perfect it s
 
 ## IDE and tricks
 
-You should be able to use any IDE you like as long as it supports Gradle. The process was validated with Eclipse, but it is not the only option (and, as shown earlier - you don't even really need an IDE). You might have to add and configure certain gradle plugins though, depending on the IDE you chose. In Eclipse you just need to import gradle project from `Strategies` directory using Buildship plugin.
+### Running Bookmap with IDE
 
-You might also want to run Bookmap from IDE. This will make development faster and also allow you to attach debugger to Bookmap and debug your code. In order to do this:
-- Use 64 bit Java 8 VM
-- Sometimes your IDE may ignore your gradle source/target compatibility settings for Java (if you have those). Ensure it is Java 8 in your project environment/compiler settings. If not, set it explicitly in the project settings.
+Running Bookmap with IDE is simply running the `Bookmap.jar` app.
+
+You should be able to use any IDE you like as long as it supports Gradle. You might have to add and configure certain gradle plugins though, depending on the IDE you chose. In Eclipse you just need to import gradle project from `Strategies` directory using Buildship plugin.
+
+#### General tips on running Bookmap with any IDE
+
+- Use 64 bit Java 14 VM
+- Sometimes your IDE may ignore your gradle source/target compatibility settings for Java (if you have those). Ensure it is Java 14 in your project environment/compiler settings. If not, set it explicitly in the project settings.
 - Sometimes your IDE may handle your gradle compileOnly dependencies incorrectly and still add those to classpath. **This will usually result in NoSuchMethodError or NoClassDefFoundError**. You can verify that this is the case by checking `java.class.path` system properly of the process that you started via Java VisualVM on in any other way - it shouldn't contain any of compileOnly dependencies, so if it does - this is a problem. To solve it you can either (hackish simple way) edit build.gradle to point to the libraries from `C:\Program Files\Bookmap\lib` directory (which will ensure that those are the same exact libraries that bookmap expects, preventing the crash) or (more correct way, but exact way to achieve it differs from one IDE to another) remove the project and project dependencies from run configuration.
 - Working directory will determine where your config folder will be. Note that Bookmap will create some folders next to it (not within it). On Windows you can set `C:\Bookmap\Config`, which is the default during installation, but you can also maintain multiple separate Bookmap configs, if you want.
 - Add `C:\Program Files\Bookmap\Bookmap.jar` to the classpath. It should list the dependencies in manifest, so that will often be enough, but you can include libraries from `C:\Program Files\Bookmap\lib` if Bookmap complains about missing classes.
-- Start velox.ib.Main
+- Start `velox.ib.Main`
 
-Now you should be able to start bookmap from IDE directly. 
+#### Running Bookmap with IntelliJ IDEA
+
+1. In your module project, create a `JAR Application` run configuration: Navigate `Edit configurations... -> Add New Configuration`, select `JAR Application`
+2. Set 'Path to jar': `C:\Program Files\Bookmap\Bookmap.jar` (note that it might be different on your machine
+if you changed the installation directory)
+3. Set 'Working directory': `C:\Bookmap\Config`
+4. Set the JRE. We recommend using Java 14 VM
+5. Save the config, and try to run it. If everything worked right, Bookmap will start.
+
+If you want to **attach a debugger**, run the configuration in `Debug` mode (a button next to `Run`).
+You should see a record in the process logs like: `Connected to the target VM, address: '127.0.0.1:63518', transport: 'socket'`
+
+Also, you may now use the breakpoints.
+
+### Simplifying L1 module code reload
+
+Note that the following is only applicable to L1 module, but not the L0.
 
 You might want to avoid packing jar every time you want to make changes. Best way to do it is the following:
 - create empty `bm-strategy-package-fs-root.jar` file in a folder where your class files are. E.g. it could be something like `Strategies\build\classes\java\main` (though it will usually be different depending on your IDE). This folder will be passed to URLClassLoader, so it should contain folder(s) matching top level package names, which contain either other folders corresponding to lower level package names or class files, e.g. `HelperStrategySettings.class`.

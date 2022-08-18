@@ -1,5 +1,6 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'idea'
 
 // This is optional, tells gradle that we want Java 11 compatible bytecode.
 // Can be removed in standalone addons
@@ -31,3 +32,4 @@ jar {
 }
 
 eclipse.classpath.downloadJavadoc = true
+idea.module.downloadJavadoc = true

@@ -171,8 +171,8 @@ public class Layer1ApiMouseEventsSquareDemo implements
                 && (SwingUtilities.isRightMouseButton(e.sourceEvent) || e.sourceEvent.getClickCount() == 0) // ignore drag events
                 && x1.pixelsX <= eventX.pixelsX && eventX.pixelsX <= x2.pixelsX
                 && y1.pixelsY <= eventY.pixelsY && eventY.pixelsY <= y2.pixelsY
-                    ? CanvasMouseListener.MAX_SCORE
-                    : 0;
+                    ? ScreenSpaceCanvas.EVENT_SCORE_MIN
+                    : ScreenSpaceCanvas.EVENT_SCORE_NONE;
         }
     
         @Override

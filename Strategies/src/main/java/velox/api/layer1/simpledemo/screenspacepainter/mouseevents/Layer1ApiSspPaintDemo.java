@@ -231,7 +231,9 @@ public class Layer1ApiSspPaintDemo implements
 
         @Override
         public int getEventScore(CanvasMouseEvent e) {
-            return e.sourceEvent.isControlDown() ? CanvasMouseListener.MAX_SCORE : 0;
+            return e.sourceEvent.isControlDown() && SwingUtilities.isLeftMouseButton(e.sourceEvent)
+                ? ScreenSpaceCanvas.EVENT_SCORE_MAX
+                : ScreenSpaceCanvas.EVENT_SCORE_NONE;
         }
     
         @Override

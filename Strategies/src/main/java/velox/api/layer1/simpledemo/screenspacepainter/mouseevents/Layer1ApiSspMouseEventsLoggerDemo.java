@@ -143,7 +143,7 @@ public class Layer1ApiSspMouseEventsLoggerDemo implements
                     
                     @Override
                     public int getEventScore(CanvasMouseEvent canvasMouseEvent) {
-                        return CanvasMouseListener.MAX_SCORE;
+                        return ScreenSpaceCanvas.EVENT_SCORE_MAX;
                     }
                 });
                 return new ScreenSpacePainterAdapter() {

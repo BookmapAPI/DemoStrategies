@@ -6,6 +6,7 @@ import java.awt.image.BufferedImage;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiDataAdapter;
@@ -31,6 +32,7 @@ import velox.api.layer1.layers.strategies.interfaces.ScreenSpacePainter;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpacePainterAdapter;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpacePainterFactory;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
+import velox.api.layer1.messages.indicators.AliasFilter;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyScreenSpacePainter;
 
 @Layer1Attachable
@@ -145,6 +147,7 @@ public class Layer1ApiLastPricePlankDemo implements
     private static final String INDICATOR_NAME = "Last price plank";
     
     private Layer1ApiProvider provider;
+    private AtomicBoolean isWorking = new AtomicBoolean(false);
 
     private Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
     private Map<String, String> indicatorsUserNameToFullName = new HashMap<>();
@@ -162,6 +165,7 @@ public class Layer1ApiLastPricePlankDemo implements
     
     @Override
     public void finish() {
+        isWorking.set(false);
         synchronized (indicatorsFullNameToUserName) {
             for (String userName: indicatorsFullNameToUserName.values()) {
                 Layer1ApiUserMessageModifyScreenSpacePainter message = Layer1ApiUserMessageModifyScreenSpacePainter
@@ -171,10 +175,16 @@ public class Layer1ApiLastPricePlankDemo implements
         }
     }
     
-    private Layer1ApiUserMessageModifyScreenSpacePainter getUserMessageAdd(String userName) {
+    private Layer1ApiUserMessageModifyScreenSpacePainter getUserMessageAdd(String alias, String userName) {
         return Layer1ApiUserMessageModifyScreenSpacePainter.builder(Layer1ApiLastPricePlankDemo.class, userName)
                 .setIsAdd(true)
                 .setScreenSpacePainterFactory(this)
+                .setAliasFilter(new AliasFilter() {
+                    @Override
+                    public boolean isDisplayedForAlias(String aliasForFilter) {
+                        return aliasForFilter.equals(alias);
+                    }
+                })
                 .build();
     }
     
@@ -183,13 +193,18 @@ public class Layer1ApiLastPricePlankDemo implements
         if (data.getClass() == UserMessageLayersChainCreatedTargeted.class) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {
-                addIndicator();
+                isWorking.set(true);
+
+                //Add SSP factory for each instrument info which we already received before UserMessageLayersChainCreatedTargeted
+                for(String alias: instrumentInfos.keySet()) {
+                    addIndicator(alias);
+                }
             }
         }
     }
 
-    public void addIndicator() {
-        Layer1ApiUserMessageModifyScreenSpacePainter message = getUserMessageAdd(INDICATOR_NAME);
+    public void addIndicator(String alias) {
+        Layer1ApiUserMessageModifyScreenSpacePainter message = getUserMessageAdd(alias, INDICATOR_NAME);
         
         synchronized (indicatorsFullNameToUserName) {
             indicatorsFullNameToUserName.put(message.fullName, message.userName);
@@ -211,6 +226,10 @@ public class Layer1ApiLastPricePlankDemo implements
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
         instrumentInfos.put(alias, instrumentInfo);
+        //Register SSP factory for given alias if we already received UserMessageLayersChainCreatedTargeted message
+        if(isWorking.get()) {
+            addIndicator(alias);
+        }
     }
     
     @Override

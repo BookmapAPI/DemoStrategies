@@ -22,6 +22,7 @@ import velox.api.layer1.common.Log;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent.CoordinateRequestType;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseListener;
+import velox.api.layer1.layers.strategies.interfaces.MouseModuleScore;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.RelativeHorizontalCoordinate;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.RelativeVerticalCoordinate;
@@ -143,7 +144,7 @@ public class Layer1ApiSspMouseEventsLoggerDemo implements
                     
                     @Override
                     public int getEventScore(CanvasMouseEvent canvasMouseEvent) {
-                        return ScreenSpaceCanvas.EVENT_SCORE_MAX;
+                        return MouseModuleScore.MAX.score;
                     }
                 });
                 return new ScreenSpacePainterAdapter() {

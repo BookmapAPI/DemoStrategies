@@ -27,6 +27,7 @@ import velox.api.layer1.common.Log;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent.CoordinateRequestType;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseListener;
+import velox.api.layer1.layers.strategies.interfaces.MouseModuleScore;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.CanvasIcon;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.CompositeCoordinateBase;
@@ -232,8 +233,8 @@ public class Layer1ApiSspPaintDemo implements
         @Override
         public int getEventScore(CanvasMouseEvent e) {
             return e.sourceEvent.isControlDown() && SwingUtilities.isLeftMouseButton(e.sourceEvent)
-                ? ScreenSpaceCanvas.EVENT_SCORE_MAX
-                : ScreenSpaceCanvas.EVENT_SCORE_NONE;
+                ? MouseModuleScore.MAX.score
+                : MouseModuleScore.NONE.score;
         }
     
         @Override

@@ -23,7 +23,6 @@ import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
-import velox.api.layer1.common.Log;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent.CoordinateRequestType;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseListener;
@@ -68,7 +67,7 @@ public class Layer1ApiSspPaintDemo implements
     private JCheckBox rightOfTimelineCanvasState;
     private ButtonGroup basisCoordinate;
     private ButtonGroup coordinateRequestType;
-    private JLabel warnMsgText;
+    private JLabel warnMsgLabel;
     
     volatile boolean isEnabled = false;
     
@@ -176,19 +175,25 @@ public class Layer1ApiSspPaintDemo implements
             strategyPanel.add(dataRequestBtn);
     
             strategyPanel.add(new JSeparator());
-            warnMsgText = new JLabel();
-            strategyPanel.add(warnMsgText);
+            warnMsgLabel = new JLabel();
+            strategyPanel.add(warnMsgLabel);
     
             // Show warn message if request coords in PIXELS from DATA_ZERO
             ActionListener warnMessageListener = e -> {
-                Log.info("action, result: " + (dataZeroBtn.isSelected() && pixelRequestBtn.isSelected()));
                 if (dataZeroBtn.isSelected() && pixelRequestBtn.isSelected()) {
-                    warnMsgText.setText("<html>It is not recommended to request data from DATA_ZERO in PIXELS,"
+                    warnMsgLabel.setText("<html>It is not recommended to request data from DATA_ZERO in PIXELS,"
                         + " almost certainly this isn't what you want to do.</html>");
+                } else if (dataZeroBtn.isSelected()
+                        && dataRequestBtn.isSelected()
+                        && rightOfTimelineCanvasState.isSelected()) {
+                    warnMsgLabel.setText("<html>It is not recommended to draw in RIGHT_OF_TIMELINE canvas"
+                        + " using DATA_ZERO coordinate as base, this might lead to"
+                        + " unexpected results, as the left edge of this canvas moves with the data.</html>");
                 } else {
-                    warnMsgText.setText("");
+                    warnMsgLabel.setText("");
                 }
             };
+            rightOfTimelineCanvasState.addActionListener(warnMessageListener);
             pixelZeroCoordsBtn.addActionListener(warnMessageListener);
             dataZeroBtn.addActionListener(warnMessageListener);
             pixelRequestBtn.addActionListener(warnMessageListener);

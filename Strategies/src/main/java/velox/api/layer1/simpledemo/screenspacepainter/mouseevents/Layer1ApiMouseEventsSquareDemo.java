@@ -20,6 +20,7 @@ import velox.api.layer1.layers.strategies.interfaces.CanvasContextMenuProvider;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseEvent.CoordinateRequestType;
 import velox.api.layer1.layers.strategies.interfaces.CanvasMouseListener;
+import velox.api.layer1.layers.strategies.interfaces.MouseModuleScore;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.CanvasIcon;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas.CompositeCoordinateBase;
@@ -171,8 +172,8 @@ public class Layer1ApiMouseEventsSquareDemo implements
                 && (SwingUtilities.isRightMouseButton(e.sourceEvent) || e.sourceEvent.getClickCount() == 0) // ignore drag events
                 && x1.pixelsX <= eventX.pixelsX && eventX.pixelsX <= x2.pixelsX
                 && y1.pixelsY <= eventY.pixelsY && eventY.pixelsY <= y2.pixelsY
-                    ? ScreenSpaceCanvas.EVENT_SCORE_MIN
-                    : ScreenSpaceCanvas.EVENT_SCORE_NONE;
+                    ? MouseModuleScore.GRAPH_LAYERS_MODULES_MAX.score + 1
+                    : MouseModuleScore.NONE.score;
         }
     
         @Override

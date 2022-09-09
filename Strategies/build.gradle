@@ -15,9 +15,9 @@ repositories {
 
 dependencies {
     if (findProperty('is_built_from_main_bookmap_project')) {
-        compile fileTree(dir: "${main_libs}", include: ['*.jar'])
-        compile project(':Level1Api')
-        compile project(':SimplifiedApiWrapper')
+        implementation fileTree(dir: "${main_libs}", include: ['*.jar'])
+        implementation project(':Level1Api')
+        implementation project(':SimplifiedApiWrapper')
     } else {
         compileOnly group: 'com.bookmap.api', name: 'api-core', version: '7.3.1.8c12a91a61';
         compileOnly group: 'com.bookmap.api', name: 'api-simplified', version: '7.3.1.8c12a91a61';

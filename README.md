@@ -242,7 +242,9 @@ You should be able to use any IDE you like as long as it supports Gradle. You mi
 
 #### General tips on running Bookmap with any IDE
 
-- For Bookmap ver. 7.2 and onwards it is recommended to use JDK 14. Note that it might be changed later.
+- Check the JRE version used in your Bookmap release: open `C:\Program Files\Bookmap\jre\bin` in your terminal, and execute `.\java --version`.
+ You can use the same JDK version for development. Also, at the time of writing, Bookmap ver. 7.2 and onwards can be run with JVM ver. 14. Note, however,
+ that this might be changed in the future.
 - Sometimes your IDE may ignore your gradle source/target compatibility settings for Java (if you have those). Ensure it is Java 14 in your project environment/compiler settings. If not, set it explicitly in the project settings.
 - Sometimes your IDE may handle your gradle compileOnly dependencies incorrectly and still add those to classpath. **This will usually result in NoSuchMethodError or NoClassDefFoundError**. You can verify that this is the case by checking `java.class.path` system properly of the process that you started via Java VisualVM on in any other way - it shouldn't contain any of compileOnly dependencies, so if it does - this is a problem. To solve it you can either (hackish simple way) edit build.gradle to point to the libraries from `C:\Program Files\Bookmap\lib` directory (which will ensure that those are the same exact libraries that bookmap expects, preventing the crash) or (more correct way, but exact way to achieve it differs from one IDE to another) remove the project and project dependencies from run configuration.
 - Working directory will determine where your config folder will be. On Windows you can set `C:\Bookmap`, which is the default during installation, but you can also maintain multiple separate Bookmap configs, if you want.
@@ -255,7 +257,7 @@ You should be able to use any IDE you like as long as it supports Gradle. You mi
 2. Set 'Path to jar': `C:\Program Files\Bookmap\Bookmap.jar` (note that it might be different on your machine
 if you changed the installation directory)
 3. Set 'Working directory': `C:\Bookmap\Config`
-4. Set the JRE. We recommend using Java 14 VM
+4. Set the JDK. Check which JDK version to use in [General tips on running Bookmap with any IDE](#General tips on running Bookmap with any IDE).
 5. Save the config, and try to run it. If everything worked right, Bookmap will start.
 
 If you want to **attach a debugger**, run the configuration in `Debug` mode (a button next to `Run`).

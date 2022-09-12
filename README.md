@@ -7,13 +7,13 @@ Word of caution: please be very careful when using something with real account. 
 ## Building your adapter
 
 - Make sure you have gradle installed and added to your path variable. If not - see https://gradle.org/install/
-- Make sure that your gradle is set to use Java 8
+- Use correct Java version - check the [General tips on running Bookmap with any IDE](#General tips on running Bookmap with any IDE).
 - Clone the repository: `git clone https://github.com/BookmapAPI/DemoStrategies.git`
 - Go to `Strategies` subfolder of the repository (the one with `build.gradle` file in it).
 - Run `gradle jar`. If everything was done correctly - gradle will tell you that build was successful.
 - In `Strategies/build/libs` subfolder (relative to the root of the repository) you should now have `bm-strategies.jar` - those are your indicators and strategies compiled and ready to be loaded into Bookmap
 
-If you have Gradle installed and configured to use Java 8, you can simply run these commands:
+If you have Gradle installed and configured to use the correct Java version, you can simply run these commands:
 ```
 git clone https://github.com/BookmapAPI/DemoStrategies.git
 cd DemoStrategies/Strategies
@@ -242,10 +242,10 @@ You should be able to use any IDE you like as long as it supports Gradle. You mi
 
 #### General tips on running Bookmap with any IDE
 
-- Check the JRE version used in your Bookmap release: open `C:\Program Files\Bookmap\jre\bin` in your terminal, and execute `.\java --version`.
- You can use the same JDK version for development. Also, at the time of writing, Bookmap ver. 7.2 and onwards can be run with JVM ver. 14. Note, however,
- that this might be changed in the future.
-- Sometimes your IDE may ignore your gradle source/target compatibility settings for Java (if you have those). Ensure it is Java 14 in your project environment/compiler settings. If not, set it explicitly in the project settings.
+- Check the JRE version used in your Bookmap release: open `C:\Program Files\Bookmap\jre\bin` in your terminal (the path might be different on your machine
+  if you changed the installation directory), and execute `.\java --version`. You can use the same JDK version for development.
+  Also, at the time of writing, Bookmap ver. 7.2 and onwards can be run with JVM ver. 14. Note, however, that this might be changed in the future.
+- Sometimes your IDE may ignore your gradle source/target compatibility settings for Java (if you have those). Ensure the Java version is the same in your project environment/compiler settings. If not, set it explicitly in the project settings.
 - Sometimes your IDE may handle your gradle compileOnly dependencies incorrectly and still add those to classpath. **This will usually result in NoSuchMethodError or NoClassDefFoundError**. You can verify that this is the case by checking `java.class.path` system properly of the process that you started via Java VisualVM on in any other way - it shouldn't contain any of compileOnly dependencies, so if it does - this is a problem. To solve it you can either (hackish simple way) edit build.gradle to point to the libraries from `C:\Program Files\Bookmap\lib` directory (which will ensure that those are the same exact libraries that bookmap expects, preventing the crash) or (more correct way, but exact way to achieve it differs from one IDE to another) remove the project and project dependencies from run configuration.
 - Working directory will determine where your config folder will be. On Windows you can set `C:\Bookmap`, which is the default during installation, but you can also maintain multiple separate Bookmap configs, if you want.
 - Add `C:\Program Files\Bookmap\Bookmap.jar` to the classpath. It should list the dependencies in manifest, so that will often be enough, but you can include libraries from `C:\Program Files\Bookmap\lib` if Bookmap complains about missing classes.

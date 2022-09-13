@@ -253,6 +253,25 @@ You should be able to use any IDE you like as long as it supports Gradle. You mi
 
 #### Running Bookmap with IntelliJ IDEA
 
+You can either manually create a run configuration, or modify the configuration in `build.gradle` of this project.
+
+##### Import the built-in run configuration
+
+1. Open the project with IntelliJ IDEA. If it wasn't automatically imported, right-click on `build.gradle` and
+press `Link Gradle Project`.
+2. After the import, you should see a run configuration created, named `BookmapJar`.
+3. Try to start the configuration. If it doesn't work, check that paths to your Bookmap.jar
+and your working directory are correct - you need to update them in `build.gradle` if you changed
+the default installation paths.
+4. You might need to change the project JDK version (in `File -> Project Structure -> SDK`),
+for details on Java version, check out [General tips on running Bookmap with any IDE](#General tips on running Bookmap with any IDE).
+
+Note that if you make any changes to this run configuration in your IDE, they will be overwritten on project import refresh.
+You need to either only modify the config in `build.gradle`, or, after successful import of the config,
+remove it from `build.gradle`.
+
+##### Manually create IntelliJ run configuration
+
 1. In your module project, create a `JAR Application` run configuration: Navigate `Edit configurations... -> Add New Configuration`, select `JAR Application`
 2. Set 'Path to jar': `C:\Program Files\Bookmap\Bookmap.jar` (note that it might be different on your machine
 if you changed the installation directory)

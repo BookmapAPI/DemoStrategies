@@ -38,7 +38,7 @@ eclipse.classpath.downloadJavadoc = true
 idea.module.downloadJavadoc = true
 
 if(idea.project) {
-    // Create BookmapJar run configuration for IntelliJ
+    // Create 'BookmapJar' run configuration for IntelliJ
     idea.project.settings.runConfigurations {
         def addOpensOptions = '--add-opens=java.base/java.lang=ALL-UNNAMED\n' +
                 '--add-opens=java.base/java.io=ALL-UNNAMED\n' +
@@ -50,9 +50,12 @@ if(idea.project) {
                 '--add-opens=java.desktop/java.awt=ALL-UNNAMED\n' +
                 '--add-opens=java.desktop/java.awt.color=ALL-UNNAMED\n' +
                 '--add-opens=java.desktop/java.awt.peer=ALL-UNNAMED\n' +
-                '--add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED\n' +
                 '--add-opens=java.desktop/com.sun.java.swing=ALL-UNNAMED\n' +
                 '--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED'
+        if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+            addOpensOptions += '--add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED\n'
+        }
+
         'BookmapJar'(org.jetbrains.gradle.ext.JarApplication) {
             // Change the path to Bookmap.jar here if you changed the default installation directory
             jarPath = 'C:\\Program Files\\Bookmap\\Bookmap.jar'

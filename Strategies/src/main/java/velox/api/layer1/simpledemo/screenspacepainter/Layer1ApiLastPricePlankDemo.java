@@ -92,7 +92,7 @@ public class Layer1ApiLastPricePlankDemo implements
 
         private synchronized void update() {
             // Return as we don't have the necessary info for calculation yet.
-            if(!instrumentInfos.containsKey(alias)) {
+            if (!instrumentInfos.containsKey(alias)) {
                 return;
             }
             
@@ -217,7 +217,7 @@ public class Layer1ApiLastPricePlankDemo implements
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
         instrumentInfos.put(alias, instrumentInfo);
         
-        if(painters.containsKey(alias)) {
+        if (painters.containsKey(alias)) {
             painters.get(alias).update();
         }
     }

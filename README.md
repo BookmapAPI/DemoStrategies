@@ -7,7 +7,7 @@ Word of caution: please be very careful when using something with real account. 
 ## Building your adapter
 
 - Make sure you have gradle installed and added to your path variable. If not - see https://gradle.org/install/
-- Use correct Java version - check the [General tips on running Bookmap with any IDE](#General tips on running Bookmap with any IDE).
+- Use correct Java version - check the [General tips on running Bookmap with any IDE](#general-tips-on-running-bookmap-with-any-ide).
 - Clone the repository: `git clone https://github.com/BookmapAPI/DemoStrategies.git`
 - Go to `Strategies` subfolder of the repository (the one with `build.gradle` file in it).
 - Run `gradle jar`. If everything was done correctly - gradle will tell you that build was successful.
@@ -262,7 +262,7 @@ You should be able to use any IDE you like as long as it supports Gradle. You mi
 --add-opens=java.desktop/java.awt.color=ALL-UNNAMED
 --add-opens=java.desktop/java.awt.peer=ALL-UNNAMED
 --add-opens=java.desktop/com.sun.java.swing=ALL-UNNAMED
---add-opens=java.prefs/java.util.prefs=ALL-UNNAM
+--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED
 --add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED // this one is needed only for Windows
 ```
 - When started from an IDE on a Windows machine, your Bookmap might look different from what you see when you 
@@ -287,7 +287,7 @@ press `Link Gradle Project`.
 and your working directory are correct - you need to update them in `build.gradle` if you changed
 the default installation paths.
 4. You might need to change the project JDK version (in `File -> Project Structure -> SDK`),
-for details on Java version, check out [General tips on running Bookmap with any IDE](#General tips on running Bookmap with any IDE).
+for details on Java version, check out [General tips on running Bookmap with any IDE](#general-tips-on-running-bookmap-with-any-ide).
 
 Note that if you make any changes to this run configuration in your IDE, they will be overwritten on gradle project sync.
 You need to either only modify the config in `build.gradle`, or, after successful import of the config,
@@ -299,8 +299,8 @@ remove it from `build.gradle`.
 2. Set 'Path to jar': `C:\Program Files\Bookmap\Bookmap.jar` (note that it might be different on your machine
 if you changed the installation directory)
 3. Set 'Working directory': `C:\Bookmap\Config`
-4. Set the JDK. Check which JDK version to use in [General tips on running Bookmap with any IDE](#General tips on running Bookmap with any IDE).
-5. For Java ver. 16 or newer - add `--add-opens` JVM args - check out [General tips on running Bookmap with any IDE](#General tips on running Bookmap with any IDE).
+4. Set the JDK. Check which JDK version to use in [General tips on running Bookmap with any IDE](#general-tips-on-running-bookmap-with-any-ide).
+5. For Java ver. 16 or newer - add `--add-opens` JVM args - check out [General tips on running Bookmap with any IDE](#general-tips-on-running-bookmap-with-any-ide).
 6. Save the config, and try to run it. If everything worked right, Bookmap will start.
 
 If you want to **attach a debugger**, run the configuration in `Debug` mode (a button next to `Run`).

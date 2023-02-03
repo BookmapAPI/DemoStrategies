@@ -166,7 +166,7 @@ public class Layer1ApiAveragePositionPriceDemo implements Layer1ApiFinishable,
     
     private void updateState(String alias, CurrentState state, OrderUpdatesExecutionsAggregationEvent aggregationEvent, Map<String, Boolean> orderIdToIsBuy,
             Map<String, String> orderIdToAlias) {
-        for (Object object: aggregationEvent.orderUpdates) {
+        for (Object object : aggregationEvent.orderUpdates) {
             if (object instanceof OrderUpdatedEvent) {
                 OrderUpdatedEvent event = (OrderUpdatedEvent) object;
                 orderIdToIsBuy.put(event.orderInfoUpdate.orderId, event.orderInfoUpdate.isBuy);

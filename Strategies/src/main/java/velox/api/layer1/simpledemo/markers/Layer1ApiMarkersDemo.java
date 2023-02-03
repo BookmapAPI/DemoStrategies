@@ -109,7 +109,7 @@ public class Layer1ApiMarkersDemo implements
     @Override
     public void finish() {
         synchronized (indicatorsFullNameToUserName) {
-            for (String userName: indicatorsFullNameToUserName.values()) {
+            for (String userName : indicatorsFullNameToUserName.values()) {
                 provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo.class, userName, false));
             }
         }
@@ -218,7 +218,7 @@ public class Layer1ApiMarkersDemo implements
                 
                 BufferedImage orderIcon = orderIcons.get(alias);
                 
-                for (Object object: orders.orderUpdates) {
+                for (Object object : orders.orderUpdates) {
                     if (object instanceof OrderExecutedEvent) {
                         OrderExecutedEvent orderExecutedEvent = (OrderExecutedEvent) object;
                         result.add(new Marker(orderExecutedEvent.executionInfo.price / pipsMap.getOrDefault(orderExecutedEvent.alias, 1.),

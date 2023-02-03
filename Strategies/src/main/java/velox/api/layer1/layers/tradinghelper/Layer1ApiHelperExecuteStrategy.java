@@ -154,7 +154,7 @@ public class Layer1ApiHelperExecuteStrategy extends Layer1ApiHelperStrategyAbstr
                 }
             }
             
-            for (Combination<String, Double> pendingMove: pendingMoves) {
+            for (Combination<String, Double> pendingMove : pendingMoves) {
                 provider.updateOrder(new OrderMoveParameters(pendingMove.first, Double.NaN, pendingMove.second));
             }
         }

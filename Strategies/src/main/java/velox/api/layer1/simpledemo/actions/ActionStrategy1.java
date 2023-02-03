@@ -64,8 +64,8 @@ public class ActionStrategy1 extends Layer1ApiInjectorRelay implements Layer1Api
         public void onShortcutChanged(String actionId, Set<String> shortcuts) {}
     }
     
-    @Layer1ActionMetadata(id = ByeWorldAction.BYE_ID1, name ="Bye Bye", groups = {"Alert Custom"})
-    @Layer1ActionMetadata(id = ByeWorldAction.BYE_ID2, name ="See you later", groups = {"Alert Custom"})
+    @Layer1ActionMetadata(id = ByeWorldAction.BYE_ID1, name = "Bye Bye", groups = {"Alert Custom"})
+    @Layer1ActionMetadata(id = ByeWorldAction.BYE_ID2, name = "See you later", groups = {"Alert Custom"})
     public class ByeWorldAction implements Layer1ExternalAction {
         protected static final String BYE_ID1 = "action_strategy1.say_bye";
         protected static final String BYE_ID2 = "action_strategy1.say_bye2";

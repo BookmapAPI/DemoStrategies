@@ -27,7 +27,7 @@ import velox.api.layer1.simplified.OrdersListener;
 @Layer1StrategyName("Cancel orders near BBO")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class CancelOrdersCloseToMarket implements
-    CustomModule, OrdersListener, BboListener{
+    CustomModule, OrdersListener, BboListener {
     
     private static final int CANCEL_DISTANCE = 3;
 

@@ -116,7 +116,7 @@ public class Layer1ApiBarsDemo implements
 
         @Override
         public String toString() {
-            return "[" + time + ": "+ open + "/" + low + "/" + high + "/" + close + "]";
+            return "[" + time + ": " + open + "/" + low + "/" + high + "/" + close + "]";
         }
 
         @Override

@@ -47,7 +47,7 @@ public class IndicatorModifiableDemo implements CustomModule, TradeDataListener,
         lastTradeIndicator.addPoint(price);
         pointNumber++;
         
-        if (pointNumber <= 30 && pointNumber%5 == 0) {
+        if (pointNumber <= 30 && pointNumber % 5 == 0) {
             Log.info(pointNumber + " " + price);
         }
         

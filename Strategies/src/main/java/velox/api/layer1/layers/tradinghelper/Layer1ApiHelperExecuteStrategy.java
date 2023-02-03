@@ -149,7 +149,7 @@ public class Layer1ApiHelperExecuteStrategy extends Layer1ApiHelperStrategyAbstr
                     moveOrders(false, orderBook.getAskMap().firstKey() - distance,ordersMap, pips, requestTimesMap, levelsNumber, pendingMoves);
                 }
                 
-                if (isConditionSatisfiedMore(volumeBid, volumeAsk, percent)){
+                if (isConditionSatisfiedMore(volumeBid, volumeAsk, percent)) {
                     moveOrders(true, orderBook.getBidMap().firstKey() + distance, ordersMap, pips, requestTimesMap, levelsNumber, pendingMoves);
                 }
             }

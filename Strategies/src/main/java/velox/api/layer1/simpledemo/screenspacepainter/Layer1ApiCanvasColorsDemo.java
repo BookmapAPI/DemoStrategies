@@ -55,7 +55,7 @@ public class Layer1ApiCanvasColorsDemo implements
     @Override
     public void finish() {
         synchronized (indicatorsFullNameToUserName) {
-            for (String userName: indicatorsFullNameToUserName.values()) {
+            for (String userName : indicatorsFullNameToUserName.values()) {
                 Layer1ApiUserMessageModifyScreenSpacePainter message = Layer1ApiUserMessageModifyScreenSpacePainter
                         .builder(Layer1ApiCanvasColorsDemo.class, userName).setIsAdd(false).build();
                 provider.sendUserMessage(message);

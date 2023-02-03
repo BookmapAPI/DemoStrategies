@@ -94,7 +94,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
             
             settingsAccess.setSettings(settingsAlias, strategyName, settingsObject, settingsObject.getClass());
             
-            for (String alias: orderBookMap.keySet()) {
+            for (String alias : orderBookMap.keySet()) {
                 doActionForAlias(alias);
             }
         }
@@ -163,7 +163,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
             UserMessageRewindBase message = (UserMessageRewindBase) data;
             
             synchronized (locker) {
-                for (Entry<String, OrderBook> entry: message.aliasToOrderBooksMap.entrySet()) {
+                for (Entry<String, OrderBook> entry : message.aliasToOrderBooksMap.entrySet()) {
                     OrderBook orderBook = orderBookMap.get(entry.getKey());
                     
                     if (orderBook != null) {
@@ -279,7 +279,7 @@ public class Layer1ApiHelperStrategyAbstract<V extends HelperStrategySettings> i
             return;
         }
         
-        for (StrategyPanel panel: lastPanels) {
+        for (StrategyPanel panel : lastPanels) {
             panel.invalidate();
             panel.repaint();
         }

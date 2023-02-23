@@ -6,6 +6,7 @@ import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1SimpleAttachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
+import velox.api.layer1.common.Log;
 import velox.api.layer1.data.BalanceInfo;
 import velox.api.layer1.data.ExecutionInfo;
 import velox.api.layer1.data.InstrumentInfo;
@@ -59,6 +60,11 @@ public class OrdersDemoNoHistory implements
 
     @Override
     public void onBalance(BalanceInfo balanceInfo) {
+        if (balanceInfo.balancesInCurrency.isEmpty()) {
+            Log.warn("BalanceInfo with empty balancesInCurrency list received, account name: " + balanceInfo.accountName);
+            return;
+        }
+
         balance.addPoint(balanceInfo.balancesInCurrency.get(0).balance);
     }
 

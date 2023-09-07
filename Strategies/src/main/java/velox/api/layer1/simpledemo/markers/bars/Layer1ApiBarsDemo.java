@@ -32,9 +32,9 @@ import java.util.Map;
 @Layer1StrategyName("Bars demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class Layer1ApiBarsDemo implements
-    Layer1ApiFinishable,
-    Layer1ApiAdminAdapter,
-    Layer1ApiInstrumentListener{
+        Layer1ApiFinishable,
+        Layer1ApiAdminAdapter,
+        Layer1ApiInstrumentListener {
 
     public static final CustomEventAggregatble BAR_EVENTS_AGGREGATOR = new CustomEventAggregatble() {
         @Override
@@ -48,38 +48,38 @@ public class Layer1ApiBarsDemo implements
             BarEvent valueEvent = (BarEvent) value;
             aggregationEvent.update(valueEvent);
         }
-        
+
         @Override
         public void aggregateAggregationWithAggregation(CustomGeneratedEvent aggregation1,
-                CustomGeneratedEvent aggregation2) {
+                                                        CustomGeneratedEvent aggregation2) {
             BarEvent aggregationEvent1 = (BarEvent) aggregation1;
             BarEvent aggregationEvent2 = (BarEvent) aggregation2;
             aggregationEvent1.update(aggregationEvent2);
         }
     };
-    
+
     private static final String INDICATOR_NAME_BARS_MAIN = "Bars: main chart";
     private static final String INDICATOR_NAME_BARS_BOTTOM = "Bars: bottom panel";
     private static final String INDICATOR_LINE_COLOR_NAME = "Trade markers line";
     private static final Color INDICATOR_LINE_DEFAULT_COLOR = Color.RED;
-    
+
     private static final String TREE_NAME = "Bars";
-    private static final Class<?>[] INTERESTING_CUSTOM_EVENTS = new Class<?>[] { BarEvent.class };
-    
+    private static final Class<?>[] INTERESTING_CUSTOM_EVENTS = new Class<?>[]{BarEvent.class};
+
     private final Layer1ApiProvider provider;
-    
+
     private final Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
     private final Map<String, String> indicatorsUserNameToFullName = new HashMap<>();
 
-    private BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
+    private final BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 
     private final BarsOnlineCalculator barsOnlineCalculator = new BarsOnlineCalculator(this);
 
     public Layer1ApiBarsDemo(Layer1ApiProvider provider) {
         this.provider = provider;
-        
+
         ListenableHelper.addListeners(provider, this);
-        
+
         // Prepare trade marker
         Graphics graphics = tradeIcon.getGraphics();
         graphics.setColor(Color.BLUE);
@@ -91,10 +91,10 @@ public class Layer1ApiBarsDemo implements
         return indicatorsFullNameToUserName.get(indicatorName);
     }
 
-    public Class<?>[] getInterestingCustomEvents () {
+    public Class<?>[] getInterestingCustomEvents() {
         return INTERESTING_CUSTOM_EVENTS;
     }
-    
+
     @Override
     public void finish() {
         synchronized (indicatorsFullNameToUserName) {
@@ -102,10 +102,10 @@ public class Layer1ApiBarsDemo implements
                 provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiBarsDemo.class, userName, false));
             }
         }
-        
+
         provider.sendUserMessage(getGeneratorMessage(false));
     }
-    
+
     private Layer1ApiUserMessageModifyIndicator getUserMessageAdd(String userName, GraphType graphType) {
         return Layer1ApiUserMessageModifyIndicator.builder(Layer1ApiBarsDemo.class, userName)
                 .setIsAdd(true)
@@ -115,7 +115,7 @@ public class Layer1ApiBarsDemo implements
                 .setIndicatorLineStyle(IndicatorLineStyle.NONE)
                 .build();
     }
-    
+
     @Override
     public void onUserMessage(Object data) {
         if (data.getClass() == UserMessageLayersChainCreatedTargeted.class) {
@@ -129,7 +129,7 @@ public class Layer1ApiBarsDemo implements
             }
         }
     }
-    
+
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
         barsOnlineCalculator.putPips(alias, instrumentInfo.pips);
@@ -138,7 +138,7 @@ public class Layer1ApiBarsDemo implements
     @Override
     public void onInstrumentRemoved(String alias) {
     }
-    
+
     @Override
     public void onInstrumentNotFound(String symbol, String exchange, String type) {
     }
@@ -150,17 +150,17 @@ public class Layer1ApiBarsDemo implements
     public void addIndicator(String userName) {
         Layer1ApiUserMessageModifyIndicator message = null;
         switch (userName) {
-        case INDICATOR_NAME_BARS_MAIN:
-            message = getUserMessageAdd(userName, GraphType.PRIMARY);
-            break;
-        case INDICATOR_NAME_BARS_BOTTOM:
-            message = getUserMessageAdd(userName, GraphType.BOTTOM);
-            break;
-        default:
-            Log.warn("Unknwon name for marker indicator: " + userName);
-            break;
+            case INDICATOR_NAME_BARS_MAIN:
+                message = getUserMessageAdd(userName, GraphType.PRIMARY);
+                break;
+            case INDICATOR_NAME_BARS_BOTTOM:
+                message = getUserMessageAdd(userName, GraphType.BOTTOM);
+                break;
+            default:
+                Log.warn("Unknwon name for marker indicator: " + userName);
+                break;
         }
-        
+
         if (message != null) {
             synchronized (indicatorsFullNameToUserName) {
                 indicatorsFullNameToUserName.put(message.fullName, message.userName);
@@ -176,14 +176,14 @@ public class Layer1ApiBarsDemo implements
                 isAdd,
                 true,
                 new BarsStrategyUpdateGenerator(),
-                new GeneratedEventInfo[] {new GeneratedEventInfo(BarEvent.class, BarEvent.class, BAR_EVENTS_AGGREGATOR)});
+                new GeneratedEventInfo[]{new GeneratedEventInfo(BarEvent.class, BarEvent.class, BAR_EVENTS_AGGREGATOR)});
     }
 
     private IndicatorColorScheme createDefaultIndicatorColorScheme() {
         return new IndicatorColorScheme() {
             @Override
             public ColorDescription[] getColors() {
-                return new ColorDescription[] {
+                return new ColorDescription[]{
                         new ColorDescription(Layer1ApiBarsDemo.class, INDICATOR_LINE_COLOR_NAME, INDICATOR_LINE_DEFAULT_COLOR, false),
                 };
             }
@@ -195,7 +195,7 @@ public class Layer1ApiBarsDemo implements
 
             @Override
             public ColorIntervalResponse getColorIntervalsList(double valueFrom, double valueTo) {
-                return new ColorIntervalResponse(new String[] {INDICATOR_LINE_COLOR_NAME}, new double[] {});
+                return new ColorIntervalResponse(new String[]{INDICATOR_LINE_COLOR_NAME}, new double[]{});
             }
         };
     }

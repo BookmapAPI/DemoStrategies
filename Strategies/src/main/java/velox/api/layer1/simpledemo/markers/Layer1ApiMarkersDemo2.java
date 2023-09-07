@@ -18,7 +18,7 @@ import velox.api.layer1.messages.indicators.SettingsAccess;
 import velox.api.layer1.settings.Layer1ConfigSettingsInterface;
 import velox.gui.StrategyPanel;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,35 +27,35 @@ import java.util.concurrent.ConcurrentHashMap;
 @Layer1StrategyName("Markers demo 2")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 public class Layer1ApiMarkersDemo2 implements
-    Layer1ApiFinishable,
-    Layer1ApiAdminAdapter,
-    Layer1ApiInstrumentListener,
-    Layer1CustomPanelsGetter,
-    Layer1ConfigSettingsInterface {
- 
+        Layer1ApiFinishable,
+        Layer1ApiAdminAdapter,
+        Layer1ApiInstrumentListener,
+        Layer1CustomPanelsGetter,
+        Layer1ConfigSettingsInterface {
+
     public static final String INDICATOR_NAME_TRADE = "Trade markers";
     public static final String INDICATOR_NAME_CIRCLES = "Order markers";
 
     private final MarkersIndicatorColor markersIndicatorColor;
 
     private final MarkersOnlineCalculator markersOnlineCalculator;
-    
+
     private final Layer1ApiProvider provider;
-    
+
     private final Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
     private final Map<String, String> indicatorsUserNameToFullName = new HashMap<>();
-    
+
     private final Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
 
     public Layer1ApiMarkersDemo2(Layer1ApiProvider provider) {
         this.provider = provider;
-        
+
         ListenableHelper.addListeners(provider, this);
 
         markersIndicatorColor = new MarkersIndicatorColor(this);
         markersOnlineCalculator = new MarkersOnlineCalculator(markersIndicatorColor, this);
     }
-    
+
     @Override
     public void finish() {
         synchronized (indicatorsFullNameToUserName) {
@@ -65,23 +65,23 @@ public class Layer1ApiMarkersDemo2 implements
         }
         invalidateInterfaceMap.clear();
     }
-    
+
     @Override
     public void onUserMessage(Object data) {
         if (data.getClass() == UserMessageLayersChainCreatedTargeted.class) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {
                 provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(
-                    dataStructureInterface -> {
-                        markersOnlineCalculator.setDataStructureInterface(dataStructureInterface);
-                        invalidateInterfaceMap.values().forEach(InvalidateInterface::invalidate);
-                    }));
+                        dataStructureInterface -> {
+                            markersOnlineCalculator.setDataStructureInterface(dataStructureInterface);
+                            invalidateInterfaceMap.values().forEach(InvalidateInterface::invalidate);
+                        }));
                 addIndicator(INDICATOR_NAME_TRADE);
                 addIndicator(INDICATOR_NAME_CIRCLES);
             }
         }
     }
-    
+
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
         markersOnlineCalculator.putPipsByAlias(alias, instrumentInfo.pips);
@@ -91,7 +91,7 @@ public class Layer1ApiMarkersDemo2 implements
     @Override
     public void onInstrumentRemoved(String alias) {
     }
-    
+
     @Override
     public void onInstrumentNotFound(String symbol, String exchange, String type) {
     }

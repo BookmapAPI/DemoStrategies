@@ -37,6 +37,7 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
     public MarkersIndicatorColor(Layer1ApiMarkersDemo2 layer1ApiMarkersDemo2) {
         this.layer1ApiMarkersDemo2 = layer1ApiMarkersDemo2;
     }
+
     @Override
     public void setColor(String alias, String name, Color color) {
         MarkersDemoSettings settings = getSettingsFor(alias);
@@ -97,14 +98,14 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
         gbConst.fill = GridBagConstraints.HORIZONTAL;
         panel.add(configItemCircles, gbConst);
 
-        return new StrategyPanel[] {panel};
+        return new StrategyPanel[]{panel};
     }
 
     public IndicatorColorScheme createDefaultIndicatorColorScheme() {
         return new IndicatorColorScheme() {
             @Override
             public ColorDescription[] getColors() {
-                return new ColorDescription[] {
+                return new ColorDescription[]{
                         new ColorDescription(Layer1ApiMarkersDemo2.class,
                                 INDICATOR_LINE_COLOR_NAME,
                                 INDICATOR_LINE_DEFAULT_COLOR,
@@ -123,12 +124,12 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
 
             @Override
             public ColorIntervalResponse getColorIntervalsList(double valueFrom, double valueTo) {
-                return new ColorIntervalResponse(new String[] {INDICATOR_LINE_COLOR_NAME}, new double[] {});
+                return new ColorIntervalResponse(new String[]{INDICATOR_LINE_COLOR_NAME}, new double[]{});
             }
         };
     }
 
-    public void setSettingsAccess (SettingsAccess settingsAccess) {
+    public void setSettingsAccess(SettingsAccess settingsAccess) {
         this.settingsAccess = settingsAccess;
     }
 

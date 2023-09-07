@@ -53,13 +53,13 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
             case Layer1ApiMarkersDemo2.INDICATOR_NAME_TRADE: {
                 ArrayList<DataStructureInterface.TreeResponseInterval> intervalResponse =
                         dataStructureInterface.get(t0, intervalWidth, intervalsNumber, alias,
-                        new DataStructureInterface.StandardEvents[] {DataStructureInterface.StandardEvents.TRADE});
+                                new DataStructureInterface.StandardEvents[]{DataStructureInterface.StandardEvents.TRADE});
 
                 double lastPrice = ((TradeAggregationEvent) intervalResponse.get(0).events
                         .get(DataStructureInterface.StandardEvents.TRADE.toString())).lastPrice;
 
                 for (int i = 1; i <= intervalsNumber; ++i) {
-                    TradeAggregationEvent trades = (TradeAggregationEvent)intervalResponse.get(i).events
+                    TradeAggregationEvent trades = (TradeAggregationEvent) intervalResponse.get(i).events
                             .get(DataStructureInterface.StandardEvents.TRADE.toString());
 
                     if (!Double.isNaN(trades.lastPrice)) {
@@ -76,9 +76,10 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
 
                 listener.setCompleted();
                 break;
-            } case Layer1ApiMarkersDemo2.INDICATOR_NAME_CIRCLES: {
+            }
+            case Layer1ApiMarkersDemo2.INDICATOR_NAME_CIRCLES: {
                 ArrayList<DataStructureInterface.TreeResponseInterval> intervalResponse = dataStructureInterface.get(t0, intervalWidth, intervalsNumber, alias,
-                        new DataStructureInterface.StandardEvents[] {DataStructureInterface.StandardEvents.ORDER});
+                        new DataStructureInterface.StandardEvents[]{DataStructureInterface.StandardEvents.ORDER});
                 for (int i = 1; i <= intervalsNumber; ++i) {
                     OrderUpdatesExecutionsAggregationEvent orders = (OrderUpdatesExecutionsAggregationEvent) intervalResponse.get(i).events.get(DataStructureInterface.StandardEvents.ORDER.toString());
 
@@ -105,7 +106,8 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
 
                 listener.setCompleted();
                 break;
-            } default:
+            }
+            default:
                 throw new IllegalArgumentException("Unknown indicator name " + indicatorName);
         }
 
@@ -121,24 +123,25 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
         layer1ApiMarkersDemo2.putInvalidateInterface(userName, invalidateInterface);
 
         if (dataStructureInterface == null) {
-            return new OnlineValueCalculatorAdapter() {};
+            return new OnlineValueCalculatorAdapter() {
+            };
         }
 
         BufferedImage orderIcon = markersIndicatorColor.getOrderIconByAlias(indicatorAlias);
 
         switch (userName) {
             case Layer1ApiMarkersDemo2.INDICATOR_NAME_TRADE:
-                return getCirclesTradeOnlineValueCalculatorAdapter(indicatorAlias, listener);
+                return getTradeOnlineValueCalculatorAdapter(indicatorAlias, listener);
             case Layer1ApiMarkersDemo2.INDICATOR_NAME_CIRCLES:
-                return getCirclesTradeOnlineValueCalculatorAdapter(indicatorAlias, listener, orderIcon);
+                return getCirclesOnlineValueCalculatorAdapter(indicatorAlias, listener, orderIcon);
             default:
                 throw new IllegalArgumentException("Unknown indicator name " + indicatorName);
         }
     }
 
-    private OnlineValueCalculatorAdapter getCirclesTradeOnlineValueCalculatorAdapter(String indicatorAlias,
-                                                                                     Consumer<Object> listener,
-                                                                                     BufferedImage orderIcon) {
+    private OnlineValueCalculatorAdapter getCirclesOnlineValueCalculatorAdapter(String indicatorAlias,
+                                                                                Consumer<Object> listener,
+                                                                                BufferedImage orderIcon) {
         return new OnlineValueCalculatorAdapter() {
             private final Map<String, String> orderIdToAlias = new HashMap<>();
 
@@ -149,7 +152,10 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
                     if (alias.equals(indicatorAlias)) {
                         Double pips = pipsMap.get(alias);
                         if (pips != null) {
-                            listener.accept(new Marker(executionInfo.price / pips, -orderIcon.getHeight() / 2, -orderIcon.getWidth() / 2, orderIcon));
+                            listener.accept(new Marker(executionInfo.price / pips,
+                                    -orderIcon.getHeight() / 2,
+                                    -orderIcon.getWidth() / 2,
+                                    orderIcon));
                         } else {
                             Log.info("Unknown pips for instrument " + alias);
                         }
@@ -167,7 +173,10 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
                             orderInfoUpdate.status == OrderStatus.DISCONNECTED) {
                         Double pips = pipsMap.get(orderInfoUpdate.instrumentAlias);
                         if (pips != null) {
-                            listener.accept(new Marker(getActivePrice(orderInfoUpdate) / pips, -orderIcon.getHeight() / 2, -orderIcon.getWidth() / 2, orderIcon));
+                            listener.accept(new Marker(getActivePrice(orderInfoUpdate) / pips,
+                                    -orderIcon.getHeight() / 2,
+                                    -orderIcon.getWidth() / 2,
+                                    orderIcon));
                         } else {
                             Log.info("Unknown pips for instrument " + orderInfoUpdate.instrumentAlias);
                         }
@@ -178,8 +187,8 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
         };
     }
 
-    private OnlineValueCalculatorAdapter getCirclesTradeOnlineValueCalculatorAdapter(String indicatorAlias,
-                                                                                     Consumer<Object> listener) {
+    private OnlineValueCalculatorAdapter getTradeOnlineValueCalculatorAdapter(String indicatorAlias,
+                                                                              Consumer<Object> listener) {
         return new OnlineValueCalculatorAdapter() {
             @Override
             public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {

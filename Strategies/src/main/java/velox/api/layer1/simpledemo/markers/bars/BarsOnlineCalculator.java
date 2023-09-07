@@ -96,7 +96,7 @@ public class BarsOnlineCalculator implements OnlineCalculatable {
                 if (data instanceof CustomGeneratedEventAliased) {
                     CustomGeneratedEventAliased aliasedEvent = (CustomGeneratedEventAliased) data;
                     if (indicatorAlias.equals(aliasedEvent.alias) && aliasedEvent.event instanceof BarEvent) {
-                        BarEvent event = (BarEvent)aliasedEvent.event;
+                        BarEvent event = (BarEvent) aliasedEvent.event;
                         /*
                          * Same idea as in calculateValuesInRange - we don't want to mess up the
                          * message, but here it's for a different reason. We have a chance of changing

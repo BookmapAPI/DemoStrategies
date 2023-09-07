@@ -23,8 +23,8 @@ dependencies {
         implementation project(':Level1Api')
         implementation project(':SimplifiedApiWrapper')
     } else {
-        compileOnly group: 'com.bookmap.api', name: 'api-core', version: '7.4.0.3'
-        compileOnly group: 'com.bookmap.api', name: 'api-simplified', version: '7.4.0.3'
+        compileOnly group: 'com.bookmap.api', name: 'api-core', version: '7.4.0.19'
+        compileOnly group: 'com.bookmap.api', name: 'api-simplified', version: '7.4.0.19'
 
         compileOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     }
@@ -53,7 +53,7 @@ if(idea.project) {
                 '--add-opens=java.desktop/com.sun.java.swing=ALL-UNNAMED\n' +
                 '--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED'
         if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-            addOpensOptions += '--add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED\n'
+            addOpensOptions += '\n--add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED\n'
         }
 
         'BookmapJar'(org.jetbrains.gradle.ext.JarApplication) {

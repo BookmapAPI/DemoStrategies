@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.util.HashMap;
 import java.util.Map;
 
+import velox.api.layer1.layers.strategies.interfaces.Layer1IndicatorColorInterface;
 import velox.api.layer1.settings.StrategySettingsVersion;
 
 @StrategySettingsVersion(currentVersion = 1, compatibleVersions = {})

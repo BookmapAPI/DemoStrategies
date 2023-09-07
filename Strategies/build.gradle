@@ -53,7 +53,7 @@ if(idea.project) {
                 '--add-opens=java.desktop/com.sun.java.swing=ALL-UNNAMED\n' +
                 '--add-opens=java.prefs/java.util.prefs=ALL-UNNAMED'
         if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-            addOpensOptions += '--add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED\n'
+            addOpensOptions += '\n--add-opens=java.desktop/sun.awt.windows=ALL-UNNAMED\n'
         }
 
         'BookmapJar'(org.jetbrains.gradle.ext.JarApplication) {

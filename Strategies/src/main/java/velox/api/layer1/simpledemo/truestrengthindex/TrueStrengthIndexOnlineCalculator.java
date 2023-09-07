@@ -7,6 +7,8 @@ import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
 import velox.api.layer1.layers.strategies.interfaces.OnlineCalculatable;
 import velox.api.layer1.layers.strategies.interfaces.OnlineValueCalculatorAdapter;
 import velox.api.layer1.messages.indicators.DataStructureInterface;
+import velox.api.layer1.messages.indicators.DataStructureInterface.TreeResponseInterval;
+import velox.api.layer1.messages.indicators.DataStructureInterface.StandardEvents;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -77,16 +79,18 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
 
     private void calculateMainIndexValuesInRange(String alias, long t0, long intervalWidth,
                                                  int intervalsNumber, CalculatedResultListener listener) {
-        ArrayList<DataStructureInterface.TreeResponseInterval> intervalResponse =
-                dataStructureInterface.get(t0, intervalWidth, intervalsNumber, alias,
-                        new DataStructureInterface.StandardEvents[]{DataStructureInterface.StandardEvents.TRADE});
+        ArrayList<TreeResponseInterval> intervalResponse = dataStructureInterface.get(t0,
+                intervalWidth,
+                intervalsNumber,
+                alias,
+                new StandardEvents[]{StandardEvents.TRADE});
 
         double lastPrice = ((TradeAggregationEvent) intervalResponse.get(0).events
-                .get(DataStructureInterface.StandardEvents.TRADE.toString())).lastPrice;
+                .get(StandardEvents.TRADE.toString())).lastPrice;
 
         for (int i = 1; i <= intervalsNumber; ++i) {
             TradeAggregationEvent trades = (TradeAggregationEvent) intervalResponse.get(i).events
-                    .get(DataStructureInterface.StandardEvents.TRADE.toString());
+                    .get(StandardEvents.TRADE.toString());
 
             if (!Double.isNaN(trades.lastPrice)) {
                 lastPrice = trades.lastPrice;

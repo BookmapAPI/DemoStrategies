@@ -43,7 +43,7 @@ import velox.api.layer1.layers.strategies.interfaces.ScreenSpacePainterFactory;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 import velox.api.layer1.messages.indicators.DataStructureInterface;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyScreenSpacePainter;
-import velox.api.layer1.simpledemo.markers.Layer1ApiMarkersDemo2;
+import velox.api.layer1.simpledemo.markers.Layer1ApiMarkersDemo;
 
 /**
  * <p>
@@ -62,7 +62,7 @@ import velox.api.layer1.simpledemo.markers.Layer1ApiMarkersDemo2;
  * <li>It is placed somewhere near BBO (for simplicity - let's take some random
  * price; it's possible to get necessary data using
  * {@link DataStructureInterface}, but that's outside of the scope of this demo
- * - see {@link Layer1ApiMarkersDemo2} if that's something you are interested in)
+ * - see {@link Layer1ApiMarkersDemo} if that's something you are interested in)
  * </li>
  * <li>In 5 seconds moved 10 levels down (keep in mind that to convert price to
  * levels it has to be divided by {@link InstrumentInfo#pips})</li>

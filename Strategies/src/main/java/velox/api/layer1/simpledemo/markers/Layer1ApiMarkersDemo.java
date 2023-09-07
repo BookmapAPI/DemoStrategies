@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Layer1Attachable
-@Layer1StrategyName("Markers demo 2")
+@Layer1StrategyName("Markers demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class Layer1ApiMarkersDemo2 implements
+public class Layer1ApiMarkersDemo implements
         Layer1ApiFinishable,
         Layer1ApiAdminAdapter,
         Layer1ApiInstrumentListener,
@@ -47,7 +47,7 @@ public class Layer1ApiMarkersDemo2 implements
 
     private final Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
 
-    public Layer1ApiMarkersDemo2(Layer1ApiProvider provider) {
+    public Layer1ApiMarkersDemo(Layer1ApiProvider provider) {
         this.provider = provider;
 
         ListenableHelper.addListeners(provider, this);
@@ -60,7 +60,7 @@ public class Layer1ApiMarkersDemo2 implements
     public void finish() {
         synchronized (indicatorsFullNameToUserName) {
             for (String userName : indicatorsFullNameToUserName.values()) {
-                provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo2.class, userName, false));
+                provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo.class, userName, false));
             }
         }
         invalidateInterfaceMap.clear();
@@ -147,7 +147,7 @@ public class Layer1ApiMarkersDemo2 implements
 
     private Layer1ApiUserMessageModifyIndicator getUserMessageAdd(String userName,
                                                                   IndicatorLineStyle lineStyle, boolean isAddWidget) {
-        return Layer1ApiUserMessageModifyIndicator.builder(Layer1ApiMarkersDemo2.class, userName)
+        return Layer1ApiUserMessageModifyIndicator.builder(Layer1ApiMarkersDemo.class, userName)
                 .setIsAdd(true)
                 .setGraphType(GraphType.PRIMARY)
                 .setColorInterface(markersIndicatorColor)

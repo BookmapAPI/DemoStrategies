@@ -24,13 +24,13 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
     private final Map<String, Double> pipsMap = new ConcurrentHashMap<>();
     private final MarkersIndicatorColor markersIndicatorColor;
     private final BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
-    private final Layer1ApiMarkersDemo2 layer1ApiMarkersDemo2;
+    private final Layer1ApiMarkersDemo layer1ApiMarkersDemo;
     private DataStructureInterface dataStructureInterface;
 
     public MarkersOnlineCalculator(MarkersIndicatorColor markersIndicatorColor,
-                                   Layer1ApiMarkersDemo2 layer1ApiMarkersDemo2) {
+                                   Layer1ApiMarkersDemo layer1ApiMarkersDemo) {
         this.markersIndicatorColor = markersIndicatorColor;
-        this.layer1ApiMarkersDemo2 = layer1ApiMarkersDemo2;
+        this.layer1ApiMarkersDemo = layer1ApiMarkersDemo;
 
         // Prepare trade marker
         Graphics graphics = tradeIcon.getGraphics();
@@ -47,10 +47,10 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
             return;
         }
 
-        String userName = layer1ApiMarkersDemo2.getFullNameByIndicator(indicatorName);
+        String userName = layer1ApiMarkersDemo.getFullNameByIndicator(indicatorName);
 
         switch (userName) {
-            case Layer1ApiMarkersDemo2.INDICATOR_NAME_TRADE: {
+            case Layer1ApiMarkersDemo.INDICATOR_NAME_TRADE: {
                 ArrayList<DataStructureInterface.TreeResponseInterval> intervalResponse =
                         dataStructureInterface.get(t0, intervalWidth, intervalsNumber, alias,
                                 new DataStructureInterface.StandardEvents[]{DataStructureInterface.StandardEvents.TRADE});
@@ -77,7 +77,7 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
                 listener.setCompleted();
                 break;
             }
-            case Layer1ApiMarkersDemo2.INDICATOR_NAME_CIRCLES: {
+            case Layer1ApiMarkersDemo.INDICATOR_NAME_CIRCLES: {
                 ArrayList<DataStructureInterface.TreeResponseInterval> intervalResponse = dataStructureInterface.get(t0, intervalWidth, intervalsNumber, alias,
                         new DataStructureInterface.StandardEvents[]{DataStructureInterface.StandardEvents.ORDER});
                 for (int i = 1; i <= intervalsNumber; ++i) {
@@ -119,8 +119,8 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
                                                                     long time,
                                                                     Consumer<Object> listener,
                                                                     InvalidateInterface invalidateInterface) {
-        String userName = layer1ApiMarkersDemo2.getFullNameByIndicator(indicatorName);
-        layer1ApiMarkersDemo2.putInvalidateInterface(userName, invalidateInterface);
+        String userName = layer1ApiMarkersDemo.getFullNameByIndicator(indicatorName);
+        layer1ApiMarkersDemo.putInvalidateInterface(userName, invalidateInterface);
 
         if (dataStructureInterface == null) {
             return new OnlineValueCalculatorAdapter() {
@@ -130,9 +130,9 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
         BufferedImage orderIcon = markersIndicatorColor.getOrderIconByAlias(indicatorAlias);
 
         switch (userName) {
-            case Layer1ApiMarkersDemo2.INDICATOR_NAME_TRADE:
+            case Layer1ApiMarkersDemo.INDICATOR_NAME_TRADE:
                 return getTradeOnlineValueCalculatorAdapter(indicatorAlias, listener);
-            case Layer1ApiMarkersDemo2.INDICATOR_NAME_CIRCLES:
+            case Layer1ApiMarkersDemo.INDICATOR_NAME_CIRCLES:
                 return getCirclesOnlineValueCalculatorAdapter(indicatorAlias, listener, orderIcon);
             default:
                 throw new IllegalArgumentException("Unknown indicator name " + indicatorName);

@@ -15,7 +15,7 @@ class BarsStrategyUpdateGenerator implements StrategyUpdateGenerator {
 
     private long time = 0;
 
-    private Map<String, BarsOnlineCalculator.BarEvent> aliasToLastBar = new HashMap<>();
+    private final Map<String, BarsOnlineCalculator.BarEvent> aliasToLastBar = new HashMap<>();
 
     @Override
     public void setGeneratedEventsConsumer(Consumer<CustomGeneratedEventAliased> consumer) {

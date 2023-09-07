@@ -128,58 +128,69 @@ public class MarkersOnlineCalculator implements OnlineCalculatable {
 
         switch (userName) {
             case Layer1ApiMarkersDemo2.INDICATOR_NAME_TRADE:
-                return new OnlineValueCalculatorAdapter() {
-                    @Override
-                    public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-                        if (alias.equals(indicatorAlias)) {
-                            listener.accept(new OnlineCalculatable.Marker(price,
-                                    -tradeIcon.getHeight() / 2,
-                                    -tradeIcon.getWidth() / 2,
-                                    tradeIcon));
-                        }
-                    }
-                };
+                return getCirclesTradeOnlineValueCalculatorAdapter(indicatorAlias, listener);
             case Layer1ApiMarkersDemo2.INDICATOR_NAME_CIRCLES:
-                return new OnlineValueCalculatorAdapter() {
-                    private Map<String, String> orderIdToAlias = new HashMap<>();
-
-                    @Override
-                    public void onOrderExecuted(ExecutionInfo executionInfo) {
-                        String alias = orderIdToAlias.get(executionInfo.orderId);
-                        if (alias != null) {
-                            if (alias.equals(indicatorAlias)) {
-                                Double pips = pipsMap.get(alias);
-                                if (pips != null) {
-                                    listener.accept(new OnlineCalculatable.Marker(executionInfo.price / pips, -orderIcon.getHeight() / 2, -orderIcon.getWidth() / 2, orderIcon));
-                                } else {
-                                    Log.info("Unknown pips for instrument " + alias);
-                                }
-
-                            }
-                        } else {
-                            Log.warn("Markers demo: Unknown alias for execution with order id " + executionInfo.orderId);
-                        }
-                    }
-
-                    @Override
-                    public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
-                        if (orderInfoUpdate.instrumentAlias.equals(indicatorAlias)) {
-                            if (orderInfoUpdate.status == OrderStatus.CANCELLED ||
-                                    orderInfoUpdate.status == OrderStatus.DISCONNECTED) {
-                                Double pips = pipsMap.get(orderInfoUpdate.instrumentAlias);
-                                if (pips != null) {
-                                    listener.accept(new OnlineCalculatable.Marker(getActivePrice(orderInfoUpdate) / pips, -orderIcon.getHeight() / 2, -orderIcon.getWidth() / 2, orderIcon));
-                                } else {
-                                    Log.info("Unknown pips for instrument " + orderInfoUpdate.instrumentAlias);
-                                }
-                            }
-                        }
-                        orderIdToAlias.put(orderInfoUpdate.orderId, orderInfoUpdate.instrumentAlias);
-                    }
-                };
+                return getCirclesTradeOnlineValueCalculatorAdapter(indicatorAlias, listener, orderIcon);
             default:
                 throw new IllegalArgumentException("Unknown indicator name " + indicatorName);
         }
+    }
+
+    private OnlineValueCalculatorAdapter getCirclesTradeOnlineValueCalculatorAdapter(String indicatorAlias,
+                                                                                     Consumer<Object> listener,
+                                                                                     BufferedImage orderIcon) {
+        return new OnlineValueCalculatorAdapter() {
+            private final Map<String, String> orderIdToAlias = new HashMap<>();
+
+            @Override
+            public void onOrderExecuted(ExecutionInfo executionInfo) {
+                String alias = orderIdToAlias.get(executionInfo.orderId);
+                if (alias != null) {
+                    if (alias.equals(indicatorAlias)) {
+                        Double pips = pipsMap.get(alias);
+                        if (pips != null) {
+                            listener.accept(new Marker(executionInfo.price / pips, -orderIcon.getHeight() / 2, -orderIcon.getWidth() / 2, orderIcon));
+                        } else {
+                            Log.info("Unknown pips for instrument " + alias);
+                        }
+
+                    }
+                } else {
+                    Log.warn("Markers demo: Unknown alias for execution with order id " + executionInfo.orderId);
+                }
+            }
+
+            @Override
+            public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
+                if (orderInfoUpdate.instrumentAlias.equals(indicatorAlias)) {
+                    if (orderInfoUpdate.status == OrderStatus.CANCELLED ||
+                            orderInfoUpdate.status == OrderStatus.DISCONNECTED) {
+                        Double pips = pipsMap.get(orderInfoUpdate.instrumentAlias);
+                        if (pips != null) {
+                            listener.accept(new Marker(getActivePrice(orderInfoUpdate) / pips, -orderIcon.getHeight() / 2, -orderIcon.getWidth() / 2, orderIcon));
+                        } else {
+                            Log.info("Unknown pips for instrument " + orderInfoUpdate.instrumentAlias);
+                        }
+                    }
+                }
+                orderIdToAlias.put(orderInfoUpdate.orderId, orderInfoUpdate.instrumentAlias);
+            }
+        };
+    }
+
+    private OnlineValueCalculatorAdapter getCirclesTradeOnlineValueCalculatorAdapter(String indicatorAlias,
+                                                                                     Consumer<Object> listener) {
+        return new OnlineValueCalculatorAdapter() {
+            @Override
+            public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
+                if (alias.equals(indicatorAlias)) {
+                    listener.accept(new Marker(price,
+                            -tradeIcon.getHeight() / 2,
+                            -tradeIcon.getWidth() / 2,
+                            tradeIcon));
+                }
+            }
+        };
     }
 
     public void putPipsByAlias(String alias, double pips) {

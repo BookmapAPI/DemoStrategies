@@ -25,7 +25,6 @@ import velox.api.layer1.simpledemo.markers.bars.BarsOnlineCalculator.BarEvent;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -67,14 +66,14 @@ public class Layer1ApiBarsDemo implements
     private static final String TREE_NAME = "Bars";
     private static final Class<?>[] INTERESTING_CUSTOM_EVENTS = new Class<?>[] { BarEvent.class };
     
-    private Layer1ApiProvider provider;
+    private final Layer1ApiProvider provider;
     
-    private Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
-    private Map<String, String> indicatorsUserNameToFullName = new HashMap<>();
-    
+    private final Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
+    private final Map<String, String> indicatorsUserNameToFullName = new HashMap<>();
+
     private BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 
-    private BarsOnlineCalculator barsOnlineCalculator = new BarsOnlineCalculator(this);
+    private final BarsOnlineCalculator barsOnlineCalculator = new BarsOnlineCalculator(this);
 
     public Layer1ApiBarsDemo(Layer1ApiProvider provider) {
         this.provider = provider;

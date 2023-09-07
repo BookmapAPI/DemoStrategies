@@ -40,12 +40,12 @@ public class Layer1ApiMarkersDemo2 implements
 
     private final MarkersOnlineCalculator markersOnlineCalculator;
     
-    private Layer1ApiProvider provider;
+    private final Layer1ApiProvider provider;
     
-    private Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
-    private Map<String, String> indicatorsUserNameToFullName = new HashMap<>();
+    private final Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
+    private final Map<String, String> indicatorsUserNameToFullName = new HashMap<>();
     
-    private Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
+    private final Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
 
     public Layer1ApiMarkersDemo2(Layer1ApiProvider provider) {
         this.provider = provider;
@@ -102,7 +102,7 @@ public class Layer1ApiMarkersDemo2 implements
 
     @Override
     public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
-        return markersIndicatorColor.getCustomGuiFor(alias, indicatorName);
+        return markersIndicatorColor.getCustomGuiFor(alias);
     }
 
     @Override

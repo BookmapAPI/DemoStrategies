@@ -22,7 +22,7 @@ public class BarsOnlineCalculator implements OnlineCalculatable {
     private static final int MIN_BODY_WIDTH = 1;
     private static final long CANDLE_INTERVAL_NS = TimeUnit.SECONDS.toNanos(30);
 
-    private Map<String, Double> pipsMap = new ConcurrentHashMap<>();
+    private final Map<String, Double> pipsMap = new ConcurrentHashMap<>();
 
     private DataStructureInterface dataStructureInterface;
 

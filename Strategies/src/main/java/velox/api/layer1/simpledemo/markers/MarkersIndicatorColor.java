@@ -17,7 +17,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MarkersIndicatorColor implements Layer1IndicatorColorInterface{
+public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
     private static final String INDICATOR_LINE_COLOR_NAME = "Trade markers line";
     private static final Color INDICATOR_LINE_DEFAULT_COLOR = Color.RED;
     private static final String INDICATOR_CIRCLES_COLOR_NAME = "Markers order circles";
@@ -70,7 +70,7 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface{
         // every one of our colors is modified only from one place
     }
 
-    public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
+    public StrategyPanel[] getCustomGuiFor(String alias) {
         StrategyPanel panel = new StrategyPanel("Colors", new GridBagLayout());
 
         panel.setLayout(new GridBagLayout());
@@ -153,7 +153,7 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface{
         orderIcons.put(alias, orderIcon);
     }
 
-    protected MarkersDemoSettings getSettingsFor(String alias) {
+    private MarkersDemoSettings getSettingsFor(String alias) {
         synchronized (locker) {
             MarkersDemoSettings settings = settingsMap.get(alias);
             if (settings == null) {
@@ -190,7 +190,7 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface{
                     layer1ApiMarkersDemo2.getInvalidateInterface(Layer1ApiMarkersDemo2.INDICATOR_NAME_TRADE);
             if (invalidaInterface != null) {
                 invalidaInterface.invalidate();
-            };
+            }
         };
 
         return new ColorsConfigItem(INDICATOR_LINE_COLOR_NAME, INDICATOR_LINE_COLOR_NAME, true,

@@ -3,7 +3,6 @@ package velox.api.layer1.simpledemo.truestrengthindex;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
 import velox.api.layer1.layers.strategies.interfaces.Layer1IndicatorColorInterface;
-import velox.api.layer1.layers.strategies.interfaces.OnlineCalculatable;
 import velox.api.layer1.messages.indicators.IndicatorColorInterface;
 import velox.api.layer1.messages.indicators.IndicatorColorScheme;
 import velox.api.layer1.messages.indicators.SettingsAccess;
@@ -12,13 +11,10 @@ import velox.gui.StrategyPanel;
 import velox.gui.colors.ColorsConfigItem;
 
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
 public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface {
-
-    private final BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 
     private final Map<String, TrueStrengthIndexSettings> settingsMap = new HashMap<>();
 
@@ -32,11 +28,6 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
     public TrueStrengthIndexGraphics(TrueStrengthIndexRepo trueStrengthIndexRepo) {
         this.trueStrengthIndexRepo = trueStrengthIndexRepo;
 
-        // Prepare trade marker
-        Graphics graphics = tradeIcon.getGraphics();
-        graphics.setColor(Color.BLUE);
-        graphics.drawLine(0, 0, 15, 15);
-        graphics.drawLine(15, 0, 0, 15);
     }
 
     @Override
@@ -54,7 +45,7 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
             if (line == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
                 color = line.getDefaultColor();
             } else {
-                Log.warn("Layer1ApiMarkersDemo: unknown color name " + name);
+                Log.warn("Layer1ApiTrueStrengthIndex: unknown color name " + name);
                 color = Color.WHITE;
             }
         }
@@ -107,13 +98,6 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
                         new double[]{});
             }
         };
-    }
-
-    protected OnlineCalculatable.Marker createNewTradeMarker(double price) {
-        return new OnlineCalculatable.Marker(price,
-                -tradeIcon.getHeight() / 2,
-                -tradeIcon.getWidth() / 2,
-                tradeIcon);
     }
 
     protected void setSettingsAccess(SettingsAccess settingsAccess) {

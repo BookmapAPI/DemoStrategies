@@ -44,7 +44,7 @@ public class Layer1ApiTrueStrengthIndex implements
         ListenableHelper.addListeners(provider, this);
 
         indexGraphics = new TrueStrengthIndexGraphics(indexRepo);
-        indexOnlineCalculator = new TrueStrengthIndexOnlineCalculator(indexRepo, indexGraphics);
+        indexOnlineCalculator = new TrueStrengthIndexOnlineCalculator(indexRepo);
     }
 
     @Override
@@ -85,7 +85,7 @@ public class Layer1ApiTrueStrengthIndex implements
         if (indicator == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
             message = getUserMessageAdd(userName);
         } else {
-            Log.warn("Unknwon name for true strength index indicator: " + userName);
+            Log.warn("Layer1ApiTrueStrengthIndex: Unknwon name for true strength index indicator: " + userName);
         }
 
         if (message != null) {

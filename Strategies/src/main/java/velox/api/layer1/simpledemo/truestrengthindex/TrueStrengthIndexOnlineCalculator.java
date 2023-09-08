@@ -9,16 +9,16 @@ import velox.api.layer1.layers.strategies.interfaces.OnlineValueCalculatorAdapte
 import velox.api.layer1.messages.indicators.DataStructureInterface;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
+    private final TrueStrengthIndex trueStrengthIndex = new TrueStrengthIndex();
     private final TrueStrengthIndexRepo trueStrengthIndexRepo;
-    private final TrueStrengthIndexGraphics trueStrengthIndexGraphics;
     private DataStructureInterface dataStructureInterface;
 
-    public TrueStrengthIndexOnlineCalculator(TrueStrengthIndexRepo trueStrengthIndexRepo, TrueStrengthIndexGraphics trueStrengthIndexGraphics) {
+    public TrueStrengthIndexOnlineCalculator(TrueStrengthIndexRepo trueStrengthIndexRepo) {
         this.trueStrengthIndexRepo = trueStrengthIndexRepo;
-        this.trueStrengthIndexGraphics = trueStrengthIndexGraphics;
     }
 
     @Override
@@ -48,8 +48,7 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
         trueStrengthIndexRepo.putInvalidateInterface(userName, invalidateInterface);
 
         if (dataStructureInterface == null) {
-            return new OnlineValueCalculatorAdapter() {
-            };
+            return new OnlineValueCalculatorAdapter() {};
         }
 
         TrueStrengthIndexDemoConstants indicator = TrueStrengthIndexDemoConstants.fromIndicatorName(userName);
@@ -66,11 +65,13 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
 
     private OnlineValueCalculatorAdapter getTradeOnlineValueCalculatorAdapter(String indicatorAlias,
                                                                               Consumer<Object> listener) {
+
         return new OnlineValueCalculatorAdapter() {
             @Override
             public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
+
                 if (alias.equals(indicatorAlias)) {
-                    listener.accept(trueStrengthIndexGraphics.createNewTradeMarker(price));
+                    listener.accept(trueStrengthIndex.addTsiValue(price));
                 }
             }
         };
@@ -85,24 +86,29 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
                 dataStructureInterface.get(t0, intervalWidth, intervalsNumber, alias,
                         new DataStructureInterface.StandardEvents[]{DataStructureInterface.StandardEvents.TRADE});
 
-        double lastPrice = ((TradeAggregationEvent) intervalResponse.get(0).events
-                .get(DataStructureInterface.StandardEvents.TRADE.toString())).lastPrice;
+        TradeAggregationEvent trades = ((TradeAggregationEvent) intervalResponse.get(0).events
+                .get(DataStructureInterface.StandardEvents.TRADE.toString()));
 
+        double lastPrice = trades.lastPrice;
+        double firstPrice = lastPrice;
+        boolean isFirst = true;
+        double tsi;
         for (int i = 1; i <= intervalsNumber; ++i) {
-            TradeAggregationEvent trades = (TradeAggregationEvent) intervalResponse.get(i).events
+            trades = (TradeAggregationEvent) intervalResponse.get(i).events
                     .get(DataStructureInterface.StandardEvents.TRADE.toString());
 
             if (!Double.isNaN(trades.lastPrice)) {
                 lastPrice = trades.lastPrice;
             }
 
-            if (trades.askAggressorMap.isEmpty() && trades.bidAggressorMap.isEmpty()) {
-                listener.provideResponse(lastPrice);
+            if (isFirst) {
+                tsi = trueStrengthIndex.addTwoTsiValues(firstPrice, lastPrice);
+                isFirst = false;
             } else {
-                listener.provideResponse(trueStrengthIndexGraphics.createNewTradeMarker(lastPrice));
+                tsi = trueStrengthIndex.addTsiValue(lastPrice);
             }
+            listener.provideResponse(tsi);
         }
-
         listener.setCompleted();
     }
 }

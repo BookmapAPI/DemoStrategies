@@ -83,7 +83,7 @@ public class Layer1ApiTrueStrengthIndex implements
 
         TrueStrengthIndexDemoConstants indicator = TrueStrengthIndexDemoConstants.fromIndicatorName(userName);
         if (indicator == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
-            message = getUserMessageAdd(userName, IndicatorLineStyle.DEFAULT, true);
+            message = getUserMessageAdd(userName);
         } else {
             Log.warn("Unknwon name for true strength index indicator: " + userName);
         }
@@ -98,19 +98,17 @@ public class Layer1ApiTrueStrengthIndex implements
         return new Layer1ApiUserMessageModifyIndicator(Layer1ApiTrueStrengthIndex.class, userName, false);
     }
 
-    private Layer1ApiUserMessageModifyIndicator getUserMessageAdd(String userName,
-                                                                  IndicatorLineStyle lineStyle,
-                                                                  boolean isAddWidget) {
+    private Layer1ApiUserMessageModifyIndicator getUserMessageAdd(String userName) {
         return Layer1ApiUserMessageModifyIndicator.builder(Layer1ApiTrueStrengthIndex.class, userName)
                 .setIsAdd(true)
                 .setGraphType(GraphType.BOTTOM)
                 .setColorInterface(indexGraphics)
                 .setOnlineCalculatable(indexOnlineCalculator)
                 .setIndicatorColorScheme(indexGraphics.createDefaultIndicatorColorScheme())
-                .setIndicatorLineStyle(lineStyle)
+                .setIndicatorLineStyle(IndicatorLineStyle.DEFAULT)
                 .setDefaultTooltipTextColor(Color.black)
                 .setDefaultTooltipBackgrondColor(Color.white)
-                .setIsSupportWidget(isAddWidget)
+                .setIsSupportWidget(true)
                 .setIsShowColorSettings(false)
                 .build();
     }

@@ -1,13 +1,15 @@
 package velox.api.layer1.simpledemo.markers.markers2;
 
-import velox.api.layer1.*;
+import velox.api.layer1.Layer1ApiAdminAdapter;
+import velox.api.layer1.Layer1ApiFinishable;
+import velox.api.layer1.Layer1ApiProvider;
+import velox.api.layer1.Layer1CustomPanelsGetter;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.Log;
-import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 import velox.api.layer1.messages.indicators.IndicatorLineStyle;
@@ -19,9 +21,6 @@ import velox.api.layer1.settings.Layer1ConfigSettingsInterface;
 import velox.gui.StrategyPanel;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 @Layer1Attachable
 @Layer1StrategyName("Markers demo 2")
@@ -32,33 +31,26 @@ public class Layer1ApiMarkersDemo2 implements
         Layer1CustomPanelsGetter,
         Layer1ConfigSettingsInterface {
 
-    public static final String INDICATOR_NAME_TRADE = "Trade markers";
+    private final MarkersRepo markersRepo = new MarkersRepo();
     private final MarkersIndicatorColor markersIndicatorColor;
 
     private final MarkersOnlineCalculator markersOnlineCalculator;
 
     private final Layer1ApiProvider provider;
 
-    private final Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
-    private final Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
-
     public Layer1ApiMarkersDemo2(Layer1ApiProvider provider) {
         this.provider = provider;
 
         ListenableHelper.addListeners(provider, this);
 
-        markersIndicatorColor = new MarkersIndicatorColor(this);
-        markersOnlineCalculator = new MarkersOnlineCalculator(markersIndicatorColor, this);
+        markersIndicatorColor = new MarkersIndicatorColor(markersRepo);
+        markersOnlineCalculator = new MarkersOnlineCalculator(markersRepo, markersIndicatorColor);
     }
 
     @Override
     public void finish() {
-        synchronized (indicatorsFullNameToUserName) {
-            for (String userName : indicatorsFullNameToUserName.values()) {
-                provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo2.class, userName, false));
-            }
-        }
-        invalidateInterfaceMap.clear();
+        markersRepo.executeForEachValueOfIndicatorsFullNameToUserName(this::getUserMessageRemove);
+        markersRepo.clearInvalidateInterfaceMap();
     }
 
     @Override
@@ -69,9 +61,9 @@ public class Layer1ApiMarkersDemo2 implements
                 provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(
                         dataStructureInterface -> {
                             markersOnlineCalculator.setDataStructureInterface(dataStructureInterface);
-                            invalidateInterfaceMap.values().forEach(InvalidateInterface::invalidate);
+                            markersRepo.executeForEachValueOfInvalidateInterfaceMap(InvalidateInterface::invalidate);
                         }));
-                addIndicator(INDICATOR_NAME_TRADE);
+                addIndicator(MarkersDemoConstants.MAIN_INDEX.getIndicatorName());
             }
         }
     }
@@ -86,35 +78,24 @@ public class Layer1ApiMarkersDemo2 implements
         markersIndicatorColor.setSettingsAccess(settingsAccess);
     }
 
-    public void putInvalidateInterface(String userName, InvalidateInterface invalidateInterface) {
-        invalidateInterfaceMap.put(userName, invalidateInterface);
-    }
-
-    public InvalidateInterface getInvalidateInterface(String userName) {
-        return invalidateInterfaceMap.get(userName);
-    }
-
-    public String getFullNameByIndicator(String indicatorName) {
-        return indicatorsFullNameToUserName.get(indicatorName);
-    }
-
-    public void addIndicator(String userName) {
+    private void addIndicator(String userName) {
         Layer1ApiUserMessageModifyIndicator message = null;
-        switch (userName) {
-            case INDICATOR_NAME_TRADE:
-                message = getUserMessageAdd(userName, IndicatorLineStyle.DEFAULT, true);
-                break;
-            default:
-                Log.warn("Unknwon name for marker indicator: " + userName);
-                break;
+
+        MarkersDemoConstants indicator = MarkersDemoConstants.fromIndicatorName(userName);
+        if (indicator == MarkersDemoConstants.MAIN_INDEX) {
+            message = getUserMessageAdd(userName, IndicatorLineStyle.DEFAULT, true);
+        } else {
+            Log.warn("Unknwon name for marker indicator: " + userName);
         }
 
         if (message != null) {
-            synchronized (indicatorsFullNameToUserName) {
-                indicatorsFullNameToUserName.put(message.fullName, message.userName);
-            }
+            markersRepo.putIndicatorNameByFullName(message.fullName, message.userName);
             provider.sendUserMessage(message);
         }
+    }
+
+    private Layer1ApiUserMessageModifyIndicator getUserMessageRemove(String userName) {
+        return new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo2.class, userName, false);
     }
 
     private Layer1ApiUserMessageModifyIndicator getUserMessageAdd(String userName,

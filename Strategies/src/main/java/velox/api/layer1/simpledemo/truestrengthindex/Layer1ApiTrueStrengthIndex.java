@@ -1,4 +1,4 @@
-package velox.api.layer1.simpledemo.markers.markers2;
+package velox.api.layer1.simpledemo.truestrengthindex;
 
 import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
@@ -23,34 +23,34 @@ import velox.gui.StrategyPanel;
 import java.awt.*;
 
 @Layer1Attachable
-@Layer1StrategyName("Markers demo 2")
+@Layer1StrategyName("True Strength Index")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-public class Layer1ApiMarkersDemo2 implements
+public class Layer1ApiTrueStrengthIndex implements
         Layer1ApiFinishable,
         Layer1ApiAdminAdapter,
         Layer1CustomPanelsGetter,
         Layer1ConfigSettingsInterface {
 
-    private final MarkersRepo markersRepo = new MarkersRepo();
-    private final MarkersIndicatorColor markersIndicatorColor;
+    private final TrueStrengthIndexRepo indexRepo = new TrueStrengthIndexRepo();
+    private final TrueStrengthIndexGraphics indexGraphics;
 
-    private final MarkersOnlineCalculator markersOnlineCalculator;
+    private final TrueStrengthIndexOnlineCalculator indexOnlineCalculator;
 
     private final Layer1ApiProvider provider;
 
-    public Layer1ApiMarkersDemo2(Layer1ApiProvider provider) {
+    public Layer1ApiTrueStrengthIndex(Layer1ApiProvider provider) {
         this.provider = provider;
 
         ListenableHelper.addListeners(provider, this);
 
-        markersIndicatorColor = new MarkersIndicatorColor(markersRepo);
-        markersOnlineCalculator = new MarkersOnlineCalculator(markersRepo, markersIndicatorColor);
+        indexGraphics = new TrueStrengthIndexGraphics(indexRepo);
+        indexOnlineCalculator = new TrueStrengthIndexOnlineCalculator(indexRepo, indexGraphics);
     }
 
     @Override
     public void finish() {
-        markersRepo.executeForEachValueOfIndicatorsFullNameToUserName(this::getUserMessageRemove);
-        markersRepo.clearInvalidateInterfaceMap();
+        indexRepo.executeForEachValueOfIndicatorsFullNameToUserName(this::getUserMessageRemove);
+        indexRepo.clearInvalidateInterfaceMap();
     }
 
     @Override
@@ -60,53 +60,53 @@ public class Layer1ApiMarkersDemo2 implements
             if (message.targetClass == getClass()) {
                 provider.sendUserMessage(new Layer1ApiDataInterfaceRequestMessage(
                         dataStructureInterface -> {
-                            markersOnlineCalculator.setDataStructureInterface(dataStructureInterface);
-                            markersRepo.executeForEachValueOfInvalidateInterfaceMap(InvalidateInterface::invalidate);
+                            indexOnlineCalculator.setDataStructureInterface(dataStructureInterface);
+                            indexRepo.executeForEachValueOfInvalidateInterfaceMap(InvalidateInterface::invalidate);
                         }));
-                addIndicator(MarkersDemoConstants.MAIN_INDEX.getIndicatorName());
+                addIndicator(TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName());
             }
         }
     }
 
     @Override
     public StrategyPanel[] getCustomGuiFor(String alias, String indicatorName) {
-        return markersIndicatorColor.getCustomGuiFor(alias);
+        return indexGraphics.getCustomGuiFor(alias);
     }
 
     @Override
     public void acceptSettingsInterface(SettingsAccess settingsAccess) {
-        markersIndicatorColor.setSettingsAccess(settingsAccess);
+        indexGraphics.setSettingsAccess(settingsAccess);
     }
 
     private void addIndicator(String userName) {
         Layer1ApiUserMessageModifyIndicator message = null;
 
-        MarkersDemoConstants indicator = MarkersDemoConstants.fromIndicatorName(userName);
-        if (indicator == MarkersDemoConstants.MAIN_INDEX) {
+        TrueStrengthIndexDemoConstants indicator = TrueStrengthIndexDemoConstants.fromIndicatorName(userName);
+        if (indicator == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
             message = getUserMessageAdd(userName, IndicatorLineStyle.DEFAULT, true);
         } else {
-            Log.warn("Unknwon name for marker indicator: " + userName);
+            Log.warn("Unknwon name for true strength index indicator: " + userName);
         }
 
         if (message != null) {
-            markersRepo.putIndicatorNameByFullName(message.fullName, message.userName);
+            indexRepo.putIndicatorNameByFullName(message.fullName, message.userName);
             provider.sendUserMessage(message);
         }
     }
 
     private Layer1ApiUserMessageModifyIndicator getUserMessageRemove(String userName) {
-        return new Layer1ApiUserMessageModifyIndicator(Layer1ApiMarkersDemo2.class, userName, false);
+        return new Layer1ApiUserMessageModifyIndicator(Layer1ApiTrueStrengthIndex.class, userName, false);
     }
 
     private Layer1ApiUserMessageModifyIndicator getUserMessageAdd(String userName,
                                                                   IndicatorLineStyle lineStyle,
                                                                   boolean isAddWidget) {
-        return Layer1ApiUserMessageModifyIndicator.builder(Layer1ApiMarkersDemo2.class, userName)
+        return Layer1ApiUserMessageModifyIndicator.builder(Layer1ApiTrueStrengthIndex.class, userName)
                 .setIsAdd(true)
                 .setGraphType(GraphType.BOTTOM)
-                .setColorInterface(markersIndicatorColor)
-                .setOnlineCalculatable(markersOnlineCalculator)
-                .setIndicatorColorScheme(markersIndicatorColor.createDefaultIndicatorColorScheme())
+                .setColorInterface(indexGraphics)
+                .setOnlineCalculatable(indexOnlineCalculator)
+                .setIndicatorColorScheme(indexGraphics.createDefaultIndicatorColorScheme())
                 .setIndicatorLineStyle(lineStyle)
                 .setDefaultTooltipTextColor(Color.black)
                 .setDefaultTooltipBackgrondColor(Color.white)

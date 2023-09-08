@@ -5,24 +5,41 @@ import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 
 public class TrueStrengthIndexRepo {
+    private final Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
     private final Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
-    private final Map<String, String> indicatorsFullNameToShortName = new HashMap<>();
 
-    public void putInvalidateInterface(String shortName, InvalidateInterface invalidateInterface) {
-        invalidateInterfaceMap.put(shortName, invalidateInterface);
+    protected void putInvalidateInterface(String userName, InvalidateInterface invalidateInterface) {
+        invalidateInterfaceMap.put(userName, invalidateInterface);
     }
 
-    public InvalidateInterface getInvalidateInterface(String shortName) {
-        return invalidateInterfaceMap.get(shortName);
+    protected InvalidateInterface getInvalidateInterface(String userName) {
+        return invalidateInterfaceMap.get(userName);
     }
 
-    public void putIndicatorShortNameByFullName(String fullName, String shortName) {
-        indicatorsFullNameToShortName.put(fullName, shortName);
+    protected void clearInvalidateInterfaceMap() {
+        invalidateInterfaceMap.clear();
     }
 
-    public String getIndicatorShortNameByFullName(String fullName) {
-        return indicatorsFullNameToShortName.get(fullName);
+    protected void executeForEachValueOfInvalidateInterfaceMap(Consumer<? super InvalidateInterface> consumer) {
+        invalidateInterfaceMap.values().forEach(consumer);
+    }
+
+    protected String getIndicatorNameByFullName(String indicatorName) {
+        return indicatorsFullNameToUserName.get(indicatorName);
+    }
+
+    protected void putIndicatorNameByFullName(String fullName, String indicatorName) {
+        synchronized (indicatorsFullNameToUserName) {
+            indicatorsFullNameToUserName.put(fullName, indicatorName);
+        }
+    }
+
+    protected void executeForEachValueOfIndicatorsFullNameToUserName(Consumer<? super String> consumer) {
+        synchronized (indicatorsFullNameToUserName) {
+            indicatorsFullNameToUserName.values().forEach(consumer);
+        }
     }
 }

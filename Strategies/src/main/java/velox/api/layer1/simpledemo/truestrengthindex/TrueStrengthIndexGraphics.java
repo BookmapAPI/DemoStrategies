@@ -1,4 +1,4 @@
-package velox.api.layer1.simpledemo.markers.markers2;
+package velox.api.layer1.simpledemo.truestrengthindex;
 
 import velox.api.layer1.common.Log;
 import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
@@ -16,21 +16,21 @@ import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
 
-public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
+public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface {
 
     private final BufferedImage tradeIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
 
-    private final Map<String, MarkersDemoSettings> settingsMap = new HashMap<>();
+    private final Map<String, TrueStrengthIndexSettings> settingsMap = new HashMap<>();
 
     private final Object locker = new Object();
 
-    private final MarkersRepo markersRepo;
+    private final TrueStrengthIndexRepo trueStrengthIndexRepo;
 
     private SettingsAccess settingsAccess;
 
 
-    public MarkersIndicatorColor(MarkersRepo markersRepo) {
-        this.markersRepo = markersRepo;
+    public TrueStrengthIndexGraphics(TrueStrengthIndexRepo trueStrengthIndexRepo) {
+        this.trueStrengthIndexRepo = trueStrengthIndexRepo;
 
         // Prepare trade marker
         Graphics graphics = tradeIcon.getGraphics();
@@ -41,7 +41,7 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
 
     @Override
     public void setColor(String alias, String name, Color color) {
-        MarkersDemoSettings settings = getSettingsFor(alias);
+        TrueStrengthIndexSettings settings = getSettingsFor(alias);
         settings.setColor(name, color);
         settingsChanged(alias, settings);
     }
@@ -50,8 +50,8 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
     public Color getColor(String alias, String name) {
         Color color = getSettingsFor(alias).getColor(name);
         if (color == null) {
-            MarkersDemoConstants line = MarkersDemoConstants.fromLineName(name);
-            if (line == MarkersDemoConstants.MAIN_INDEX) {
+            TrueStrengthIndexDemoConstants line = TrueStrengthIndexDemoConstants.fromLineName(name);
+            if (line == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
                 color = line.getDefaultColor();
             } else {
                 Log.warn("Layer1ApiMarkersDemo: unknown color name " + name);
@@ -69,7 +69,6 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
 
     protected StrategyPanel[] getCustomGuiFor(String alias) {
         StrategyPanel panel = new StrategyPanel("Colors", new GridBagLayout());
-//        panel.setLayout(new GridBagLayout());
 
         IndicatorColorInterface indicatorColorInterface = createNewIndicatorColorInterfaceInst(alias);
         ColorsConfigItem configItemLines = createNewColorsLinesConfigItem(indicatorColorInterface);
@@ -90,21 +89,21 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
             @Override
             public ColorDescription[] getColors() {
                 return new ColorDescription[]{
-                        new ColorDescription(Layer1ApiMarkersDemo2.class,
-                                MarkersDemoConstants.MAIN_INDEX.getLineName(),
-                                MarkersDemoConstants.MAIN_INDEX.getDefaultColor(),
+                        new ColorDescription(Layer1ApiTrueStrengthIndex.class,
+                                TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName(),
+                                TrueStrengthIndexDemoConstants.MAIN_INDEX.getDefaultColor(),
                                 false),
                 };
             }
 
             @Override
             public String getColorFor(Double value) {
-                return MarkersDemoConstants.MAIN_INDEX.getLineName();
+                return TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName();
             }
 
             @Override
             public ColorIntervalResponse getColorIntervalsList(double valueFrom, double valueTo) {
-                return new ColorIntervalResponse(new String[]{MarkersDemoConstants.MAIN_INDEX.getLineName()},
+                return new ColorIntervalResponse(new String[]{TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName()},
                         new double[]{});
             }
         };
@@ -121,19 +120,19 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
         this.settingsAccess = settingsAccess;
     }
 
-    protected void settingsChanged(String settingsAlias, MarkersDemoSettings settingsObject) {
+    protected void settingsChanged(String settingsAlias, TrueStrengthIndexSettings settingsObject) {
         synchronized (locker) {
             settingsAccess.setSettings(settingsAlias,
-                    MarkersDemoConstants.MAIN_INDEX.getIndicatorName(), settingsObject, MarkersDemoSettings.class);
+                    TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName(), settingsObject, TrueStrengthIndexSettings.class);
         }
     }
 
-    private MarkersDemoSettings getSettingsFor(String alias) {
+    private TrueStrengthIndexSettings getSettingsFor(String alias) {
         synchronized (locker) {
-            MarkersDemoSettings settings = settingsMap.get(alias);
+            TrueStrengthIndexSettings settings = settingsMap.get(alias);
             if (settings == null) {
-                settings = (MarkersDemoSettings) settingsAccess.getSettings(alias,
-                        MarkersDemoConstants.MAIN_INDEX.getIndicatorName(), MarkersDemoSettings.class);
+                settings = (TrueStrengthIndexSettings) settingsAccess.getSettings(alias,
+                        TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName(), TrueStrengthIndexSettings.class);
                 settingsMap.put(alias, settings);
             }
             return settings;
@@ -162,16 +161,16 @@ public class MarkersIndicatorColor implements Layer1IndicatorColorInterface {
     private ColorsConfigItem createNewColorsLinesConfigItem(IndicatorColorInterface indicatorColorInterface) {
         ColorsChangedListener colorsChangedListener = () -> {
             InvalidateInterface invalidaInterface =
-                    markersRepo.getInvalidateInterface(MarkersDemoConstants.MAIN_INDEX.getIndicatorName());
+                    trueStrengthIndexRepo.getInvalidateInterface(TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName());
             if (invalidaInterface != null) {
                 invalidaInterface.invalidate();
             }
         };
 
-        return new ColorsConfigItem(MarkersDemoConstants.MAIN_INDEX.getLineName(),
-                MarkersDemoConstants.MAIN_INDEX.getLineName(),
+        return new ColorsConfigItem(TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName(),
+                TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName(),
                 true,
-                MarkersDemoConstants.MAIN_INDEX.getDefaultColor(),
+                TrueStrengthIndexDemoConstants.MAIN_INDEX.getDefaultColor(),
                 indicatorColorInterface,
                 colorsChangedListener);
     }

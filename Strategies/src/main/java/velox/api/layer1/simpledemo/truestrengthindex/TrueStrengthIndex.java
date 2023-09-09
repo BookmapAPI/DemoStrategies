@@ -56,6 +56,7 @@ public class TrueStrengthIndex {
         notifyAll();
         return tsi.getLast();
     }
+
     synchronized public Double addTsiValue(Double newPrice) {
         while(flag.equals(false)) {
             try {
@@ -73,7 +74,7 @@ public class TrueStrengthIndex {
         ema.add(values.get(0));
         doubleEma.add(values.get(0));
         absEma.add(values.get(0));
-        doubleEma.add(values.get(0));
+        absDoubleEma.add(values.get(0));
         for (int i = 1; i < values.size(); i++) {
             countTsiValue(values.get(i));
         }
@@ -85,6 +86,7 @@ public class TrueStrengthIndex {
 
         tsi.add((doubleEma.getLast() / absDoubleEma.getLast()) * 100.0);
     }
+
     private void addDoubleEmaValue(Double value, LinkedList<Double> ema, LinkedList<Double> doubleEma) {
         ema.add(ema.getLast() * (1 - alpha) + alpha * value);
         doubleEma.add(doubleEma.getLast() * (1 - beta) + alpha * ema.getLast());

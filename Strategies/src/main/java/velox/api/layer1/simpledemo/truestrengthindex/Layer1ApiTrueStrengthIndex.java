@@ -1,15 +1,13 @@
 package velox.api.layer1.simpledemo.truestrengthindex;
 
-import velox.api.layer1.Layer1ApiAdminAdapter;
-import velox.api.layer1.Layer1ApiFinishable;
-import velox.api.layer1.Layer1ApiProvider;
-import velox.api.layer1.Layer1CustomPanelsGetter;
+import velox.api.layer1.*;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.Log;
+import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 import velox.api.layer1.messages.indicators.IndicatorLineStyle;
@@ -29,6 +27,7 @@ public class Layer1ApiTrueStrengthIndex implements
         Layer1ApiFinishable,
         Layer1ApiAdminAdapter,
         Layer1CustomPanelsGetter,
+        Layer1ApiInstrumentListener,
         Layer1ConfigSettingsInterface {
 
     private final TrueStrengthIndexRepo indexRepo = new TrueStrengthIndexRepo();
@@ -75,7 +74,26 @@ public class Layer1ApiTrueStrengthIndex implements
 
     @Override
     public void acceptSettingsInterface(SettingsAccess settingsAccess) {
-        indexGraphics.setSettingsAccess(settingsAccess);
+        indexRepo.setSettingsAccess(settingsAccess);
+    }
+
+    @Override
+    public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
+        Integer shortPeriod = TrueStrengthIndexDemoConstants.MAIN_INDEX.getParams().getLeft();
+        Integer longPeriod = TrueStrengthIndexDemoConstants.MAIN_INDEX.getParams().getRight();
+        indexRepo.putTrueStrengthIndex(alias, new TrueStrengthIndex(shortPeriod, longPeriod));
+    }
+
+    @Override
+    public void onInstrumentRemoved(String alias) {
+    }
+
+    @Override
+    public void onInstrumentNotFound(String symbol, String exchange, String type) {
+    }
+
+    @Override
+    public void onInstrumentAlreadySubscribed(String symbol, String exchange, String type) {
     }
 
     private void addIndicator(String userName) {
@@ -85,7 +103,7 @@ public class Layer1ApiTrueStrengthIndex implements
         if (indicator == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
             message = getUserMessageAdd(userName);
         } else {
-            Log.warn("Layer1ApiTrueStrengthIndex: Unknwon name for true strength index indicator: " + userName);
+            Log.warn("Layer1ApiTrueStrengthIndex: Unknown name for true strength index indicator: " + userName);
         }
 
         if (message != null) {

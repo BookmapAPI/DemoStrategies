@@ -9,11 +9,9 @@ import velox.api.layer1.layers.strategies.interfaces.OnlineValueCalculatorAdapte
 import velox.api.layer1.messages.indicators.DataStructureInterface;
 
 import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 
 public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
-    private final TrueStrengthIndex trueStrengthIndex = new TrueStrengthIndex();
     private final TrueStrengthIndexRepo trueStrengthIndexRepo;
     private DataStructureInterface dataStructureInterface;
 
@@ -69,9 +67,9 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
         return new OnlineValueCalculatorAdapter() {
             @Override
             public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-
                 if (alias.equals(indicatorAlias)) {
-                    listener.accept(trueStrengthIndex.addTsiValue(price));
+                    TrueStrengthIndex t = trueStrengthIndexRepo.getTrueStrengthIndex(alias);
+                    listener.accept(t.addTsiValue(price));
                 }
             }
         };
@@ -89,6 +87,7 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
         TradeAggregationEvent trades = ((TradeAggregationEvent) intervalResponse.get(0).events
                 .get(DataStructureInterface.StandardEvents.TRADE.toString()));
 
+        TrueStrengthIndex trueStrengthIndex = trueStrengthIndexRepo.getTrueStrengthIndex(alias);
         double lastPrice = trades.lastPrice;
         double firstPrice = lastPrice;
         boolean isFirst = true;

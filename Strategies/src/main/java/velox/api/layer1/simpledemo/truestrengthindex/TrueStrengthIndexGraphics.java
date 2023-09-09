@@ -5,24 +5,15 @@ import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
 import velox.api.layer1.layers.strategies.interfaces.Layer1IndicatorColorInterface;
 import velox.api.layer1.messages.indicators.IndicatorColorInterface;
 import velox.api.layer1.messages.indicators.IndicatorColorScheme;
-import velox.api.layer1.messages.indicators.SettingsAccess;
 import velox.colors.ColorsChangedListener;
 import velox.gui.StrategyPanel;
 import velox.gui.colors.ColorsConfigItem;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.Map;
 
 public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface {
 
-    private final Map<String, TrueStrengthIndexSettings> settingsMap = new HashMap<>();
-
-    private final Object locker = new Object();
-
-    private final TrueStrengthIndexRepo trueStrengthIndexRepo;
-
-    private SettingsAccess settingsAccess;
+    final TrueStrengthIndexRepo trueStrengthIndexRepo;
 
 
     public TrueStrengthIndexGraphics(TrueStrengthIndexRepo trueStrengthIndexRepo) {
@@ -32,14 +23,14 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
 
     @Override
     public void setColor(String alias, String name, Color color) {
-        TrueStrengthIndexSettings settings = getSettingsFor(alias);
+        TrueStrengthIndexSettings settings = trueStrengthIndexRepo.getSettingsFor(alias);
         settings.setColor(name, color);
-        settingsChanged(alias, settings);
+        trueStrengthIndexRepo.settingsChanged(alias, settings);
     }
 
     @Override
     public Color getColor(String alias, String name) {
-        Color color = getSettingsFor(alias).getColor(name);
+        Color color = trueStrengthIndexRepo.getSettingsFor(alias).getColor(name);
         if (color == null) {
             TrueStrengthIndexDemoConstants line = TrueStrengthIndexDemoConstants.fromLineName(name);
             if (line == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
@@ -100,29 +91,6 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
         };
     }
 
-    protected void setSettingsAccess(SettingsAccess settingsAccess) {
-        this.settingsAccess = settingsAccess;
-    }
-
-    protected void settingsChanged(String settingsAlias, TrueStrengthIndexSettings settingsObject) {
-        synchronized (locker) {
-            settingsAccess.setSettings(settingsAlias,
-                    TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName(), settingsObject, TrueStrengthIndexSettings.class);
-        }
-    }
-
-    private TrueStrengthIndexSettings getSettingsFor(String alias) {
-        synchronized (locker) {
-            TrueStrengthIndexSettings settings = settingsMap.get(alias);
-            if (settings == null) {
-                settings = (TrueStrengthIndexSettings) settingsAccess.getSettings(alias,
-                        TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName(), TrueStrengthIndexSettings.class);
-                settingsMap.put(alias, settings);
-            }
-            return settings;
-        }
-    }
-
     private IndicatorColorInterface createNewIndicatorColorInterfaceInst(String alias) {
         return new IndicatorColorInterface() {
             @Override
@@ -132,7 +100,7 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
 
             @Override
             public Color getOrDefault(String name, Color defaultValue) {
-                Color color = getSettingsFor(alias).getColor(name);
+                Color color = trueStrengthIndexRepo.getSettingsFor(alias).getColor(name);
                 return color == null ? defaultValue : color;
             }
 

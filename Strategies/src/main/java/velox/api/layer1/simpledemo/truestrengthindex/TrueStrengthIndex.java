@@ -13,12 +13,20 @@ public class TrueStrengthIndex {
     private final LinkedList<Double> absEma = new LinkedList<>();
     private final LinkedList<Double> absDoubleEma = new LinkedList<>();
     private Double lastPrice = Double.NaN;
-    private int shortPeriod = 13;
-    private int longPeriod = 25;
-    private double alpha = 2. / (shortPeriod + 1);
-    private double beta = 2. / (longPeriod + 1);
     private LinkedList<Double> tsi = new LinkedList<>();
     private volatile Boolean flag = false;
+    private int shortPeriod;
+    private int longPeriod;
+    private double alpha;
+    private double beta;
+
+    public TrueStrengthIndex(Integer shortPeriod, Integer longPeriod) {
+        this.shortPeriod = shortPeriod;
+        this.longPeriod = longPeriod;
+
+        alpha = getConst(shortPeriod);
+        beta = getConst(longPeriod);
+    }
 
     synchronized public List<Double> addNewTsiValues(List<Double> closePrices) {
         lastPrice = closePrices.get(closePrices.size() - 1);
@@ -70,6 +78,16 @@ public class TrueStrengthIndex {
         return tsi.getLast();
     }
 
+    public void setShortPeriod(int shortPeriod) {
+        this.shortPeriod = shortPeriod;
+        this.alpha = getConst(shortPeriod);
+    }
+
+    public void setLongPeriod(int longPeriod) {
+        this.longPeriod = longPeriod;
+        beta = getConst(longPeriod);
+    }
+
     private void countTsiValues(List<Double> values) {
         ema.add(values.get(0));
         doubleEma.add(values.get(0));
@@ -90,5 +108,9 @@ public class TrueStrengthIndex {
     private void addDoubleEmaValue(Double value, LinkedList<Double> ema, LinkedList<Double> doubleEma) {
         ema.add(ema.getLast() * (1 - alpha) + alpha * value);
         doubleEma.add(doubleEma.getLast() * (1 - beta) + alpha * ema.getLast());
+    }
+
+    private double getConst(int period) {
+        return 2. / (period + 1);
     }
 }

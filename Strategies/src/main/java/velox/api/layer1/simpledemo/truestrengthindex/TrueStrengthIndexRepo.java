@@ -1,6 +1,7 @@
 package velox.api.layer1.simpledemo.truestrengthindex;
 
 import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
+import velox.api.layer1.messages.indicators.SettingsAccess;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,8 +9,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 public class TrueStrengthIndexRepo {
+    private final Map<String, TrueStrengthIndexSettings> settingsMap = new HashMap<>();
+    private final Map<String, TrueStrengthIndex> trueStrengthIndexByAlias = new HashMap<>();
     private final Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
     private final Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
+    private final Object locker = new Object();
+    private SettingsAccess settingsAccess;
+
+    protected void putTrueStrengthIndex(String alias, TrueStrengthIndex trueStrengthIndex) {
+        trueStrengthIndexByAlias.put(alias, trueStrengthIndex);
+    }
+
+    protected TrueStrengthIndex getTrueStrengthIndex(String alias) {
+        return trueStrengthIndexByAlias.get(alias);
+    }
 
     protected void putInvalidateInterface(String userName, InvalidateInterface invalidateInterface) {
         invalidateInterfaceMap.put(userName, invalidateInterface);
@@ -41,5 +54,30 @@ public class TrueStrengthIndexRepo {
         synchronized (indicatorsFullNameToUserName) {
             indicatorsFullNameToUserName.values().forEach(consumer);
         }
+    }
+
+    protected TrueStrengthIndexSettings getSettingsFor(String alias) {
+        synchronized (locker) {
+            TrueStrengthIndexSettings settings = settingsMap.get(alias);
+            if (settings == null) {
+                settings = (TrueStrengthIndexSettings) settingsAccess.getSettings(alias,
+                        TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName(), TrueStrengthIndexSettings.class);
+                settingsMap.put(alias, settings);
+            }
+            return settings;
+        }
+    }
+
+    protected void settingsChanged(String settingsAlias, TrueStrengthIndexSettings settingsObject) {
+        synchronized (locker) {
+            settingsAccess.setSettings(settingsAlias,
+                    TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName(),
+                    settingsObject,
+                    TrueStrengthIndexSettings.class);
+        }
+    }
+
+    protected void setSettingsAccess(SettingsAccess settingsAccess) {
+        this.settingsAccess = settingsAccess;
     }
 }

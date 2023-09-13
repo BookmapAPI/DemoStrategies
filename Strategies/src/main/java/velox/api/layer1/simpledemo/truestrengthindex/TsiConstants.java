@@ -5,12 +5,14 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import java.awt.*;
 import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
 
 public enum TsiConstants {
     MAIN_INDEX("Strength index line", Color.RED),
     CIRCLE_INDEX("Strength index circle", Color.GREEN);
     static public final String INDICATOR_NAME = "True Strength index";
     static public final String SHORT_NAME = "TSI";
+    static public final long PERIOD_INTERVAL_NS = TimeUnit.SECONDS.toNanos(1);
     static public final Pair<Integer, Integer> TSI_PARAMS = new ImmutablePair<>(13, 25);
     private final String lineName;
     private final Color defaultColor;

@@ -3,6 +3,7 @@ package velox.api.layer1.simpledemo.truestrengthindex;
 import velox.api.layer1.layers.strategies.interfaces.*;
 import velox.api.layer1.messages.indicators.DataStructureInterface;
 
+import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -66,7 +67,6 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
                                                  long intervalWidth,
                                                  int intervalsNumber,
                                                  CalculatedResultListener listener) {
-        TrueStrengthIndex trueStrengthIndex = indexRepo.getTrueStrengthIndex(alias);
         Double pips = indexRepo.getPips(alias);
         List<DataStructureInterface.TreeResponseInterval> intervalResponse =
                 getIntervalResponse(alias, t0, intervalWidth, intervalsNumber);
@@ -75,11 +75,8 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
             PeriodEvent value = getEvent(intervalResponse.get(i));
 
             if (value != null) {
-                value = new PeriodEvent(value);
-                value.applyPips(pips);
-
-                value.addTsiIfAbsent(trueStrengthIndex);
-                listener.provideResponse(value.getTsi());
+                Marker marker = makeMarker(value, pips, intervalWidth, alias);
+                listener.provideResponse(marker);
             } else {
                 listener.provideResponse(Double.NaN);
             }
@@ -90,8 +87,12 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
     private OnlineValueCalculatorAdapter getTradeOnlineValueCalculatorAdapter(String alias,
                                                                               Consumer<Object> listener) {
         Double pips = indexRepo.getPips(alias);
-        TrueStrengthIndex trueStrengthIndex = indexRepo.getTrueStrengthIndex(alias);
         return new OnlineValueCalculatorAdapter() {
+            long intervalWidth = 30;
+            @Override
+            public void onIntervalWidth(long intervalWidth) {
+                this.intervalWidth = intervalWidth;
+            }
             @Override
             public void onUserMessage(Object data) {
                 if (!(data instanceof CustomGeneratedEventAliased)) {
@@ -99,15 +100,34 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
                 }
                 CustomGeneratedEventAliased aliasedEvent = (CustomGeneratedEventAliased) data;
                 if (alias.equals(aliasedEvent.alias) && aliasedEvent.event instanceof PeriodEvent) {
-                    PeriodEvent event = (PeriodEvent) aliasedEvent.event;
+                    PeriodEvent event = (PeriodEvent) aliasedEvent.event ;
 
-                    event = new PeriodEvent(event);
-                    event.applyPips(pips);
-                    event.addTsiIfAbsent(trueStrengthIndex);
-                    listener.accept(event.getTsi());
+                    Marker marker = makeMarker(event, pips, intervalWidth, alias);
+                    listener.accept(marker);
                 }
             }
         };
+    }
+
+    private OnlineCalculatable.Marker makeMarker(PeriodEvent event,
+                                                 double pips,
+                                                 long intervalWidth,
+                                                 String alias) {
+        TrueStrengthIndex trueStrengthIndex = indexRepo.getTrueStrengthIndex(alias);
+
+        event = new PeriodEvent(event);
+        event.applyPips(pips);
+        event.setBodyWidthPx(intervalWidth);
+        event.addTsiIfAbsent(trueStrengthIndex);
+
+        String name = getColorName(trueStrengthIndex);
+        Color color = indexRepo.getSettingsFor(alias).getColor(name);
+
+        return event.makeMarker(color);
+    }
+
+    private String getColorName(TrueStrengthIndex trueStrengthIndex) {
+        return trueStrengthIndex.getRoc() ? TsiConstants.CIRCLE_INDEX.getLineName() : TsiConstants.MAIN_INDEX.getLineName();
     }
 
     private List<DataStructureInterface.TreeResponseInterval> getIntervalResponse(String alias,

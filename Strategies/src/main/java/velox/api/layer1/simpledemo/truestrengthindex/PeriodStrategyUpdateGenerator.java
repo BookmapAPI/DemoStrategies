@@ -6,11 +6,9 @@ import velox.api.layer1.messages.indicators.StrategyUpdateGenerator;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 class PeriodStrategyUpdateGenerator implements StrategyUpdateGenerator {
-    private static final long PERIOD_INTERVAL_NS = TimeUnit.SECONDS.toNanos(1);
     private final Map<String, PeriodEvent> aliasToLastPeriod = new HashMap<>();
     private Consumer<CustomGeneratedEventAliased> consumer;
     private long time = 0;
@@ -112,6 +110,6 @@ class PeriodStrategyUpdateGenerator implements StrategyUpdateGenerator {
     }
 
     private long getPeriodStartTime(long time) {
-        return time - time % PERIOD_INTERVAL_NS;
+        return time - time % TsiConstants.PERIOD_INTERVAL_NS;
     }
 }

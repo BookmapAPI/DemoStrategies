@@ -133,7 +133,7 @@ public class Layer1ApiTrueStrengthIndex implements
                 .setColorInterface(indexGraphics)
                 .setOnlineCalculatable(indexOnlineCalculator)
                 .setIndicatorColorScheme(indexGraphics.createDefaultIndicatorColorScheme())
-                .setIndicatorLineStyle(IndicatorLineStyle.DEFAULT)
+                .setIndicatorLineStyle(IndicatorLineStyle.NONE)
                 .setDefaultTooltipTextColor(Color.black)
                 .setDefaultTooltipBackgrondColor(Color.white)
                 .setIsSupportWidget(true)

@@ -2,8 +2,14 @@ package velox.api.layer1.simpledemo.truestrengthindex;
 
 import velox.api.layer1.layers.strategies.interfaces.CustomEventAggregatble;
 import velox.api.layer1.layers.strategies.interfaces.CustomGeneratedEvent;
+import velox.api.layer1.layers.strategies.interfaces.OnlineCalculatable;
+
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class PeriodEvent implements CustomGeneratedEvent {
+    private static final int IMAGE_HEIGHT = 4;
+    private static final int MIN_IMAGE_WIGHT = 4;
     public static final CustomEventAggregatble AGGREGATOR = new CustomEventAggregatble() {
         @Override
         public CustomGeneratedEvent getInitialValue(long t) {
@@ -30,6 +36,7 @@ public class PeriodEvent implements CustomGeneratedEvent {
     private long time;
     private double open;
     private double close;
+    private int bodyWidthPx;
 
     public PeriodEvent(long time) {
         this(time, Double.NaN);
@@ -45,17 +52,17 @@ public class PeriodEvent implements CustomGeneratedEvent {
         this.open = open;
         this.close = close;
     }
-
-    public PeriodEvent(long time, double open, double close, double tsi) {
+    public PeriodEvent(long time, double open, double close, double tsi, int bodyWidthPx) {
         super();
         this.time = time;
         this.open = open;
         this.close = close;
         this.tsi = tsi;
+        this.bodyWidthPx = bodyWidthPx;
     }
 
     public PeriodEvent(PeriodEvent other) {
-        this(other.time, other.open, other.close, other.tsi);
+        this(other.time, other.open, other.close, other.tsi, other.bodyWidthPx);
     }
 
     @Override
@@ -69,7 +76,7 @@ public class PeriodEvent implements CustomGeneratedEvent {
 
     @Override
     public Object clone() {
-        return new PeriodEvent(time, open, close, tsi);
+        return new PeriodEvent(time, open, close, tsi, bodyWidthPx);
     }
 
     @Override
@@ -79,10 +86,6 @@ public class PeriodEvent implements CustomGeneratedEvent {
 
     public double getPrice() {
         return open - close;
-    }
-
-    public Double getTsi() {
-        return tsi;
     }
 
     public double getClose() {
@@ -113,5 +116,28 @@ public class PeriodEvent implements CustomGeneratedEvent {
     public void applyPips(double pips) {
         open *= pips;
         close *= pips;
+    }
+
+    public void setBodyWidthPx(long bodyWidthPx) {
+        this.bodyWidthPx = getBodyWidth(bodyWidthPx);
+    }
+
+    public OnlineCalculatable.Marker makeMarker(Color color) {
+        BufferedImage icon = new BufferedImage(bodyWidthPx, IMAGE_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        Graphics graphics = icon.getGraphics();
+
+        graphics.setColor(color);
+        graphics.fillRect(0, 0, bodyWidthPx - 1, IMAGE_HEIGHT - 1);
+
+        return new OnlineCalculatable.Marker(tsi,
+                - icon.getWidth() / 2,
+                - icon.getHeight() / 2,
+                icon);
+    }
+
+    private int getBodyWidth(long intervalWidth) {
+        long bodyWidth = TsiConstants.PERIOD_INTERVAL_NS / intervalWidth;
+        bodyWidth = Math.max(bodyWidth, MIN_IMAGE_WIGHT);
+        return (int) bodyWidth;
     }
 }

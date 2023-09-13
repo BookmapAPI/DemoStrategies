@@ -300,7 +300,7 @@ public class Layer1ApiHelperEscapeStrategy extends Layer1ApiHelperStrategyAbstra
                 moveDelta *= -1;
             }
             
-            for (Combination<String, Integer> pair: affectedOrders) {
+            for (Combination<String, Integer> pair : affectedOrders) {
                 switch (mode) {
                 case CANCEL: {
                     OrderRequest orderRequest = new OrderRequest(pair.first, pair.second);

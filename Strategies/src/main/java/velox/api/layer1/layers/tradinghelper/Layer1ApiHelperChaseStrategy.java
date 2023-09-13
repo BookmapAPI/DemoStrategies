@@ -180,7 +180,7 @@ public class Layer1ApiHelperChaseStrategy extends Layer1ApiHelperStrategyAbstrac
                     }
                 });
                 
-                for (Combination<String, Double> pendingMove: pendingMoves) {
+                for (Combination<String, Double> pendingMove : pendingMoves) {
                     provider.updateOrder(new OrderMoveParameters(pendingMove.first, Double.NaN, pendingMove.second));
                 }
             }

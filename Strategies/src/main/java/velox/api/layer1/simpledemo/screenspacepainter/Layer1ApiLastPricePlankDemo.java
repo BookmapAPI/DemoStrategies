@@ -91,6 +91,11 @@ public class Layer1ApiLastPricePlankDemo implements
         }
 
         private synchronized void update() {
+            // Return as we don't have the necessary info for calculation yet.
+            if (!instrumentInfos.containsKey(alias)) {
+                return;
+            }
+            
             CompositeHorizontalCoordinate x1 = new CompositeHorizontalCoordinate(CompositeCoordinateBase.PIXEL_ZERO, 0, 0);
             CompositeVerticalCoordinate y1 = new CompositeVerticalCoordinate(CompositeCoordinateBase.DATA_ZERO, - PLANK_HEIGHT / 2, lastPrice);
             CompositeHorizontalCoordinate x2 = new CompositeHorizontalCoordinate(CompositeCoordinateBase.PIXEL_ZERO, rightOfTimelineWidth, 0);
@@ -163,7 +168,7 @@ public class Layer1ApiLastPricePlankDemo implements
     @Override
     public void finish() {
         synchronized (indicatorsFullNameToUserName) {
-            for (String userName: indicatorsFullNameToUserName.values()) {
+            for (String userName : indicatorsFullNameToUserName.values()) {
                 Layer1ApiUserMessageModifyScreenSpacePainter message = Layer1ApiUserMessageModifyScreenSpacePainter
                         .builder(Layer1ApiLastPricePlankDemo.class, userName).setIsAdd(false).build();
                 provider.sendUserMessage(message);
@@ -211,6 +216,10 @@ public class Layer1ApiLastPricePlankDemo implements
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
         instrumentInfos.put(alias, instrumentInfo);
+        
+        if (painters.containsKey(alias)) {
+            painters.get(alias).update();
+        }
     }
     
     @Override

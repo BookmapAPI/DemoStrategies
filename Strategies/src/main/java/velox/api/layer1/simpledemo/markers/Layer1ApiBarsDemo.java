@@ -116,7 +116,7 @@ public class Layer1ApiBarsDemo implements
 
         @Override
         public String toString() {
-            return "[" + time + ": "+ open + "/" + low + "/" + high + "/" + close + "]";
+            return "[" + time + ": " + open + "/" + low + "/" + high + "/" + close + "]";
         }
 
         @Override
@@ -300,7 +300,7 @@ public class Layer1ApiBarsDemo implements
     @Override
     public void finish() {
         synchronized (indicatorsFullNameToUserName) {
-            for (String userName: indicatorsFullNameToUserName.values()) {
+            for (String userName : indicatorsFullNameToUserName.values()) {
                 provider.sendUserMessage(new Layer1ApiUserMessageModifyIndicator(Layer1ApiBarsDemo.class, userName, false));
             }
         }

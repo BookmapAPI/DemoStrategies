@@ -18,7 +18,6 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
 
     public TrueStrengthIndexGraphics(TrueStrengthIndexRepo trueStrengthIndexRepo) {
         this.trueStrengthIndexRepo = trueStrengthIndexRepo;
-
     }
 
     @Override
@@ -32,8 +31,8 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
     public Color getColor(String alias, String name) {
         Color color = trueStrengthIndexRepo.getSettingsFor(alias).getColor(name);
         if (color == null) {
-            TrueStrengthIndexDemoConstants line = TrueStrengthIndexDemoConstants.fromLineName(name);
-            if (line == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
+            TsiConstants line = TsiConstants.fromLineName(name);
+            if (line != null) {
                 color = line.getDefaultColor();
             } else {
                 Log.warn("Layer1ApiTrueStrengthIndex: unknown color name " + name);
@@ -46,22 +45,19 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
 
     @Override
     public void addColorChangeListener(ColorsChangedListener listener) {
-        // every one of our colors is modified only from one place
     }
 
     protected StrategyPanel[] getCustomGuiFor(String alias) {
         StrategyPanel panel = new StrategyPanel("Colors", new GridBagLayout());
 
         IndicatorColorInterface indicatorColorInterface = createNewIndicatorColorInterfaceInst(alias);
-        ColorsConfigItem configItemLines = createNewColorsLinesConfigItem(indicatorColorInterface);
+        ColorsConfigItem configItemMain = createNewColorsConfigItem(indicatorColorInterface, TsiConstants.MAIN_INDEX);
+        ColorsConfigItem configItemBack = createNewColorsConfigItem(indicatorColorInterface, TsiConstants.CIRCLE_INDEX);
 
-        GridBagConstraints gbConst = new GridBagConstraints();
-        gbConst.gridx = 0;
-        gbConst.gridy = 0;
-        gbConst.weightx = 1;
-        gbConst.insets = new Insets(5, 5, 5, 5);
-        gbConst.fill = GridBagConstraints.HORIZONTAL;
-        panel.add(configItemLines, gbConst);
+        panel.add(configItemMain, createDefaultGridBagConstraints(0));
+        panel.add(configItemBack, createDefaultGridBagConstraints(1));
+
+        panel.requestReload();
 
         return new StrategyPanel[]{panel};
     }
@@ -72,20 +68,24 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
             public ColorDescription[] getColors() {
                 return new ColorDescription[]{
                         new ColorDescription(Layer1ApiTrueStrengthIndex.class,
-                                TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName(),
-                                TrueStrengthIndexDemoConstants.MAIN_INDEX.getDefaultColor(),
+                                TsiConstants.MAIN_INDEX.getLineName(),
+                                TsiConstants.MAIN_INDEX.getDefaultColor(),
                                 false),
+                        new ColorDescription(Layer1ApiTrueStrengthIndex.class,
+                                TsiConstants.CIRCLE_INDEX.getLineName(),
+                                TsiConstants.CIRCLE_INDEX.getDefaultColor(),
+                                false)
                 };
             }
 
             @Override
             public String getColorFor(Double value) {
-                return TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName();
+                return TsiConstants.CIRCLE_INDEX.getLineName();
             }
 
             @Override
             public ColorIntervalResponse getColorIntervalsList(double valueFrom, double valueTo) {
-                return new ColorIntervalResponse(new String[]{TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName()},
+                return new ColorIntervalResponse(new String[]{TsiConstants.MAIN_INDEX.getLineName()},
                         new double[]{});
             }
         };
@@ -110,20 +110,32 @@ public class TrueStrengthIndexGraphics implements Layer1IndicatorColorInterface 
         };
     }
 
-    private ColorsConfigItem createNewColorsLinesConfigItem(IndicatorColorInterface indicatorColorInterface) {
+    private ColorsConfigItem createNewColorsConfigItem(IndicatorColorInterface indicatorColorInterface, TsiConstants c) {
         ColorsChangedListener colorsChangedListener = () -> {
-            InvalidateInterface invalidaInterface =
-                    trueStrengthIndexRepo.getInvalidateInterface(TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName());
-            if (invalidaInterface != null) {
-                invalidaInterface.invalidate();
+            InvalidateInterface invalidateInterface =
+                    trueStrengthIndexRepo.getInvalidateInterface(TsiConstants.INDICATOR_NAME);
+
+            if (invalidateInterface != null) {
+                invalidateInterface.invalidate();
             }
         };
 
-        return new ColorsConfigItem(TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName(),
-                TrueStrengthIndexDemoConstants.MAIN_INDEX.getLineName(),
+        return new ColorsConfigItem(c.getLineName(),
+                c.getLineName(),
                 true,
-                TrueStrengthIndexDemoConstants.MAIN_INDEX.getDefaultColor(),
+                c.getDefaultColor(),
                 indicatorColorInterface,
                 colorsChangedListener);
+    }
+
+    private GridBagConstraints createDefaultGridBagConstraints(int number) {
+        GridBagConstraints gbConst;
+        gbConst = new GridBagConstraints();
+        gbConst.gridx = 0;
+        gbConst.gridy = number;
+        gbConst.weightx = 1;
+        gbConst.insets = new Insets(5, 5, 5, 5);
+        gbConst.fill = GridBagConstraints.HORIZONTAL;
+        return gbConst;
     }
 }

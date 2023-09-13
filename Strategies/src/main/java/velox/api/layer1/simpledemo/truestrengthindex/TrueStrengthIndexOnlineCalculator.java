@@ -1,35 +1,34 @@
 package velox.api.layer1.simpledemo.truestrengthindex;
 
-import velox.api.layer1.data.TradeInfo;
-import velox.api.layer1.datastructure.events.TradeAggregationEvent;
-import velox.api.layer1.layers.strategies.interfaces.CalculatedResultListener;
-import velox.api.layer1.layers.strategies.interfaces.InvalidateInterface;
-import velox.api.layer1.layers.strategies.interfaces.OnlineCalculatable;
-import velox.api.layer1.layers.strategies.interfaces.OnlineValueCalculatorAdapter;
+import velox.api.layer1.layers.strategies.interfaces.*;
 import velox.api.layer1.messages.indicators.DataStructureInterface;
 
-import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
-    private final TrueStrengthIndexRepo trueStrengthIndexRepo;
+    private final TrueStrengthIndexRepo indexRepo;
     private DataStructureInterface dataStructureInterface;
 
     public TrueStrengthIndexOnlineCalculator(TrueStrengthIndexRepo trueStrengthIndexRepo) {
-        this.trueStrengthIndexRepo = trueStrengthIndexRepo;
+        this.indexRepo = trueStrengthIndexRepo;
     }
 
     @Override
-    public void calculateValuesInRange(String indicatorName, String alias, long t0, long intervalWidth,
-                                       int intervalsNumber, CalculatedResultListener listener) {
+    public void calculateValuesInRange(String indicatorName,
+                                       String alias,
+                                       long t0,
+                                       long intervalWidth,
+                                       int intervalsNumber,
+                                       CalculatedResultListener listener) {
         if (dataStructureInterface == null) {
             listener.setCompleted();
             return;
         }
 
-        String userName = trueStrengthIndexRepo.getIndicatorNameByFullName(indicatorName);
-        TrueStrengthIndexDemoConstants indicator = TrueStrengthIndexDemoConstants.fromIndicatorName(userName);
-        if (indicator == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
+        String userName = indexRepo.getIndicatorNameByFullName(indicatorName);
+        TsiConstants indicator = TsiConstants.fromIndicatorName(userName);
+        if (indicator != null) {
             calculateMainIndexValuesInRange(alias, t0, intervalWidth, intervalsNumber, listener);
         } else {
             throw new IllegalArgumentException("Unknown indicator name " + indicatorName);
@@ -42,15 +41,16 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
                                                                     long time,
                                                                     Consumer<Object> listener,
                                                                     InvalidateInterface invalidateInterface) {
-        String userName = trueStrengthIndexRepo.getIndicatorNameByFullName(indicatorName);
-        trueStrengthIndexRepo.putInvalidateInterface(userName, invalidateInterface);
+        String userName = indexRepo.getIndicatorNameByFullName(indicatorName);
+        indexRepo.putInvalidateInterface(userName, invalidateInterface);
 
         if (dataStructureInterface == null) {
-            return new OnlineValueCalculatorAdapter() {};
+            return new OnlineValueCalculatorAdapter() {
+            };
         }
 
-        TrueStrengthIndexDemoConstants indicator = TrueStrengthIndexDemoConstants.fromIndicatorName(userName);
-        if (indicator == TrueStrengthIndexDemoConstants.MAIN_INDEX) {
+        TsiConstants indicator = TsiConstants.fromIndicatorName(userName);
+        if (indicator != null) {
             return getTradeOnlineValueCalculatorAdapter(indicatorAlias, listener);
         } else {
             throw new IllegalArgumentException("Unknown indicator name " + indicatorName);
@@ -61,53 +61,74 @@ public class TrueStrengthIndexOnlineCalculator implements OnlineCalculatable {
         this.dataStructureInterface = dataStructureInterface;
     }
 
-    private OnlineValueCalculatorAdapter getTradeOnlineValueCalculatorAdapter(String indicatorAlias,
-                                                                              Consumer<Object> listener) {
-
-        return new OnlineValueCalculatorAdapter() {
-            @Override
-            public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-                if (alias.equals(indicatorAlias)) {
-                    TrueStrengthIndex t = trueStrengthIndexRepo.getTrueStrengthIndex(alias);
-                    listener.accept(t.addTsiValue(price));
-                }
-            }
-        };
-    }
-
     private void calculateMainIndexValuesInRange(String alias,
                                                  long t0,
                                                  long intervalWidth,
                                                  int intervalsNumber,
                                                  CalculatedResultListener listener) {
-        ArrayList<DataStructureInterface.TreeResponseInterval> intervalResponse =
-                dataStructureInterface.get(t0, intervalWidth, intervalsNumber, alias,
-                        new DataStructureInterface.StandardEvents[]{DataStructureInterface.StandardEvents.TRADE});
+        TrueStrengthIndex trueStrengthIndex = indexRepo.getTrueStrengthIndex(alias);
+        Double pips = indexRepo.getPips(alias);
+        List<DataStructureInterface.TreeResponseInterval> intervalResponse =
+                getIntervalResponse(alias, t0, intervalWidth, intervalsNumber);
 
-        TradeAggregationEvent trades = ((TradeAggregationEvent) intervalResponse.get(0).events
-                .get(DataStructureInterface.StandardEvents.TRADE.toString()));
-
-        TrueStrengthIndex trueStrengthIndex = trueStrengthIndexRepo.getTrueStrengthIndex(alias);
-        double lastPrice = trades.lastPrice;
-        double firstPrice = lastPrice;
-        boolean isFirst = true;
-        double tsi;
         for (int i = 1; i <= intervalsNumber; ++i) {
-            trades = (TradeAggregationEvent) intervalResponse.get(i).events
-                    .get(DataStructureInterface.StandardEvents.TRADE.toString());
+            PeriodEvent value = getEvent(intervalResponse.get(i));
 
-            if (!Double.isNaN(trades.lastPrice)) {
-                lastPrice = trades.lastPrice;
-            }
+            if (value != null) {
+                value = new PeriodEvent(value);
+                value.applyPips(pips);
 
-            if (isFirst) {
-                tsi = trueStrengthIndex.addTwoTsiValues(firstPrice, lastPrice);
-                isFirst = false;
+                value.addTsiIfAbsent(trueStrengthIndex);
+                listener.provideResponse(value.getTsi());
             } else {
-                tsi = trueStrengthIndex.addTsiValue(lastPrice);
+                listener.provideResponse(Double.NaN);
             }
-            listener.provideResponse(tsi);
         }
         listener.setCompleted();
+    }
+
+    private OnlineValueCalculatorAdapter getTradeOnlineValueCalculatorAdapter(String alias,
+                                                                              Consumer<Object> listener) {
+        Double pips = indexRepo.getPips(alias);
+        TrueStrengthIndex trueStrengthIndex = indexRepo.getTrueStrengthIndex(alias);
+        return new OnlineValueCalculatorAdapter() {
+            @Override
+            public void onUserMessage(Object data) {
+                if (!(data instanceof CustomGeneratedEventAliased)) {
+                    return;
+                }
+                CustomGeneratedEventAliased aliasedEvent = (CustomGeneratedEventAliased) data;
+                if (alias.equals(aliasedEvent.alias) && aliasedEvent.event instanceof PeriodEvent) {
+                    PeriodEvent event = (PeriodEvent) aliasedEvent.event;
+
+                    event = new PeriodEvent(event);
+                    event.applyPips(pips);
+                    event.addTsiIfAbsent(trueStrengthIndex);
+                    listener.accept(event.getTsi());
+                }
+            }
+        };
+    }
+
+    private List<DataStructureInterface.TreeResponseInterval> getIntervalResponse(String alias,
+                                                                                  long t0,
+                                                                                  long intervalWidth,
+                                                                                  int intervalsNumber) {
+        return dataStructureInterface.get(Layer1ApiTrueStrengthIndex.class,
+                TsiConstants.SHORT_NAME,
+                t0,
+                intervalWidth,
+                intervalsNumber,
+                alias,
+                new Class<?>[]{PeriodEvent.class});
+    }
+
+    private PeriodEvent getEvent(DataStructureInterface.TreeResponseInterval treeResponseInterval) {
+        Object result = treeResponseInterval.events.get(PeriodEvent.class.toString());
+        if (result != null) {
+            return (PeriodEvent) result;
+        } else {
+            return null;
+        }
     }
 }

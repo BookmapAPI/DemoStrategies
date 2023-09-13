@@ -2,9 +2,7 @@ package velox.api.layer1.simpledemo.truestrengthindex;
 
 import velox.api.layer1.common.Log;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 public class TrueStrengthIndex {
 
@@ -12,70 +10,45 @@ public class TrueStrengthIndex {
     private final LinkedList<Double> doubleEma = new LinkedList<>();
     private final LinkedList<Double> absEma = new LinkedList<>();
     private final LinkedList<Double> absDoubleEma = new LinkedList<>();
-    private Double lastPrice = Double.NaN;
-    private LinkedList<Double> tsi = new LinkedList<>();
-    private volatile Boolean flag = false;
+    private final LinkedList<Double> tsi = new LinkedList<>();
+    private volatile Boolean isInitialized = false;
     private int shortPeriod;
     private int longPeriod;
     private double alpha;
     private double beta;
 
     public TrueStrengthIndex(Integer shortPeriod, Integer longPeriod) {
-        this.shortPeriod = shortPeriod;
-        this.longPeriod = longPeriod;
+        if (shortPeriod < longPeriod) {
+            this.shortPeriod = shortPeriod;
+            this.longPeriod = longPeriod;
+        } else {
+            this.shortPeriod = longPeriod;
+            this.longPeriod = shortPeriod;
+        }
 
         alpha = getConst(shortPeriod);
         beta = getConst(longPeriod);
     }
 
-    synchronized public List<Double> addNewTsiValues(List<Double> closePrices) {
-        lastPrice = closePrices.get(closePrices.size() - 1);
-        tsi = new LinkedList<>();
-
-        List<Double> diff = new ArrayList<>();
-
-        for (int i = 1; i < closePrices.size(); i++) {
-            diff.add(closePrices.get(i) - closePrices.get(i - 1));
+    public Double getTsi(Double newPrice) {
+        double tsi;
+        if (!this.isInitialized) {
+            tsi = initialize(newPrice);
+        } else {
+            tsi = addTsi(newPrice);
         }
-
-        countTsiValues(diff);
-
-        flag = true;
-        notifyAll();
         return tsi;
     }
 
-    synchronized public Double addTwoTsiValues(Double firstPrice, Double secondPrice) {
-        lastPrice = secondPrice;
-        tsi.clear();
-        ema.clear();
-        doubleEma.clear();
-        absEma.clear();
-        absDoubleEma.clear();
+    public boolean getRoc() {
+        if (tsi.size() >= 3) {
+            int n = tsi.size() - 1;
+            double roc1 = calculateRoc(tsi.getLast(), tsi.get(n - 1));
+            double roc2 = calculateRoc(tsi.get(n - 1), tsi.get(n - 2));
 
-        double diff = secondPrice - firstPrice;
-        ema.add(diff);
-        doubleEma.add(diff);
-        absEma.add(Math.abs(diff));
-        absDoubleEma.add(Math.abs(diff));
-        tsi.add((diff / Math.abs(diff)) * 100.0);
-
-        flag = true;
-        notifyAll();
-        return tsi.getLast();
-    }
-
-    synchronized public Double addTsiValue(Double newPrice) {
-        while(flag.equals(false)) {
-            try {
-                wait();
-            } catch (InterruptedException e) {
-                Log.warn("Layer1ApiTrueStrengthIndex: InterruptedException: " + e);
-            }
+            return roc1 >= roc2;
         }
-        countTsiValue(newPrice - lastPrice);
-        lastPrice = newPrice;
-        return tsi.getLast();
+        return false;
     }
 
     public void setShortPeriod(int shortPeriod) {
@@ -88,17 +61,37 @@ public class TrueStrengthIndex {
         beta = getConst(longPeriod);
     }
 
-    private void countTsiValues(List<Double> values) {
-        ema.add(values.get(0));
-        doubleEma.add(values.get(0));
-        absEma.add(values.get(0));
-        absDoubleEma.add(values.get(0));
-        for (int i = 1; i < values.size(); i++) {
-            countTsiValue(values.get(i));
-        }
+    synchronized private Double initialize(Double newPrice) {
+        tsi.clear();
+        ema.clear();
+        doubleEma.clear();
+        absEma.clear();
+        absDoubleEma.clear();
+
+        ema.add(newPrice);
+        doubleEma.add(newPrice);
+        absEma.add(Math.abs(newPrice));
+        absDoubleEma.add(Math.abs(newPrice));
+        tsi.add((newPrice / Math.abs(newPrice)) * 100.0);
+
+        isInitialized = true;
+        notifyAll();
+        return tsi.getLast();
     }
 
-    private void countTsiValue(Double value) {
+    synchronized private Double addTsi(Double newPrice) {
+        while (!isInitialized) {
+            try {
+                wait();
+            } catch (InterruptedException e) {
+                Log.warn("Layer1ApiTrueStrengthIndex: InterruptedException: " + e);
+            }
+        }
+        addTsiValue(newPrice);
+        return tsi.getLast();
+    }
+
+    private void addTsiValue(Double value) {
         addDoubleEmaValue(value, ema, doubleEma);
         addDoubleEmaValue(Math.abs(value), absEma, absDoubleEma);
 
@@ -112,5 +105,9 @@ public class TrueStrengthIndex {
 
     private double getConst(int period) {
         return 2. / (period + 1);
+    }
+
+    private double calculateRoc(double currentValue, double previousValue) {
+        return ((currentValue - previousValue) / previousValue) * 100.0;
     }
 }

@@ -12,9 +12,18 @@ public class TrueStrengthIndexRepo {
     private final Map<String, TrueStrengthIndexSettings> settingsMap = new HashMap<>();
     private final Map<String, TrueStrengthIndex> trueStrengthIndexByAlias = new HashMap<>();
     private final Map<String, String> indicatorsFullNameToUserName = new HashMap<>();
+    private final Map<String, Double> pipsMap = new ConcurrentHashMap<>();
     private final Map<String, InvalidateInterface> invalidateInterfaceMap = new ConcurrentHashMap<>();
     private final Object locker = new Object();
     private SettingsAccess settingsAccess;
+
+    protected void putPips(String alias, Double pips) {
+        pipsMap.put(alias, pips);
+    }
+
+    protected Double getPips(String alias) {
+        return pipsMap.get(alias);
+    }
 
     protected void putTrueStrengthIndex(String alias, TrueStrengthIndex trueStrengthIndex) {
         trueStrengthIndexByAlias.put(alias, trueStrengthIndex);
@@ -61,17 +70,19 @@ public class TrueStrengthIndexRepo {
             TrueStrengthIndexSettings settings = settingsMap.get(alias);
             if (settings == null) {
                 settings = (TrueStrengthIndexSettings) settingsAccess.getSettings(alias,
-                        TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName(), TrueStrengthIndexSettings.class);
+                        TsiConstants.INDICATOR_NAME,
+                        TrueStrengthIndexSettings.class);
                 settingsMap.put(alias, settings);
             }
             return settings;
         }
     }
 
-    protected void settingsChanged(String settingsAlias, TrueStrengthIndexSettings settingsObject) {
+    protected void settingsChanged(String settingsAlias,
+                                   TrueStrengthIndexSettings settingsObject) {
         synchronized (locker) {
             settingsAccess.setSettings(settingsAlias,
-                    TrueStrengthIndexDemoConstants.MAIN_INDEX.getIndicatorName(),
+                    TsiConstants.INDICATOR_NAME,
                     settingsObject,
                     TrueStrengthIndexSettings.class);
         }

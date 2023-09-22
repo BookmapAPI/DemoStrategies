@@ -23,8 +23,8 @@ dependencies {
         implementation project(':Level1Api')
         implementation project(':SimplifiedApiWrapper')
     } else {
-        compileOnly group: 'com.bookmap.api', name: 'api-core', version: '7.4.0.3'
-        compileOnly group: 'com.bookmap.api', name: 'api-simplified', version: '7.4.0.3'
+        compileOnly group: 'com.bookmap.api', name: 'api-core', version: '7.4.0.19'
+        compileOnly group: 'com.bookmap.api', name: 'api-simplified', version: '7.4.0.19'
 
         compileOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     }

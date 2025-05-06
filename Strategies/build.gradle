@@ -60,7 +60,9 @@ if(idea.project) {
 
         'BookmapJar'(org.jetbrains.gradle.ext.JarApplication) {
             // Change the path to Bookmap.jar here if you changed the default installation directory
-            jarPath = 'C:\\Program Files\\Bookmap\\Bookmap.jar'
+//            jarPath = 'C:\\Program Files\\Bookmap\\Bookmap.jar'
+            // TODO: Need to figure out what this path does, for now just commented because it doesn't make sense for Macs
+            jarPath = ''
             workingDirectory = 'C:\\Bookmap'
             jvmArgs = addOpensOptions
         }

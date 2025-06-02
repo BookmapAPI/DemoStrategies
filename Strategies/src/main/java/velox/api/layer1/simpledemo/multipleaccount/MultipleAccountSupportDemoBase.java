@@ -387,7 +387,7 @@ public class MultipleAccountSupportDemoBase implements
         accountListManager.onOrderUpdated(orderInfoUpdate);
         
         // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-        Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias, false);
+        boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias);
         Log.info("[isSelectedAccount=" + isSelectedAccount + "] MultipleAccountSupportDemoBase#onOrderUpdated: " + orderInfoUpdate);
         
         // Save order info for GUI:
@@ -400,13 +400,13 @@ public class MultipleAccountSupportDemoBase implements
     @Override
     public void onOrderExecuted(ExecutionInfo executionInfo) {
         // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-        Boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderId(executionInfo.orderId);
+        boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderId(executionInfo.orderId);
         Log.info("[isSelectedAccount=" + isSelectedAccount + "] MultipleAccountSupportDemoBase#onOrderExecuted: " + executionInfo);
     }
     
     @Override
     public void onStatus(StatusInfo statusInfo) {
-        Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias, false);
+        boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias);
         Log.info("[isSelectedAccount=" + isSelectedAccount + "] MultipleAccountSupportDemoBase#onStatus: " + statusInfo);
     }
     
@@ -443,14 +443,14 @@ public class MultipleAccountSupportDemoBase implements
             @Override
             public void onStatus(StatusInfo statusInfo) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias, false);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias);
                 Log.info("[isSelectedAccount=" + isSelectedAccount + "] OnlineValueCalculatorAdapter#onStatus: " + statusInfo);
             }
             
             @Override
             public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias, false);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias);
                 Log.info("[isSelectedAccount=" + isSelectedAccount + "] OnlineValueCalculatorAdapter#onOrderUpdated: " + orderInfoUpdate);
             }
             
@@ -492,14 +492,14 @@ public class MultipleAccountSupportDemoBase implements
             @Override
             public void onStatus(StatusInfo statusInfo) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias, false);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias);
                 Log.info("[isSelectedAccount=" + isSelectedAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onStatus: " + statusInfo);
             }
             
             @Override
             public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias, false);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias);
                 Log.info("[isSelectedAccount=" + isSelectedAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onOrderUpdated: " + orderInfoUpdate);
             }
             

@@ -46,21 +46,25 @@ public class LargeOrdersFilter extends Layer1ApiInjectorRelay implements Layer1A
                 // 1) Order is sent
                 // 2) Order is rejected
                 // If we just send "REJECTED" update Bookmap will handle it as historical order and won't display it on heatmap
-                OrderInfo orderInfo1 = new OrderInfo(
+                OrderInfo orderInfo1 = new OrderInfoBuilder(
                         simpleOrderSendParameters.alias,
                         fakeOrderId,
                         simpleOrderSendParameters.isBuy,
                         OrderType.getTypeFromPrices(simpleOrderSendParameters.stopPrice,
                                 simpleOrderSendParameters.limitPrice),
                         simpleOrderSendParameters.clientId,
-                        simpleOrderSendParameters.doNotIncrease,
-                        0, simpleOrderSendParameters.size,
-                        Double.NaN,
-                        simpleOrderSendParameters.duration,
-                        OrderStatus.PENDING_SUBMIT,
-                        simpleOrderSendParameters.limitPrice,
-                        simpleOrderSendParameters.stopPrice,
-                        false, currentTime);
+                        simpleOrderSendParameters.doNotIncrease)
+                        .setFilled(0)
+                        .setUnfilled(simpleOrderSendParameters.size)
+                        .setAverageFillPrice(Double.NaN)
+                        .setDuration(simpleOrderSendParameters.duration)
+                        .setStatus(OrderStatus.PENDING_SUBMIT)
+                        .setLimitPrice(simpleOrderSendParameters.limitPrice)
+                        .setStopPrice(simpleOrderSendParameters.stopPrice)
+                        .setStopTriggered(false)
+                        .setModificationUtcTime(currentTime)
+                        .setAccountId(simpleOrderSendParameters.accountId)
+                        .build();
                 OrderInfoUpdate orderInfoUpdate1 = new OrderInfoUpdate(orderInfo1);
 
                 OrderInfoBuilder orderInfoUpdate2Template = orderInfoUpdate1.toBuilder();

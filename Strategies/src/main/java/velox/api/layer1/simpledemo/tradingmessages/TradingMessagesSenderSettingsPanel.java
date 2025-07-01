@@ -27,6 +27,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
+import velox.api.layer1.common.Log;
 import velox.api.layer1.data.AccountInfo;
 import velox.api.layer1.data.AccountInfoBuilder;
 import velox.api.layer1.messages.Layer1ApiChangeSelectedAccountMessage;
@@ -73,7 +74,7 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         this.add(disabledPanel);
         this.add(workingPanel);
         
-        comboBoxAccounts.addActionListener(e -> updateAccounts());
+        comboBoxAliasesTradingEnable.addActionListener(e -> updateAccounts());
         
         comboBoxAccounts.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -107,6 +108,7 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
             accounts.sort(Comparator.comparing(account -> account.summary));
             accounts.add(0, new AccountInfoBuilder(null, "None").build());
             
+            Log.info("TradingMessagesSenderSettingsPanel", "Updating accounts for alias: " + alias + ", accounts: " + accounts);
             updateComboBox(comboBoxAccounts, accounts);
         }
     }

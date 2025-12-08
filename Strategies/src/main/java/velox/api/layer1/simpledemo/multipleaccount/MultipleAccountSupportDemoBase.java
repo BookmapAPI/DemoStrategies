@@ -387,8 +387,8 @@ public class MultipleAccountSupportDemoBase implements
         accountListManager.onOrderUpdated(orderInfoUpdate);
         
         // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-        Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(orderInfoUpdate.accountId);
-        Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] MultipleAccountSupportDemoBase#onOrderUpdated: " + orderInfoUpdate);
+        boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias);
+        Log.info("[isSelectedAccount=" + isSelectedAccount + "] MultipleAccountSupportDemoBase#onOrderUpdated: " + orderInfoUpdate);
         
         // Save order info for GUI:
         synchronized (orders) {
@@ -400,21 +400,18 @@ public class MultipleAccountSupportDemoBase implements
     @Override
     public void onOrderExecuted(ExecutionInfo executionInfo) {
         // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-        Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrderOrNull(executionInfo.orderId);
-        Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] MultipleAccountSupportDemoBase#onOrderExecuted: " + executionInfo);
+        boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderId(executionInfo.orderId);
+        Log.info("[isSelectedAccount=" + isSelectedAccount + "] MultipleAccountSupportDemoBase#onOrderExecuted: " + executionInfo);
     }
     
     @Override
     public void onStatus(StatusInfo statusInfo) {
-        Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(statusInfo.accountId);
-        Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] MultipleAccountSupportDemoBase#onStatus: " + statusInfo);
+        boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias);
+        Log.info("[isSelectedAccount=" + isSelectedAccount + "] MultipleAccountSupportDemoBase#onStatus: " + statusInfo);
     }
     
     @Override
-    public void onBalance(BalanceInfo balanceInfo) {
-        Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(balanceInfo.accountId);
-        Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] MultipleAccountSupportDemoBase#onBalance: " + balanceInfo);
-    }
+    public void onBalance(BalanceInfo balanceInfo) {}
     
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
@@ -446,30 +443,26 @@ public class MultipleAccountSupportDemoBase implements
             @Override
             public void onStatus(StatusInfo statusInfo) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(statusInfo.accountId);
-                Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] OnlineValueCalculatorAdapter#onStatus: " + statusInfo);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias);
+                Log.info("[isSelectedAccount=" + isSelectedAccount + "] OnlineValueCalculatorAdapter#onStatus: " + statusInfo);
             }
             
             @Override
             public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(orderInfoUpdate.accountId);
-                Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] OnlineValueCalculatorAdapter#onOrderUpdated: " + orderInfoUpdate);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias);
+                Log.info("[isSelectedAccount=" + isSelectedAccount + "] OnlineValueCalculatorAdapter#onOrderUpdated: " + orderInfoUpdate);
             }
             
             @Override
             public void onOrderExecuted(ExecutionInfo executionInfo) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrderOrNull(executionInfo.orderId);
-                Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] OnlineValueCalculatorAdapter#onOrderExecuted: " + executionInfo);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderId(executionInfo.orderId);
+                Log.info("[isSelectedAccount=" + isSelectedAccount + "] OnlineValueCalculatorAdapter#onOrderExecuted: " + executionInfo);
             }
             
             @Override
-            public void onBalance(BalanceInfo balanceInfo) {
-                // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(balanceInfo.accountId);
-                Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] OnlineValueCalculatorAdapter#onStatus: " + balanceInfo);
-            }
+            public void onBalance(BalanceInfo balanceInfo) {}
             
             @Override
             public void onUserMessage(Object data) {
@@ -499,29 +492,28 @@ public class MultipleAccountSupportDemoBase implements
             @Override
             public void onStatus(StatusInfo statusInfo) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(statusInfo.accountId);
-                Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onStatus: " + statusInfo);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(statusInfo.accountId, statusInfo.instrumentAlias);
+                Log.info("[isSelectedAccount=" + isSelectedAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onStatus: " + statusInfo);
             }
             
             @Override
             public void onOrderUpdated(OrderInfoUpdate orderInfoUpdate) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(orderInfoUpdate.accountId);
-                Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onOrderUpdated: " + orderInfoUpdate);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForAlias(orderInfoUpdate.accountId, orderInfoUpdate.instrumentAlias);
+                Log.info("[isSelectedAccount=" + isSelectedAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onOrderUpdated: " + orderInfoUpdate);
             }
             
             @Override
             public void onOrderExecuted(ExecutionInfo executionInfo) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrderOrNull(executionInfo.orderId);
-                Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onOrderExecuted: " + executionInfo);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderId(executionInfo.orderId);
+                Log.info("[isSelectedAccount=" + isSelectedAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onOrderExecuted: " + executionInfo);
             }
             
             @Override
             public void onBalance(BalanceInfo balanceInfo) {
-                // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isPrimaryAccount = accountListManager.isPrimaryAccountOrNull(balanceInfo.accountId);
-                Log.info("[isPrimaryAccount=" + isPrimaryAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onBalance: " + balanceInfo);
+                // BalanceInfo is always received here for all accounts.
+                Log.info("[accountId=" + balanceInfo.accountId + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onBalance: " + balanceInfo);
             }
             
             @Override

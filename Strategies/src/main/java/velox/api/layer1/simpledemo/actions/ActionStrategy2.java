@@ -10,6 +10,8 @@ import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Injectable;
 import velox.api.layer1.annotations.Layer1StrategyName;
+import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
+import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManagerFactory;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.layers.Layer1ApiInjectorRelay;
 import velox.api.layer1.messages.Layer1ApiSoundAlertMessage;
@@ -40,6 +42,7 @@ public class ActionStrategy2 extends Layer1ApiInjectorRelay implements Layer1Api
     
     private static JFrame frame;
     private static JComboBox<String> combo;
+    private final InstrumentsManager instrumentsManager = InstrumentsManagerFactory.getInstrumentsManager();
     private Layer1ApiProvider provider;
     private JLabel aliasLabel;
 
@@ -51,18 +54,25 @@ public class ActionStrategy2 extends Layer1ApiInjectorRelay implements Layer1Api
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
         super.onInstrumentAdded(alias, instrumentInfo);
-        SwingUtilities.invokeLater(() -> {
-            createFrame();
-            combo.addItem(alias);
-        });
+        instrumentsManager.onInstrumentAdded(alias, instrumentInfo);
+        if (instrumentsManager.canHasChart(alias)) {
+            // we want to have ability to send shortcuts only for the instruments that can have charts
+            // you don't need to have this check if your addon doesn't support duplicated instruments mode
+            // (in non-duplicated instruments mode each instrument can have a chart)
+            SwingUtilities.invokeLater(() -> {
+                createFrame();
+                combo.addItem(alias);
+            });
+        }
     }
 
     @Override
     public void onInstrumentRemoved(String alias) {
         super.onInstrumentRemoved(alias);
-        SwingUtilities.invokeLater(() -> {
-            combo.removeItem(alias);
-        });
+        if (instrumentsManager.canHasChart(alias)) {
+            SwingUtilities.invokeLater(() -> combo.removeItem(alias));
+        }
+        instrumentsManager.onInstrumentRemoved(alias);
     }
 
     private void createFrame() {

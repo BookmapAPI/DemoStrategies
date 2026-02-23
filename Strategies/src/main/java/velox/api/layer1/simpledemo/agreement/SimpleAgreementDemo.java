@@ -63,6 +63,14 @@ public class SimpleAgreementDemo implements
                                 new AgreementComponent.RadioButtonGroup.Option("option2", "Option 2"),
                                 new AgreementComponent.RadioButtonGroup.Option("option3", "Option 3")
                         })
+                .setDeclineConfirmation(component -> {
+                    int result = JOptionPane.showConfirmDialog(
+                            component,
+                            "Are you sure you want to decline this agreement?",
+                            "Decline confirmation",
+                            JOptionPane.YES_NO_OPTION);
+                    return result == JOptionPane.YES_OPTION;
+                })
                 .build();
 
         AgreementHelper.requestAgreement(

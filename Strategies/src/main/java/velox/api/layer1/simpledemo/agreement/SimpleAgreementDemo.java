@@ -1,6 +1,7 @@
 package velox.api.layer1.simpledemo.agreement;
 
-import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,8 +44,8 @@ public class SimpleAgreementDemo implements
                 .setAcceptButtonText("Demo Accept")
                 // optional. "Accept" by default:
                 .setDeclineButtonText("Demo Decline")
-                // agreement will expire in 5minutes, and after that user will have to accept it again:
-                .setExpirationDate(Instant.now().plusSeconds(5 * 60))
+                // agreement will expire in 2 days, and after that user will have to accept it again:
+                .setExpirationDate(LocalDate.now(ZoneOffset.UTC).plusDays(2))
                 .addRadioButtonGroup(
                         "demo-radio-group", "Choose one of the options:",
                         new AgreementComponent.RadioButtonGroup.Option[] {

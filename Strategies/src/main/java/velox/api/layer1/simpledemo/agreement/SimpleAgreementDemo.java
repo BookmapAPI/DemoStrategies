@@ -52,7 +52,7 @@ public class SimpleAgreementDemo implements
                 .setAgreementTitle("Simple Agreement Demo")
                 // optional. "Accept" by default:
                 .setAcceptButtonText("Demo Accept")
-                // optional. "Accept" by default:
+                // optional. "Decline" by default:
                 .setDeclineButtonText("Demo Decline")
                 // agreement will expire in 2 days, and after that user will have to accept it again:
                 .setExpirationDate(LocalDate.now(ZoneOffset.UTC).plusDays(2))

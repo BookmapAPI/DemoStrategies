@@ -43,8 +43,11 @@ public class SimpleAgreementDemo implements
         AgreementInfo agreementInfo = new AgreementInfo.Builder()
                 .setAgreementId("simple-agreement-demo#simple-agreement-demo-v1")
                 .setAgreementText("""
-                        This is a simple agreement demo. By accepting this agreement, you agree that you
-                        understand that this is just a demo, and it doesn't do anything.
+                        <html>
+                            This is a simple agreement demo. By accepting this agreement, you agree that you<br>
+                            understand that this is just a demo, and <b>it doesn't do anything.</b><br>
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                        </html>
                         """)
                 .setAgreementTitle("Simple Agreement Demo")
                 // optional. "Accept" by default:

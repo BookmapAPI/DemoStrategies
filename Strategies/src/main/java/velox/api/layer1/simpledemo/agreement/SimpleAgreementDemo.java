@@ -25,6 +25,7 @@ public class SimpleAgreementDemo implements
         Layer1ApiFinishable,
         Layer1ApiInstrumentSpecificEnabledStateProvider {
 
+    private boolean isStrategyEnabled = false;
     private boolean isAgreementAccepted = false;
 
     private final Map<String, Runnable> recheckCallbacksByAlias = new HashMap<>();
@@ -33,6 +34,12 @@ public class SimpleAgreementDemo implements
 
     @Override
     public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
+        isStrategyEnabled = isEnabled;
+
+        if (!isEnabled) {
+            return;
+        }
+
         AgreementInfo agreementInfo = new AgreementInfo.Builder()
                 .setAgreementId("simple-agreement-demo#simple-agreement-demo-v1")
                 .setAgreementText("""
@@ -74,7 +81,7 @@ public class SimpleAgreementDemo implements
 
     @Override
     public boolean isStrategyEnabled(String alias) {
-        return false;
+        return isAgreementAccepted && isStrategyEnabled;
     }
 
     @Override

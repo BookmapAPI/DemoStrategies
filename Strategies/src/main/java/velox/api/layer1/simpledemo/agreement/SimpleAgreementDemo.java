@@ -64,10 +64,10 @@ public class SimpleAgreementDemo implements
 
         AgreementHelper.requestAgreement(
                 agreementInfo, (agreementStatus, userChoices) -> {
-                    String userChoiceText = userChoices.entrySet().stream()
+                    String userChoiceText = userChoices != null ? userChoices.entrySet().stream()
                             .map(entry -> entry.getKey() + "=" + entry.getValue())
                             .reduce((a, b) -> a + ", " + b)
-                            .orElse("No choices");
+                            .orElse("No choices") : null;
                     JOptionPane.showMessageDialog(
                             null,
                             "\"" + agreementInfo.agreementTitle + "\" agreement status: " + agreementStatus

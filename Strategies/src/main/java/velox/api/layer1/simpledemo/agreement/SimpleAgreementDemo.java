@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
+import velox.api.layer1.Layer1ApiFinishable;
 import velox.api.layer1.Layer1ApiInstrumentSpecificEnabledStateProvider;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.agreement.AgreementComponent;
@@ -16,25 +17,27 @@ import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
-import velox.api.layer1.annotations.Layer1TradingStrategy;
-
 @Layer1Attachable
 @Layer1StrategyName("Simple Agreement Demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
-@Layer1TradingStrategy
-public class SimpleAgreementDemo implements Layer1ApiInstrumentSpecificEnabledStateProvider {
+public class SimpleAgreementDemo implements
+        Layer1ApiFinishable,
+        Layer1ApiInstrumentSpecificEnabledStateProvider {
 
     private boolean isAgreementAccepted = false;
 
-    private Map<String, Runnable> recheckCallbacksByAlias = new HashMap<>();
+    private final Map<String, Runnable> recheckCallbacksByAlias = new HashMap<>();
 
-    public SimpleAgreementDemo(Layer1ApiProvider provider) {
-    }
+    public SimpleAgreementDemo(Layer1ApiProvider provider) {}
 
     @Override
     public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
         AgreementInfo agreementInfo = new AgreementInfo.Builder()
                 .setAgreementId("simple-agreement-demo#simple-agreement-demo-v1")
+                .setAgreementText("""
+                        This is a simple agreement demo. By accepting this agreement, you agree that you
+                        understand that this is just a demo, and it doesn't do anything.
+                        """)
                 .setAgreementTitle("Simple Agreement Demo")
                 // optional. "Accept" by default:
                 .setAcceptButtonText("Demo Accept")
@@ -77,4 +80,7 @@ public class SimpleAgreementDemo implements Layer1ApiInstrumentSpecificEnabledSt
     public void setStrategyEnabledRecheckCallback(String alias, Runnable recheckCallback) {
         SwingUtilities.invokeLater(() -> recheckCallbacksByAlias.put(alias, recheckCallback));
     }
+
+    @Override
+    public void finish() {}
 }

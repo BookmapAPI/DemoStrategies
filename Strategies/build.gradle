@@ -3,6 +3,7 @@ plugins {
     id 'eclipse'
     id 'idea'
     id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.6'
+    id 'org.jetbrains.kotlin.jvm' version '2.2.0'
 }
 
 java {

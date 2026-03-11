@@ -17,6 +17,8 @@ import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
+import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
+import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManagerFactory;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas;
@@ -62,7 +64,7 @@ public class Layer1ApiLastPricePlankDemo implements
         public LastPricePainter(ScreenSpaceCanvas canvas, String alias) {
             this.canvas = canvas;
             this.alias = alias;
-            this.lastPrice = lastPrices.getOrDefault(alias, Double.NaN);
+            this.lastPrice = lastPrices.getOrDefault(instrumentsManager.getOriginalAliasOrReturn(alias), Double.NaN);
         }
         
         private void onLastPrice(double lastPrice) {
@@ -159,6 +161,11 @@ public class Layer1ApiLastPricePlankDemo implements
     private Map<String, InstrumentInfo> instrumentInfos = Collections.synchronizedMap(new HashMap<>());
     private Map<String, Double> lastPrices = Collections.synchronizedMap(new HashMap<>());
 
+    // to link indicators and data by aliases
+    // you don't need to have this tool if your addon doesn't support duplicated instruments mode
+    // in non-duplicated instruments mode there is no difference between aliases for data and theirs charts
+    private final InstrumentsManager instrumentsManager = InstrumentsManagerFactory.getInstrumentsManager();
+
     public Layer1ApiLastPricePlankDemo(Layer1ApiProvider provider) {
         this.provider = provider;
         
@@ -216,17 +223,24 @@ public class Layer1ApiLastPricePlankDemo implements
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
         instrumentInfos.put(alias, instrumentInfo);
-        
+        instrumentsManager.onInstrumentAdded(alias, instrumentInfo);
         if (painters.containsKey(alias)) {
             painters.get(alias).update();
         }
     }
-    
+
+    @Override
+    public void onInstrumentRemoved(String alias) {
+        instrumentsManager.onInstrumentRemoved(alias);
+    }
+
     @Override
     public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
-        LastPricePainter painter = painters.get(alias);
-        if (painter != null) {
-            painter.onLastPrice(price);
+        for (String availableAlias : instrumentsManager.getAvailableAliases(alias)) {
+            LastPricePainter painter = painters.get(availableAlias);
+            if (painter != null) {
+                painter.onLastPrice(price);
+            }
         }
         lastPrices.put(alias, price);
     }

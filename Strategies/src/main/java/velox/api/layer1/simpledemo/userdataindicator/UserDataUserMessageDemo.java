@@ -22,6 +22,8 @@ import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
+import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
+import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManagerFactory;
 import velox.api.layer1.data.BalanceInfo;
 import velox.api.layer1.data.ExecutionInfo;
 import velox.api.layer1.data.InstrumentInfo;
@@ -29,6 +31,7 @@ import velox.api.layer1.data.MarketMode;
 import velox.api.layer1.data.OrderInfoUpdate;
 import velox.api.layer1.data.StatusInfo;
 import velox.api.layer1.data.TradeInfo;
+import velox.api.layer1.layers.instrumentduplicator.DuplicateInstrumentInfo;
 import velox.api.layer1.layers.strategies.interfaces.CalculatedResultListener;
 import velox.api.layer1.layers.strategies.interfaces.CustomEventAggregatble;
 import velox.api.layer1.layers.strategies.interfaces.CustomGeneratedEvent;
@@ -379,6 +382,7 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
     }
 
     private String getGeneratorName(String alias) {
+        alias = instrumentsManager.getOriginalAliasOrReturn(alias);
         return GENERATOR_NAME_PREFIX + alias;
     }
 
@@ -395,6 +399,12 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
     private final Layer1ApiRequestCurrentTimeEvents requestCurrentTimeEventsMessage = new Layer1ApiRequestCurrentTimeEvents(
             true, 0, TimeUnit.MILLISECONDS.toNanos(50));
 
+    // to link indicators and data (generators) by aliases
+    // you don't need to have this tool if your addon doesn't support duplicated instruments mode
+    // in non-duplicated instruments mode there is no difference between aliases for data and theirs charts
+    private final InstrumentsManager instrumentsManager = InstrumentsManagerFactory.getInstrumentsManager();
+    private final Set<String> aliasesWithGenerators = new HashSet<>();
+
     private DataStructureInterface dataStructureInterface;
 
     public UserDataUserMessageDemo(Layer1ApiProvider provider) {
@@ -404,6 +414,14 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
 
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
+        instrumentsManager.onInstrumentAdded(alias, instrumentInfo);
+        boolean duplicate = instrumentInfo instanceof DuplicateInstrumentInfo;
+        if (duplicate) {
+            // we do not want to generate events for duplicated instruments in this demo, because they have the same data,
+            // so we will just reuse the same generator for all duplicated aliases
+            return;
+        }
+        aliasesWithGenerators.add(alias);
         new Thread(() -> {
             provider.sendUserMessage(getGeneratorMessage(alias, false));
             provider.sendUserMessage(getGeneratorMessage(alias, true));
@@ -412,6 +430,10 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
 
     @Override
     public void onInstrumentRemoved(String alias) {
+        instrumentsManager.onInstrumentRemoved(alias);
+        if (!aliasesWithGenerators.remove(alias)) {
+            return;
+        }
         new Thread(() -> {
             provider.sendUserMessage(getGeneratorMessage(alias, false));
         }).start();
@@ -427,10 +449,12 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
     public void onUserMessage(Object data) {
         if (data instanceof Layer1ApiHistoricalDataLoadedMessage) {
             Layer1ApiHistoricalDataLoadedMessage message = (Layer1ApiHistoricalDataLoadedMessage) data;
-            new Thread(() -> {
-                provider.sendUserMessage(getGeneratorMessage(message.alias, false));
-                provider.sendUserMessage(getGeneratorMessage(message.alias, true));
-            }).start();
+            if (aliasesWithGenerators.contains(message.alias)) {
+                new Thread(() -> {
+                    provider.sendUserMessage(getGeneratorMessage(message.alias, false));
+                    provider.sendUserMessage(getGeneratorMessage(message.alias, true));
+                }).start();
+            }
         } else if (data instanceof UserMessageLayersChainCreatedTargeted) {
             UserMessageLayersChainCreatedTargeted message = (UserMessageLayersChainCreatedTargeted) data;
             if (message.targetClass == getClass()) {

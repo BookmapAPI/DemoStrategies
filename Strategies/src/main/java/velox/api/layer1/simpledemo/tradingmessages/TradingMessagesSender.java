@@ -12,6 +12,8 @@ import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.annotations.Layer1TradingStrategy;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.helper.AccountListManager;
+import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
+import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManagerFactory;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.messages.Layer1ApiUserMessageReloadStrategyGui;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
@@ -42,6 +44,7 @@ public class TradingMessagesSender implements
     private final AtomicBoolean isWorking = new AtomicBoolean(false);
     private final ExecutorService asyncExecutor = Executors.newSingleThreadExecutor();
     private final AccountListManager accountListManager = new AccountListManager();
+    private final InstrumentsManager instrumentsManager = InstrumentsManagerFactory.getInstrumentsManager();
 
     public TradingMessagesSender(final Layer1ApiProvider provider) {
         ListenableHelper.addListeners(provider, this);
@@ -59,18 +62,27 @@ public class TradingMessagesSender implements
     
     @Override
     public void onInstrumentAdded(final String alias, final InstrumentInfo info) {
-        SwingUtilities.invokeLater(() -> {
-            instruments.put(alias, info);
-            updateInstruments();
-        });
+        instrumentsManager.onInstrumentAdded(alias, info);
+        if (instrumentsManager.canHasChart(alias)) {
+            // we want to have ability to send messages only for the instruments that can have charts
+            // you don't need to have this check if your addon doesn't support duplicated instruments mode
+            // (in non-duplicated instruments mode each instrument can have a chart)
+            SwingUtilities.invokeLater(() -> {
+                instruments.put(alias, info);
+                updateInstruments();
+            });
+        }
     }
 
     @Override
     public void onInstrumentRemoved(final String alias) {
-        SwingUtilities.invokeLater(() -> {
-            instruments.remove(alias);
-            updateInstruments();
-        });
+        if (instrumentsManager.canHasChart(alias)) {
+            SwingUtilities.invokeLater(() -> {
+                instruments.remove(alias);
+                updateInstruments();
+            });
+        }
+        instrumentsManager.onInstrumentRemoved(alias);
     }
 
     @Override

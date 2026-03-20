@@ -5,10 +5,11 @@ plugins {
     id 'org.jetbrains.gradle.plugin.idea-ext' version '1.1.6'
 }
 
-// This is optional, tells gradle that we want Java 17 compatible bytecode.
-// Can be removed in standalone addons
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
 
 repositories {
     mavenCentral()
@@ -28,7 +29,7 @@ dependencies {
 
         compileOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     }
-    
+
     compileOnly group: 'com.ibm.icu', name: 'icu4j', version: '71.1'
 }
 

@@ -79,7 +79,7 @@ public class RegisteredAccountsDemo implements
      */
     private record AccountInfoMessageKey(String accountId, String accountBelongsTo) {}
 
-    final static String NAME = "Registered Accounts Demo";
+    static final String NAME = "Registered Accounts Demo";
     private static final String PER_ALIAS_COLOR = "Per-alias accounts count";
     private static final Color  PER_ALIAS_COLOR_DEFAULT = Color.CYAN;
 

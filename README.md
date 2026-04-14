@@ -322,8 +322,8 @@ Your module is loaded into a custom child classloader. It is a "normal" parent-f
 You can ship necessary libraries with your code, and the easiest way to achieve this would be to create a "fat jar", also known as "uber". Just be aware of potential conflicts with the libraries that are packaged with Bookmap - e.g. it's probably not a great idea to try using a different version of the same library (it can be done in a way that will work, e.g. by using another classloader, just be aware of conflicts if you decide to do it in a simple way).
 
 A common way to keep versions consistency for the libraries is taking a look into Bookmap's lib folder and checking libraries versions. Explicitly make gradle use the versions of libraries Bookmap uses.  
-Example: gson library Bookmap uses is in the lib folder (`gson-2.8.5.jar`). You can find the notation for Gradle in the maven repository and add it to the dependencies in your project's gradle.build:  
-`compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.8.5'`
+Example: gson library Bookmap uses is in the lib folder (`gson-2.13.2.jar`). You can find the notation for Gradle in the maven repository and add it to the dependencies in your project's gradle.build:  
+`compileOnly group: 'com.google.code.gson', name: 'gson', version: '2.13.2'`
 
 When new version of Bookmap is released it will usually be able to load the code created for older versions (but not the other way around).
 

@@ -17,6 +17,7 @@ import velox.api.layer1.Layer1CustomPanelsGetter;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
+import velox.api.layer1.annotations.Layer1DuplicateInstrumentsAware;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.Log;
@@ -64,6 +65,7 @@ import velox.gui.colors.ColorsConfigItem;
 @Layer1Attachable
 @Layer1StrategyName("Custom Events Demo")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
+@Layer1DuplicateInstrumentsAware
 public class Layer1CustomEventsDemo implements Layer1ApiFinishable, Layer1ApiAdminAdapter, OnlineCalculatable,
     Layer1CustomPanelsGetter, Layer1ConfigSettingsInterface, Layer1IndicatorColorInterface {
     private static class CustomTradePriceEvent implements CustomGeneratedEvent {

@@ -8,6 +8,7 @@ import velox.api.layer1.actions.Layer1ExternalAction;
 import velox.api.layer1.actions.annotations.Layer1ActionMetadata;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
+import velox.api.layer1.annotations.Layer1DuplicateInstrumentsAware;
 import velox.api.layer1.annotations.Layer1Injectable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
@@ -36,6 +37,7 @@ import java.util.Set;
 @Layer1Injectable
 @Layer1StrategyName(ActionStrategy2.STRATEGY_NAME)
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
+@Layer1DuplicateInstrumentsAware()
 public class ActionStrategy2 extends Layer1ApiInjectorRelay implements Layer1ApiFinishable, Layer1ActionMapper {
     static final String STRATEGY_NAME = "Action Strategy 2";
     private static final String NONE_ITEM = "---";

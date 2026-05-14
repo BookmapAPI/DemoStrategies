@@ -12,6 +12,7 @@ import velox.api.layer1.Layer1CustomPanelsGetter;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
+import velox.api.layer1.annotations.Layer1DuplicateInstrumentsAware;
 import velox.api.layer1.annotations.Layer1LocalizationBundle;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
@@ -37,6 +38,7 @@ import velox.gui.utils.localization.LocalizedBundle;
 @Layer1LocalizationBundle(Layer1ApiLocalizedAlertDemo.LOCALIZED_BUNDLE_NAME)
 @Layer1StrategyName(value = "Alert localized demo", localizationKey = "Layer1ApiLocalizedAlertDemo.Name")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
+@Layer1DuplicateInstrumentsAware()
 public class Layer1ApiLocalizedAlertDemo implements
     Layer1CustomPanelsGetter,
     Layer1ApiFinishable,

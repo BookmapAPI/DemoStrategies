@@ -10,6 +10,7 @@ import velox.api.layer1.actions.annotations.Layer1ActionMetadata;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
+import velox.api.layer1.annotations.Layer1DuplicateInstrumentsAware;
 import velox.api.layer1.annotations.Layer1Injectable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 
@@ -38,6 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Layer1Injectable
 @Layer1StrategyName("Action Strategy 3")
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
+@Layer1DuplicateInstrumentsAware()
 public class ActionStrategy3 implements Layer1ApiFinishable, Layer1ApiInstrumentSpecificEnabledStateProvider, Layer1ActionMapper {
     static final String STRATEGY_NAME = "Action Strategy 3";
     private Layer1ApiProvider provider;

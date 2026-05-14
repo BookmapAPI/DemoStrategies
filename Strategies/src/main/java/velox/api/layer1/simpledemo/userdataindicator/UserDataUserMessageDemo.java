@@ -22,8 +22,6 @@ import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
-import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
-import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManagerFactory;
 import velox.api.layer1.data.BalanceInfo;
 import velox.api.layer1.data.ExecutionInfo;
 import velox.api.layer1.data.InstrumentInfo;
@@ -382,7 +380,6 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
     }
 
     private String getGeneratorName(String alias) {
-        alias = instrumentsManager.getOriginalAliasOrReturn(alias);
         return GENERATOR_NAME_PREFIX + alias;
     }
 
@@ -399,10 +396,6 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
     private final Layer1ApiRequestCurrentTimeEvents requestCurrentTimeEventsMessage = new Layer1ApiRequestCurrentTimeEvents(
             true, 0, TimeUnit.MILLISECONDS.toNanos(50));
 
-    // to link indicators and data (generators) by aliases
-    // you don't need to have this tool if your addon doesn't support duplicated instruments mode
-    // in non-duplicated instruments mode there is no difference between aliases for data and theirs charts
-    private final InstrumentsManager instrumentsManager = InstrumentsManagerFactory.getInstrumentsManager();
     private final Set<String> aliasesWithGenerators = new HashSet<>();
 
     private DataStructureInterface dataStructureInterface;
@@ -414,7 +407,6 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
 
     @Override
     public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
-        instrumentsManager.onInstrumentAdded(alias, instrumentInfo);
         boolean duplicate = instrumentInfo instanceof DuplicateInstrumentInfo;
         if (duplicate) {
             // we do not want to generate events for duplicated instruments in this demo, because they have the same data,
@@ -430,7 +422,6 @@ public class UserDataUserMessageDemo implements Layer1ApiAdminAdapter, Layer1Api
 
     @Override
     public void onInstrumentRemoved(String alias) {
-        instrumentsManager.onInstrumentRemoved(alias);
         if (!aliasesWithGenerators.remove(alias)) {
             return;
         }

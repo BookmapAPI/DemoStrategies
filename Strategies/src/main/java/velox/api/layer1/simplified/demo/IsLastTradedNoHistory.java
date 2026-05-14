@@ -1,7 +1,6 @@
 package velox.api.layer1.simplified.demo;
 
 import java.awt.Color;
-import java.util.Objects;
 
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
@@ -10,7 +9,6 @@ import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.TradeInfo;
-import velox.api.layer1.layers.instrumentduplicator.DuplicateInstrumentInfo;
 import velox.api.layer1.messages.indicators.Layer1ApiUserMessageModifyIndicator.GraphType;
 import velox.api.layer1.simplified.Api;
 import velox.api.layer1.simplified.CustomModule;
@@ -59,12 +57,6 @@ public class IsLastTradedNoHistory implements
     
     @Override
     public void onInstrumentAdded(InstrumentInfo info) {
-        if (info instanceof DuplicateInstrumentInfo duplicateInstrumentInfo
-                && Objects.equals(currentInstrumentAlias, outputInstrumetnAlias)) {
-            //converting output instrument to original, to compare the data events (which are only for the original instruments)
-            // you don't need to do this if your addon doesn't support duplicated instruments mode
-            outputInstrumetnAlias = duplicateInstrumentInfo.originalAlias;
-        }
         Log.info("[IsLastTradedNoHistory] indicator for " + outputInstrumetnAlias + " received onAdded for "
                 + currentInstrumentAlias + " info " + info);
     }

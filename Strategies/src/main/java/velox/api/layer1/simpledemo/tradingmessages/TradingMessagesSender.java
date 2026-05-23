@@ -8,6 +8,7 @@ import velox.api.layer1.Layer1CustomPanelsGetter;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
+import velox.api.layer1.annotations.Layer1DuplicateInstrumentsAware;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.annotations.Layer1TradingStrategy;
 import velox.api.layer1.common.ListenableHelper;
@@ -32,6 +33,7 @@ import java.util.concurrent.atomic.AtomicReference;
 @Layer1StrategyName(TradingMessagesSender.NAME)
 @Layer1ApiVersion(Layer1ApiVersionValue.VERSION2)
 @Layer1TradingStrategy
+@Layer1DuplicateInstrumentsAware()
 public class TradingMessagesSender implements
         Layer1ApiAdminAdapter,
         Layer1ApiFinishable,

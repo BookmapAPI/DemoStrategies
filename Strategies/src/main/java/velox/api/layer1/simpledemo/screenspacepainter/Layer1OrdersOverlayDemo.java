@@ -18,15 +18,12 @@ import java.util.concurrent.TimeUnit;
 import velox.api.layer1.Layer1ApiAdminAdapter;
 import velox.api.layer1.Layer1ApiDataAdapter;
 import velox.api.layer1.Layer1ApiFinishable;
-import velox.api.layer1.Layer1ApiInstrumentAdapter;
 import velox.api.layer1.Layer1ApiProvider;
 import velox.api.layer1.annotations.Layer1ApiVersion;
 import velox.api.layer1.annotations.Layer1ApiVersionValue;
 import velox.api.layer1.annotations.Layer1Attachable;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.common.ListenableHelper;
-import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
-import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManagerFactory;
 import velox.api.layer1.data.InstrumentInfo;
 import velox.api.layer1.data.TradeInfo;
 import velox.api.layer1.layers.strategies.interfaces.ScreenSpaceCanvas;
@@ -87,7 +84,6 @@ import velox.api.layer1.simpledemo.markers.Layer1ApiMarkersDemo;
 public class Layer1OrdersOverlayDemo implements
     Layer1ApiFinishable,
     Layer1ApiAdminAdapter,
-    Layer1ApiInstrumentAdapter,
     Layer1ApiDataAdapter,
     ScreenSpacePainterFactory
 {
@@ -109,11 +105,6 @@ public class Layer1OrdersOverlayDemo implements
      * source, it's here only to generate reasonable demo data.
      */
     private Map<String, Integer> prices = new ConcurrentHashMap<>();
-
-    // to link indicators and data by aliases
-    // you don't need to have this tool if your addon doesn't support duplicated instruments mode
-    // in non-duplicated instruments mode there is no difference between aliases for data and theirs charts
-    private final InstrumentsManager instrumentsManager = InstrumentsManagerFactory.getInstrumentsManager();
 
     public Layer1OrdersOverlayDemo(Layer1ApiProvider provider) {
         this.provider = provider;
@@ -217,7 +208,7 @@ public class Layer1OrdersOverlayDemo implements
 
             private Collection<? extends CanvasIcon> generateIconsFor(long orderIndex) {
                 
-                Integer basePrice = prices.get(instrumentsManager.getOriginalAliasOrReturn(indicatorAlias));
+                Integer basePrice = prices.get(indicatorAlias);
                 
                 if (basePrice == null) {
                     return Collections.emptyList();
@@ -361,15 +352,5 @@ public class Layer1OrdersOverlayDemo implements
     public void onTrade(String alias, double price, int size, TradeInfo tradeInfo) {
         // Remembering first trade price rounded to nearest level.
         prices.putIfAbsent(alias, (int) Math.round(price));
-    }
-
-    @Override
-    public void onInstrumentAdded(String alias, InstrumentInfo instrumentInfo) {
-        instrumentsManager.onInstrumentAdded(alias, instrumentInfo);
-    }
-
-    @Override
-    public void onInstrumentRemoved(String alias) {
-        instrumentsManager.onInstrumentRemoved(alias);
     }
 }

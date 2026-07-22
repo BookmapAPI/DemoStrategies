@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -30,8 +31,8 @@ public class SimpleAgreementDemo implements
 
     private static final int AGREEMENTS_COUNT = 4;
 
-    private boolean isStrategyEnabled = false;
-    private boolean isAgreementAccepted = false;
+    private boolean isStrategyEnabled;
+    private boolean isAgreementAccepted;
 
     private final Map<String, Runnable> recheckCallbacksByAlias = new HashMap<>();
 
@@ -41,10 +42,9 @@ public class SimpleAgreementDemo implements
     public void onStrategyCheckboxEnabled(String alias, boolean isEnabled) {
         isStrategyEnabled = isEnabled;
 
-        if (!isEnabled) {
-            return;
+        if (isEnabled && !isAgreementAccepted) {
+            requestAgreements();
         }
-        requestAgreements();
     }
 
     private void requestAgreements() {
@@ -53,9 +53,15 @@ public class SimpleAgreementDemo implements
             results.add(requestAgreement(agreementNumber));
         }
 
+        CompletableFuture.allOf(results.toArray(CompletableFuture<?>[]::new))
+                .thenRun(() -> showAgreementResults(results));
+    }
+
+    private void showAgreementResults(List<CompletableFuture<AgreementResult>> results) {
         List<AgreementResult> agreementResults = results.stream().map(CompletableFuture::join).toList();
-        isAgreementAccepted = isStrategyEnabled && agreementResults.stream().allMatch(AgreementResult::accepted);
         SwingUtilities.invokeLater(() -> {
+            isAgreementAccepted = isStrategyEnabled
+                    && agreementResults.stream().allMatch(AgreementResult::accepted);
             JOptionPane.showMessageDialog(
                     null,
                     String.join("\n", agreementResults.stream().map(AgreementResult::message).toList()));
@@ -76,10 +82,13 @@ public class SimpleAgreementDemo implements
     }
 
     private String getUserChoiceText(Map<String, String> userChoices) {
-        return userChoices != null ? userChoices.entrySet().stream()
+        if (userChoices == null) {
+            return null;
+        }
+        String choices = userChoices.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())
-                .reduce((a, b) -> a + ", " + b)
-                .orElse("No choices") : null;
+                .collect(Collectors.joining(", "));
+        return choices.isEmpty() ? "No choices" : choices;
     }
 
     private AgreementInfo buildAgreementInfo(int agreementNumber) {

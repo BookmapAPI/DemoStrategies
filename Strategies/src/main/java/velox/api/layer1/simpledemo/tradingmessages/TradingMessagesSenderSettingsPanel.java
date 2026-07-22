@@ -192,11 +192,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
 
         JButton sendButton = new JButton("Send ChangeSelectedAccount Message");
         sendButton.addActionListener(e -> {
-            String alias = (String) comboBoxAliasesChangeAccount.getSelectedItem();
-            if (alias == null || alias.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Alias cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            String alias = getSelectedAlias(comboBoxAliasesChangeAccount);
+            if (alias == null) return;
 
             String accountId;
             try {
@@ -233,11 +230,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
 
         JButton sendSetOrderSizeMessage = new JButton("Send SetOrderSize Message");
         sendSetOrderSizeMessage.addActionListener(e -> {
-            String alias = (String) comboBoxAliasesSetOrderSize.getSelectedItem();
-            if (alias == null || alias.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Alias cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            String alias = getSelectedAlias(comboBoxAliasesSetOrderSize);
+            if (alias == null) return;
             int orderSize = (int) spinnerOrderSize.getValue();
             String messageText = "Layer1ApiSetOrderSizeMessage with alias: " + alias + ", orderSize: " + orderSize;
             messageConsumer.accept(new Layer1ApiSetOrderSizeMessage(alias, orderSize, getResponseListener(messageText)));
@@ -272,11 +266,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
 
         JButton sendButton = new JButton("Send SetBrackets Message");
         sendButton.addActionListener(e -> {
-            String alias = (String) comboBoxAliasesBrackets.getSelectedItem();
-            if (alias == null || alias.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Alias cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            String alias = getSelectedAlias(comboBoxAliasesBrackets);
+            if (alias == null) return;
             boolean enabled = cbEnabled.isSelected();
             int tp = (int) spinnerTp.getValue();
             int sl = (int) spinnerSl.getValue();
@@ -300,11 +291,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
 
         JButton sendButton = new JButton("Send SetOco Message");
         sendButton.addActionListener(e -> {
-            String alias = (String) comboBoxAliasesOco.getSelectedItem();
-            if (alias == null || alias.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Alias cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            String alias = getSelectedAlias(comboBoxAliasesOco);
+            if (alias == null) return;
             boolean enabled = cbEnabled.isSelected();
             String messageText = "Layer1ApiSetOcoMessage with alias: " + alias + ", enabled: " + enabled;
             messageConsumer.accept(new Layer1ApiSetOcoMessage(alias, enabled, getResponseListener(messageText)));
@@ -330,11 +318,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
 
         JButton sendButton = new JButton("Send SetTrailingStop Message");
         sendButton.addActionListener(e -> {
-            String alias = (String) comboBoxAliasesTrailingStop.getSelectedItem();
-            if (alias == null || alias.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Alias cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            String alias = getSelectedAlias(comboBoxAliasesTrailingStop);
+            if (alias == null) return;
             boolean enabled = cbEnabled.isSelected();
             int step = (int) spinnerStep.getValue();
             String messageText = "Layer1ApiSetTrailingStopMessage with alias: " + alias + ", enabled: " + enabled + ", step: " + step;
@@ -359,11 +344,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
 
         JButton sendButton = new JButton("Send SetStopOrderType Message");
         sendButton.addActionListener(e -> {
-            String alias = (String) comboBoxAliasesStopOrderType.getSelectedItem();
-            if (alias == null || alias.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Alias cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            String alias = getSelectedAlias(comboBoxAliasesStopOrderType);
+            if (alias == null) return;
             OrderType type = (OrderType) typeCombo.getSelectedItem();
             String messageText = "Layer1ApiSetStopOrderTypeMessage with alias: " + alias + ", type: " + type;
             messageConsumer.accept(new Layer1ApiSetStopOrderTypeMessage(alias, type, getResponseListener(messageText)));
@@ -380,6 +362,7 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         block.add(new JLabel("Select instrument:"));
         block.add(comboBoxAliasesOrderDuration);
 
+        // Hardcoded for simplicity. In production, these should be obtained from SupportedFeatures
         OrderDuration[] durations = {OrderDuration.GTC, OrderDuration.DAY, OrderDuration.FOK, OrderDuration.IOC};
         JComboBox<OrderDuration> durationCombo = new JComboBox<>(durations);
         block.add(new JLabel("Order Duration:"));
@@ -387,11 +370,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
 
         JButton sendButton = new JButton("Send SetOrderDuration Message");
         sendButton.addActionListener(e -> {
-            String alias = (String) comboBoxAliasesOrderDuration.getSelectedItem();
-            if (alias == null || alias.isEmpty()) {
-                JOptionPane.showMessageDialog(null, "Alias cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
-            }
+            String alias = getSelectedAlias(comboBoxAliasesOrderDuration);
+            if (alias == null) return;
             OrderDuration duration = (OrderDuration) durationCombo.getSelectedItem();
             String messageText = "Layer1ApiSetOrderDurationMessage with alias: " + alias + ", duration: " + duration;
             messageConsumer.accept(new Layer1ApiSetOrderDurationMessage(alias, duration, getResponseListener(messageText)));

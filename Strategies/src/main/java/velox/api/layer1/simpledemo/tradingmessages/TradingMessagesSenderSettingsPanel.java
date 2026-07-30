@@ -16,20 +16,7 @@ import velox.api.layer1.data.AccountInfo;
 import velox.api.layer1.data.AccountInfoBuilder;
 import velox.api.layer1.data.OrderDuration;
 import velox.api.layer1.data.OrderType;
-import velox.api.layer1.messages.Layer1ApiChangeSelectedAccountMessage;
-import velox.api.layer1.messages.Layer1ApiGetBracketsMessage;
-import velox.api.layer1.messages.Layer1ApiGetOcoMessage;
-import velox.api.layer1.messages.Layer1ApiGetOrderDurationMessage;
-import velox.api.layer1.messages.Layer1ApiGetOrderSizeMessage;
-import velox.api.layer1.messages.Layer1ApiGetStopOrderTypeMessage;
-import velox.api.layer1.messages.Layer1ApiGetTrailingStopMessage;
-import velox.api.layer1.messages.Layer1ApiSetBracketsMessage;
-import velox.api.layer1.messages.Layer1ApiSetOcoMessage;
-import velox.api.layer1.messages.Layer1ApiSetOrderDurationMessage;
-import velox.api.layer1.messages.Layer1ApiSetOrderSizeMessage;
-import velox.api.layer1.messages.Layer1ApiSetStopOrderTypeMessage;
-import velox.api.layer1.messages.Layer1ApiSetTrailingStopMessage;
-import velox.api.layer1.messages.Layer1ApiTradingMessageWithCallback;
+import velox.api.layer1.messages.*;
 import velox.gui.StrategyPanel;
 
 import javax.swing.BorderFactory;
@@ -61,6 +48,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private static final String SET_OCO_TITLE = "Set OCO";
     private static final String SET_TRAILING_STOP_TITLE = "Set Trailing Stop";
     private static final String SET_STOP_ORDER_TYPE_TITLE = "Set Stop Order Type";
+    private static final String SET_STOP_ORDER_OFFSET_TITLE = "Set Stop Order Offset";
+    private static final String SET_STOP_ORDER_DURATION_TITLE = "Set Stop Order Duration";
     private static final String SET_ORDER_DURATION_TITLE = "Set Order Duration";
     private static final String GET_TCP_STATE_TITLE = "Get TCP State";
     private final boolean initialized;
@@ -71,6 +60,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private final JComboBox<String> comboBoxAliasesOco;
     private final JComboBox<String> comboBoxAliasesTrailingStop;
     private final JComboBox<String> comboBoxAliasesStopOrderType;
+    private final JComboBox<String> comboBoxAliasesStopOrderOffset;
+    private final JComboBox<String> comboBoxAliasesStopOrderDuration;
     private final JComboBox<String> comboBoxAliasesOrderDuration;
     private final JComboBox<String> comboBoxAliasesGetState;
     private final Consumer<Object> messageConsumer;
@@ -93,6 +84,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         comboBoxAliasesOco = newComboBox();
         comboBoxAliasesTrailingStop = newComboBox();
         comboBoxAliasesStopOrderType = newComboBox();
+        comboBoxAliasesStopOrderOffset = newComboBox();
+        comboBoxAliasesStopOrderDuration = newComboBox();
         comboBoxAliasesOrderDuration = newComboBox();
         comboBoxAliasesGetState = newComboBox();
         this.messageConsumer = messageConsumer;
@@ -148,6 +141,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         updateComboBox(comboBoxAliasesOco, aliases);
         updateComboBox(comboBoxAliasesTrailingStop, aliases);
         updateComboBox(comboBoxAliasesStopOrderType, aliases);
+        updateComboBox(comboBoxAliasesStopOrderOffset, aliases);
+        updateComboBox(comboBoxAliasesStopOrderDuration, aliases);
         updateComboBox(comboBoxAliasesOrderDuration, aliases);
         updateComboBox(comboBoxAliasesGetState, aliases);
     }
@@ -167,6 +162,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         panel.add(buildSetOcoBlock());
         panel.add(buildSetTrailingStopBlock());
         panel.add(buildSetStopOrderTypeBlock());
+        panel.add(buildSetStopOrderOffsetBlock());
+        panel.add(buildSetStopOrderDurationBlock());
         panel.add(buildSetOrderDurationBlock());
         panel.add(buildGetTcpStateBlock());
 
@@ -255,24 +252,41 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         block.add(comboBoxAliasesBrackets);
 
         JCheckBox cbEnabled = new JCheckBox("Enable Brackets", true);
-        JSpinner spinnerTp = new JSpinner(new SpinnerNumberModel(10, 1, 9999, 1));
-        JSpinner spinnerSl = new JSpinner(new SpinnerNumberModel(10, 1, 9999, 1));
+        // A 0 offset means the corresponding leg is not set, mirroring the message's "not set" sentinel,
+        // so each leg can be toggled independently without a dedicated checkbox.
+        JSpinner spinnerTp = new JSpinner(new SpinnerNumberModel(10, 0, 9999, 1));
+        JSpinner spinnerSl = new JSpinner(new SpinnerNumberModel(10, 0, 9999, 1));
 
         block.add(cbEnabled);
-        block.add(new JLabel("Take Profit offset (ticks):"));
+        block.add(new JLabel("Take Profit offset (ticks, 0 = not set):"));
         block.add(spinnerTp);
-        block.add(new JLabel("Stop Loss offset (ticks):"));
+        block.add(new JLabel("Stop Loss offset (ticks, 0 = not set):"));
         block.add(spinnerSl);
 
         JButton sendButton = new JButton("Send SetBrackets Message");
         sendButton.addActionListener(e -> {
             String alias = getSelectedAlias(comboBoxAliasesBrackets);
             if (alias == null) return;
-            boolean enabled = cbEnabled.isSelected();
-            int tp = (int) spinnerTp.getValue();
-            int sl = (int) spinnerSl.getValue();
-            String messageText = "Layer1ApiSetBracketsMessage with alias: " + alias + ", enabled: " + enabled + ", tp: " + tp + ", sl: " + sl;
-            messageConsumer.accept(new Layer1ApiSetBracketsMessage(alias, enabled, tp, sl, getResponseListener(messageText)));
+            Layer1ApiSetBracketsMessage message;
+            if (!cbEnabled.isSelected()) {
+                // Disable brackets entirely.
+                String messageText = "Layer1ApiSetBracketsMessage with alias: " + alias + ", enabled: false";
+                message = new Layer1ApiSetBracketsMessage(alias, getResponseListener(messageText));
+            } else {
+                // 0 means the leg is not set; the spinners already allow 0 as their minimum.
+                int tp = (int) spinnerTp.getValue();
+                int sl = (int) spinnerSl.getValue();
+                if (tp == 0 && sl == 0) {
+                    JOptionPane.showMessageDialog(null,
+                            "Set a non-zero Take Profit or Stop Loss offset when enabling brackets.",
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                String messageText = "Layer1ApiSetBracketsMessage with alias: " + alias
+                        + ", enabled: true, tp: " + tp + ", sl: " + sl;
+                message = new Layer1ApiSetBracketsMessage(alias, tp, sl, getResponseListener(messageText));
+            }
+            messageConsumer.accept(message);
         });
         block.add(sendButton);
         return block;
@@ -320,10 +334,17 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         sendButton.addActionListener(e -> {
             String alias = getSelectedAlias(comboBoxAliasesTrailingStop);
             if (alias == null) return;
-            boolean enabled = cbEnabled.isSelected();
-            int step = (int) spinnerStep.getValue();
-            String messageText = "Layer1ApiSetTrailingStopMessage with alias: " + alias + ", enabled: " + enabled + ", step: " + step;
-            messageConsumer.accept(new Layer1ApiSetTrailingStopMessage(alias, enabled, step, getResponseListener(messageText)));
+            Layer1ApiSetTrailingStopMessage message;
+            if (cbEnabled.isSelected()) {
+                int step = (int) spinnerStep.getValue();
+                String messageText = "Layer1ApiSetTrailingStopMessage with alias: " + alias
+                        + ", enabled: true, step: " + step;
+                message = new Layer1ApiSetTrailingStopMessage(alias, step, getResponseListener(messageText));
+            } else {
+                String messageText = "Layer1ApiSetTrailingStopMessage with alias: " + alias + ", enabled: false";
+                message = new Layer1ApiSetTrailingStopMessage(alias, getResponseListener(messageText));
+            }
+            messageConsumer.accept(message);
         });
         block.add(sendButton);
         return block;
@@ -349,6 +370,61 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
             OrderType type = (OrderType) typeCombo.getSelectedItem();
             String messageText = "Layer1ApiSetStopOrderTypeMessage with alias: " + alias + ", type: " + type;
             messageConsumer.accept(new Layer1ApiSetStopOrderTypeMessage(alias, type, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
+    private JPanel buildSetStopOrderOffsetBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(SET_STOP_ORDER_OFFSET_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesStopOrderOffset);
+
+        // Only applies to stop-limit orders. Negative values are accepted only on instruments that support them.
+        JSpinner spinnerOffset = new JSpinner(new SpinnerNumberModel(0,
+                -Layer1ApiSetStopOrderOffsetMessage.STOP_ORDER_OFFSET_MAX_ABS_VALUE,
+                Layer1ApiSetStopOrderOffsetMessage.STOP_ORDER_OFFSET_MAX_ABS_VALUE, 1));
+        block.add(new JLabel("Stop Order offset (ticks):"));
+        block.add(spinnerOffset);
+
+        JButton sendButton = new JButton("Send SetStopOrderOffset Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesStopOrderOffset);
+            if (alias == null) return;
+            int offset = (int) spinnerOffset.getValue();
+            String messageText = "Layer1ApiSetStopOrderOffsetMessage with alias: " + alias + ", offset: " + offset;
+            messageConsumer.accept(new Layer1ApiSetStopOrderOffsetMessage(alias, offset, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
+    private JPanel buildSetStopOrderDurationBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(SET_STOP_ORDER_DURATION_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesStopOrderDuration);
+
+        // Hardcoded for simplicity. In production, these should be obtained from SupportedFeatures
+        OrderDuration[] durations = {OrderDuration.GTC, OrderDuration.DAY, OrderDuration.FOK, OrderDuration.IOC};
+        JComboBox<OrderDuration> durationCombo = new JComboBox<>(durations);
+        block.add(new JLabel("Stop Order Duration:"));
+        block.add(durationCombo);
+
+        JButton sendButton = new JButton("Send SetStopOrderDuration Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesStopOrderDuration);
+            if (alias == null) return;
+            OrderDuration duration = (OrderDuration) durationCombo.getSelectedItem();
+            String messageText =
+                    "Layer1ApiSetStopOrderDurationMessage with alias: " + alias + ", duration: " + duration;
+            messageConsumer.accept(
+                    new Layer1ApiSetStopOrderDurationMessage(alias, duration, getResponseListener(messageText)));
         });
         block.add(sendButton);
         return block;
@@ -420,6 +496,22 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
                     showMessageDialog("Stop Order Type: " + state)));
         });
 
+        JButton getStopOrderOffsetBtn = new JButton("Get Stop Order Offset");
+        getStopOrderOffsetBtn.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesGetState);
+            if (alias == null) return;
+            messageConsumer.accept(new Layer1ApiGetStopOrderOffsetMessage(alias, state ->
+                    showMessageDialog("Stop Order Offset: " + state)));
+        });
+
+        JButton getStopOrderDurationBtn = new JButton("Get Stop Order Duration");
+        getStopOrderDurationBtn.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesGetState);
+            if (alias == null) return;
+            messageConsumer.accept(new Layer1ApiGetStopOrderDurationMessage(alias, state ->
+                    showMessageDialog("Stop Order Duration: " + state)));
+        });
+
         JButton getOrderDurationBtn = new JButton("Get Order Duration");
         getOrderDurationBtn.addActionListener(e -> {
             String alias = getSelectedAlias(comboBoxAliasesGetState);
@@ -440,6 +532,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         block.add(getOcoBtn);
         block.add(getTrailingStopBtn);
         block.add(getStopOrderTypeBtn);
+        block.add(getStopOrderOffsetBtn);
+        block.add(getStopOrderDurationBtn);
         block.add(getOrderDurationBtn);
         block.add(getOrderSizeBtn);
         return block;

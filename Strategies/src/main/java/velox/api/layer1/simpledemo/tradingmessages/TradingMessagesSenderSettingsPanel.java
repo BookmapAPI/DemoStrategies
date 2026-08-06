@@ -51,6 +51,11 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private static final String SET_STOP_ORDER_OFFSET_TITLE = "Set Stop Order Offset";
     private static final String SET_STOP_ORDER_DURATION_TITLE = "Set Stop Order Duration";
     private static final String SET_ORDER_DURATION_TITLE = "Set Order Duration";
+    private static final String CANCEL_ALL_ORDERS_TITLE = "Cancel All Orders";
+    private static final String CANCEL_BIDS_TITLE = "Cancel Bids";
+    private static final String CANCEL_ASKS_TITLE = "Cancel Asks";
+    private static final String FLATTEN_POSITION_TITLE = "Flatten Position";
+    private static final String REVERSE_POSITION_TITLE = "Reverse Position";
     private static final String GET_TCP_STATE_TITLE = "Get TCP State";
     private final boolean initialized;
     private final JComboBox<String> comboBoxAliasesChangeAccount;
@@ -63,6 +68,11 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private final JComboBox<String> comboBoxAliasesStopOrderOffset;
     private final JComboBox<String> comboBoxAliasesStopOrderDuration;
     private final JComboBox<String> comboBoxAliasesOrderDuration;
+    private final JComboBox<String> comboBoxAliasesCancelAllOrders;
+    private final JComboBox<String> comboBoxAliasesCancelBids;
+    private final JComboBox<String> comboBoxAliasesCancelAsks;
+    private final JComboBox<String> comboBoxAliasesFlattenPosition;
+    private final JComboBox<String> comboBoxAliasesReversePosition;
     private final JComboBox<String> comboBoxAliasesGetState;
     private final Consumer<Object> messageConsumer;
     private final JComponent workingPanel;
@@ -87,6 +97,11 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         comboBoxAliasesStopOrderOffset = newComboBox();
         comboBoxAliasesStopOrderDuration = newComboBox();
         comboBoxAliasesOrderDuration = newComboBox();
+        comboBoxAliasesCancelAllOrders = newComboBox();
+        comboBoxAliasesCancelBids = newComboBox();
+        comboBoxAliasesCancelAsks = newComboBox();
+        comboBoxAliasesFlattenPosition = newComboBox();
+        comboBoxAliasesReversePosition = newComboBox();
         comboBoxAliasesGetState = newComboBox();
         this.messageConsumer = messageConsumer;
         this.accountsPerAliasProvider = accountsPerAliasProvider;
@@ -144,6 +159,11 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         updateComboBox(comboBoxAliasesStopOrderOffset, aliases);
         updateComboBox(comboBoxAliasesStopOrderDuration, aliases);
         updateComboBox(comboBoxAliasesOrderDuration, aliases);
+        updateComboBox(comboBoxAliasesCancelAllOrders, aliases);
+        updateComboBox(comboBoxAliasesCancelBids, aliases);
+        updateComboBox(comboBoxAliasesCancelAsks, aliases);
+        updateComboBox(comboBoxAliasesFlattenPosition, aliases);
+        updateComboBox(comboBoxAliasesReversePosition, aliases);
         updateComboBox(comboBoxAliasesGetState, aliases);
     }
     
@@ -165,6 +185,11 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         panel.add(buildSetStopOrderOffsetBlock());
         panel.add(buildSetStopOrderDurationBlock());
         panel.add(buildSetOrderDurationBlock());
+        panel.add(buildCancelAllOrdersBlock());
+        panel.add(buildCancelBidsBlock());
+        panel.add(buildCancelAsksBlock());
+        panel.add(buildFlattenPositionBlock());
+        panel.add(buildReversePositionBlock());
         panel.add(buildGetTcpStateBlock());
 
         JScrollPane scrollPane = new JScrollPane(panel);
@@ -451,6 +476,101 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
             OrderDuration duration = (OrderDuration) durationCombo.getSelectedItem();
             String messageText = "Layer1ApiSetOrderDurationMessage with alias: " + alias + ", duration: " + duration;
             messageConsumer.accept(new Layer1ApiSetOrderDurationMessage(alias, duration, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
+    private JPanel buildCancelAllOrdersBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(CANCEL_ALL_ORDERS_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesCancelAllOrders);
+
+        JButton sendButton = new JButton("Send CancelAllOrders Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesCancelAllOrders);
+            if (alias == null) return;
+            String messageText = "Layer1ApiCancelAllOrdersMessage with alias: " + alias;
+            messageConsumer.accept(new Layer1ApiCancelAllOrdersMessage(alias, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
+    private JPanel buildCancelBidsBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(CANCEL_BIDS_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesCancelBids);
+
+        JButton sendButton = new JButton("Send CancelBids Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesCancelBids);
+            if (alias == null) return;
+            String messageText = "Layer1ApiCancelBidsMessage with alias: " + alias;
+            messageConsumer.accept(new Layer1ApiCancelBidsMessage(alias, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
+    private JPanel buildCancelAsksBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(CANCEL_ASKS_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesCancelAsks);
+
+        JButton sendButton = new JButton("Send CancelAsks Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesCancelAsks);
+            if (alias == null) return;
+            String messageText = "Layer1ApiCancelAsksMessage with alias: " + alias;
+            messageConsumer.accept(new Layer1ApiCancelAsksMessage(alias, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
+    private JPanel buildFlattenPositionBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(FLATTEN_POSITION_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesFlattenPosition);
+
+        JButton sendButton = new JButton("Send FlattenPosition Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesFlattenPosition);
+            if (alias == null) return;
+            String messageText = "Layer1ApiFlattenPositionMessage with alias: " + alias;
+            messageConsumer.accept(new Layer1ApiFlattenPositionMessage(alias, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
+    private JPanel buildReversePositionBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(REVERSE_POSITION_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesReversePosition);
+
+        JButton sendButton = new JButton("Send ReversePosition Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesReversePosition);
+            if (alias == null) return;
+            String messageText = "Layer1ApiReversePositionMessage with alias: " + alias;
+            messageConsumer.accept(new Layer1ApiReversePositionMessage(alias, getResponseListener(messageText)));
         });
         block.add(sendButton);
         return block;

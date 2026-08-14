@@ -12,10 +12,13 @@ import velox.api.layer1.annotations.Layer1DuplicateInstrumentsAware;
 import velox.api.layer1.annotations.Layer1StrategyName;
 import velox.api.layer1.annotations.Layer1TradingStrategy;
 import velox.api.layer1.common.ListenableHelper;
+import velox.api.layer1.common.Log;
 import velox.api.layer1.common.helper.AccountListManager;
 import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
 import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManagerFactory;
 import velox.api.layer1.data.InstrumentInfo;
+import velox.api.layer1.messages.Layer1ApiCrossTradingRoundingChangedMessage;
+import velox.api.layer1.messages.Layer1ApiCrossTradingTargetChangedMessage;
 import velox.api.layer1.messages.Layer1ApiUserMessageReloadStrategyGui;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 import velox.gui.StrategyPanel;
@@ -103,7 +106,12 @@ public class TradingMessagesSender implements
                 settingsPanel.get().updateAccounts();
             }
         }
-        
+
+        if (data instanceof Layer1ApiCrossTradingTargetChangedMessage crossTradingChanged) {
+            // Demonstrates reacting to Trading Control Panel changes that Bookmap broadcasts to add-ons.
+            Log.info(NAME, "Cross trading target changed: " + crossTradingChanged);
+        }
+
         if (data.getClass() == UserMessageLayersChainCreatedTargeted.class) {
             final Class<?> targetClass = ((UserMessageLayersChainCreatedTargeted) data).targetClass;
             if (!targetClass.equals(TradingMessagesSender.class)) {

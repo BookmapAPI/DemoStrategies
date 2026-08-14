@@ -14,6 +14,7 @@ import java.util.function.Function;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.data.AccountInfo;
 import velox.api.layer1.data.AccountInfoBuilder;
+import velox.api.layer1.data.InstrumentCoreInfo;
 import velox.api.layer1.data.OrderDuration;
 import velox.api.layer1.data.OrderType;
 import velox.api.layer1.messages.*;
@@ -51,12 +52,17 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private static final String SET_STOP_ORDER_OFFSET_TITLE = "Set Stop Order Offset";
     private static final String SET_STOP_ORDER_DURATION_TITLE = "Set Stop Order Duration";
     private static final String SET_ORDER_DURATION_TITLE = "Set Order Duration";
+    private static final String CROSS_TRADING_TITLE = "Cross-Instrument Trading";
+    private static final String CROSS_TRADING_ROUNDING_TITLE = "Rounding";
     private static final String CANCEL_ALL_ORDERS_TITLE = "Cancel All Orders";
     private static final String CANCEL_BIDS_TITLE = "Cancel Bids";
     private static final String CANCEL_ASKS_TITLE = "Cancel Asks";
     private static final String FLATTEN_POSITION_TITLE = "Flatten Position";
     private static final String REVERSE_POSITION_TITLE = "Reverse Position";
     private static final String GET_TCP_STATE_TITLE = "Get TCP State";
+    /** Sentinel entry in the target combo representing "stop cross trading" (maps to a {@code null} target). */
+    private static final InstrumentCoreInfo STOP_CROSS_TRADING =
+            new InstrumentCoreInfo("None (stop cross trading)", "", "");
     private final boolean initialized;
     private final JComboBox<String> comboBoxAliasesChangeAccount;
     private final JComboBox<String> comboBoxAliasesSetOrderSize;
@@ -68,6 +74,10 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private final JComboBox<String> comboBoxAliasesStopOrderOffset;
     private final JComboBox<String> comboBoxAliasesStopOrderDuration;
     private final JComboBox<String> comboBoxAliasesOrderDuration;
+    private final JComboBox<String> comboBoxAliasesCrossTrading;
+    private final JComboBox<InstrumentCoreInfo> comboBoxCrossTradingTargets;
+    private final JComboBox<String> comboBoxAliasesCrossRounding;
+    private final JComboBox<String> comboBoxCrossRoundingMode;
     private final JComboBox<String> comboBoxAliasesCancelAllOrders;
     private final JComboBox<String> comboBoxAliasesCancelBids;
     private final JComboBox<String> comboBoxAliasesCancelAsks;
@@ -97,6 +107,10 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         comboBoxAliasesStopOrderOffset = newComboBox();
         comboBoxAliasesStopOrderDuration = newComboBox();
         comboBoxAliasesOrderDuration = newComboBox();
+        comboBoxAliasesCrossTrading = newComboBox();
+        comboBoxCrossTradingTargets = newComboBox();
+        comboBoxAliasesCrossRounding = newComboBox();
+        comboBoxCrossRoundingMode = new JComboBox<>(new String[]{"To", "Away"});
         comboBoxAliasesCancelAllOrders = newComboBox();
         comboBoxAliasesCancelBids = newComboBox();
         comboBoxAliasesCancelAsks = newComboBox();
@@ -109,8 +123,9 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         disabledPanel = getDisabledPanel();
         this.add(disabledPanel);
         this.add(workingPanel);
-        
+
         comboBoxAliasesChangeAccount.addActionListener(e -> updateAccounts());
+
 
         comboBoxAccounts.setRenderer(new DefaultListCellRenderer() {
             @Override
@@ -159,6 +174,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         updateComboBox(comboBoxAliasesStopOrderOffset, aliases);
         updateComboBox(comboBoxAliasesStopOrderDuration, aliases);
         updateComboBox(comboBoxAliasesOrderDuration, aliases);
+        updateComboBox(comboBoxAliasesCrossTrading, aliases);
+        updateComboBox(comboBoxAliasesCrossRounding, aliases);
         updateComboBox(comboBoxAliasesCancelAllOrders, aliases);
         updateComboBox(comboBoxAliasesCancelBids, aliases);
         updateComboBox(comboBoxAliasesCancelAsks, aliases);
@@ -185,6 +202,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         panel.add(buildSetStopOrderOffsetBlock());
         panel.add(buildSetStopOrderDurationBlock());
         panel.add(buildSetOrderDurationBlock());
+        panel.add(buildCrossTradingBlock());
+        panel.add(buildCrossTradingRoundingBlock());
         panel.add(buildCancelAllOrdersBlock());
         panel.add(buildCancelBidsBlock());
         panel.add(buildCancelAsksBlock());
@@ -481,6 +500,98 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         return block;
     }
 
+    private JPanel buildCrossTradingBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(CROSS_TRADING_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesCrossTrading);
+
+        comboBoxCrossTradingTargets.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(javax.swing.JList<?> list, Object value,
+                    int index, boolean isSelected, boolean cellHasFocus) {
+                Object text = value;
+                if (value instanceof InstrumentCoreInfo info) {
+                    text = (info == STOP_CROSS_TRADING) ? info.symbol
+                            : info.symbol + " @ " + info.exchange + " (" + info.type + ")";
+                }
+                return super.getListCellRendererComponent(list, text, index, isSelected, cellHasFocus);
+            }
+        });
+
+        // The set of valid targets depends on the source instrument, so fetch them from the TCP before choosing one.
+        JButton refreshButton = new JButton("Refresh Possible Targets");
+        refreshButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesCrossTrading);
+            if (alias == null) return;
+            messageConsumer.accept(new Layer1ApiGetCrossTradingTargetMessage(alias, state ->
+                    SwingUtilities.invokeLater(() -> updateCrossTradingTargets(state))));
+        });
+
+        block.add(new JLabel("Target instrument:"));
+        block.add(comboBoxCrossTradingTargets);
+        block.add(refreshButton);
+
+        JButton sendButton = new JButton("Send SetCrossTradingTarget Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesCrossTrading);
+            if (alias == null) return;
+            InstrumentCoreInfo selected = (InstrumentCoreInfo) comboBoxCrossTradingTargets.getSelectedItem();
+            if (selected == null) {
+                JOptionPane.showMessageDialog(null,
+                        "Refresh the possible targets and select one (or \"None\") first.",
+                        "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+            // The sentinel maps to a null target, which stops cross trading.
+            InstrumentCoreInfo target = (selected == STOP_CROSS_TRADING) ? null : selected;
+            String messageText = "Layer1ApiSetCrossTradingTargetMessage with alias: " + alias + ", target: " + target;
+            messageConsumer.accept(
+                    new Layer1ApiSetCrossTradingTargetMessage(alias, target, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
+    private void updateCrossTradingTargets(Layer1ApiGetCrossTradingTargetMessage.CrossTradingTargetState state) {
+        List<InstrumentCoreInfo> items = new ArrayList<>();
+        // The first entry stops cross trading; the rest are the targets reported by the TCP.
+        items.add(STOP_CROSS_TRADING);
+        items.addAll(state.possibleTargets);
+        updateComboBox(comboBoxCrossTradingTargets, items);
+        // Pre-select the current target, or the "stop" sentinel when cross trading is not active.
+        SwingUtilities.invokeLater(() -> comboBoxCrossTradingTargets.setSelectedItem(
+                state.target == null ? STOP_CROSS_TRADING : state.target));
+    }
+
+    private JPanel buildCrossTradingRoundingBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(CROSS_TRADING_ROUNDING_TITLE));
+
+        block.add(new JLabel("Select instrument:"));
+        block.add(comboBoxAliasesCrossRounding);
+
+        block.add(new JLabel("Rounding rule:"));
+        block.add(comboBoxCrossRoundingMode);
+
+        JButton sendButton = new JButton("Send Rounding Message");
+        sendButton.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesCrossRounding);
+            if (alias == null) return;
+            CrossTradingRoundingMode mode = "To".equals(comboBoxCrossRoundingMode.getSelectedItem())
+                    ? CrossTradingRoundingMode.ROUND_TO_MARKET_PRICE
+                    : CrossTradingRoundingMode.ROUND_OFF_MARKET_PRICE;
+            String messageText = "Layer1ApiSetCrossTradingRoundingMessage with alias: " + alias + ", mode: " + mode;
+            messageConsumer.accept(
+                    new Layer1ApiSetCrossTradingRoundingMessage(alias, mode, getResponseListener(messageText)));
+        });
+        block.add(sendButton);
+        return block;
+    }
+
     private JPanel buildCancelAllOrdersBlock() {
         JPanel block = new JPanel();
         block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
@@ -648,6 +759,22 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
                     showMessageDialog("Order Size: " + state)));
         });
 
+        JButton getCrossTradingTargetBtn = new JButton("Get Cross Trading Target");
+        getCrossTradingTargetBtn.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesGetState);
+            if (alias == null) return;
+            messageConsumer.accept(new Layer1ApiGetCrossTradingTargetMessage(alias, state ->
+                    showMessageDialog("Cross Trading Target: " + state)));
+        });
+
+        JButton getCrossTradingRoundingBtn = new JButton("Get Cross Trading Rounding");
+        getCrossTradingRoundingBtn.addActionListener(e -> {
+            String alias = getSelectedAlias(comboBoxAliasesGetState);
+            if (alias == null) return;
+            messageConsumer.accept(new Layer1ApiGetCrossTradingRoundingMessage(alias, state ->
+                    showMessageDialog("Cross Trading Rounding: " + state)));
+        });
+
         block.add(getBracketsBtn);
         block.add(getOcoBtn);
         block.add(getTrailingStopBtn);
@@ -656,6 +783,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         block.add(getStopOrderDurationBtn);
         block.add(getOrderDurationBtn);
         block.add(getOrderSizeBtn);
+        block.add(getCrossTradingTargetBtn);
+        block.add(getCrossTradingRoundingBtn);
         return block;
     }
 

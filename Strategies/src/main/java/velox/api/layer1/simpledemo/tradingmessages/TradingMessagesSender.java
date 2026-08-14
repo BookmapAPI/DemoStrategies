@@ -17,8 +17,7 @@ import velox.api.layer1.common.helper.AccountListManager;
 import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManager;
 import velox.api.layer1.common.helper.instrumentmanager.InstrumentsManagerFactory;
 import velox.api.layer1.data.InstrumentInfo;
-import velox.api.layer1.messages.Layer1ApiCrossTradingRoundingChangedMessage;
-import velox.api.layer1.messages.Layer1ApiCrossTradingTargetChangedMessage;
+import velox.api.layer1.messages.Layer1ApiUiValueChangedMessage;
 import velox.api.layer1.messages.Layer1ApiUserMessageReloadStrategyGui;
 import velox.api.layer1.messages.UserMessageLayersChainCreatedTargeted;
 import velox.gui.StrategyPanel;
@@ -107,9 +106,13 @@ public class TradingMessagesSender implements
             }
         }
 
-        if (data instanceof Layer1ApiCrossTradingTargetChangedMessage crossTradingChanged) {
-            // Demonstrates reacting to Trading Control Panel changes that Bookmap broadcasts to add-ons.
-            Log.info(NAME, "Cross trading target changed: " + crossTradingChanged);
+        if (data instanceof Layer1ApiUiValueChangedMessage valueChanged) {
+            // Demonstrates reacting to any Trading Control Panel value change that Bookmap broadcasts to add-ons.
+            Log.info(NAME, "Trading Control Panel value changed: " + valueChanged);
+            final TradingMessagesSenderSettingsPanel panel = settingsPanel.get();
+            if (panel != null) {
+                panel.appendBroadcast(valueChanged.toString());
+            }
         }
 
         if (data.getClass() == UserMessageLayersChainCreatedTargeted.class) {

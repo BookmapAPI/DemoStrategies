@@ -34,6 +34,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
+import javax.swing.JTextArea;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
@@ -60,6 +61,7 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private static final String FLATTEN_POSITION_TITLE = "Flatten Position";
     private static final String REVERSE_POSITION_TITLE = "Reverse Position";
     private static final String GET_TCP_STATE_TITLE = "Get TCP State";
+    private static final String BROADCAST_LOG_TITLE = "TCP Broadcasts";
     /** Sentinel entry in the target combo representing "stop cross trading" (maps to a {@code null} target). */
     private static final InstrumentCoreInfo STOP_CROSS_TRADING =
             new InstrumentCoreInfo("None (stop cross trading)", "", "");
@@ -84,6 +86,7 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private final JComboBox<String> comboBoxAliasesFlattenPosition;
     private final JComboBox<String> comboBoxAliasesReversePosition;
     private final JComboBox<String> comboBoxAliasesGetState;
+    private final JTextArea broadcastLogArea;
     private final Consumer<Object> messageConsumer;
     private final JComponent workingPanel;
     private final JComponent disabledPanel;
@@ -119,6 +122,10 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         comboBoxAliasesGetState = newComboBox();
         this.messageConsumer = messageConsumer;
         this.accountsPerAliasProvider = accountsPerAliasProvider;
+        broadcastLogArea = new JTextArea(6, 20);
+        broadcastLogArea.setEditable(false);
+        broadcastLogArea.setLineWrap(true);
+        broadcastLogArea.setWrapStyleWord(true);
         workingPanel = getMainPanel();
         disabledPanel = getDisabledPanel();
         this.add(disabledPanel);
@@ -188,11 +195,20 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         workingPanel.setVisible(isWorking.get());
         disabledPanel.setVisible(!isWorking.get());
     }
+
+    /** Appends a Trading Control Panel broadcast to the on-screen log. */
+    public void appendBroadcast(final String text) {
+        SwingUtilities.invokeLater(() -> {
+            broadcastLogArea.append(text + "\n");
+            broadcastLogArea.setCaretPosition(broadcastLogArea.getDocument().getLength());
+        });
+    }
     
     private JPanel getMainPanel() {
         JPanel panel = new JPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
+        panel.add(buildBroadcastLogBlock());
         panel.add(buildChangeAccountBlock());
         panel.add(buildSetOrderSizeBlock());
         panel.add(buildSetBracketsBlock());
@@ -221,6 +237,24 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         wrapper.add(scrollPane);
         wrapper.setVisible(isWorking.get());
         return wrapper;
+    }
+
+    private JPanel buildBroadcastLogBlock() {
+        JPanel block = new JPanel();
+        block.setLayout(new BoxLayout(block, BoxLayout.Y_AXIS));
+        block.setBorder(BorderFactory.createTitledBorder(BROADCAST_LOG_TITLE));
+
+        JScrollPane logScrollPane = new JScrollPane(broadcastLogArea);
+        logScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        logScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        JButton clearButton = new JButton("Clear");
+        clearButton.addActionListener(e -> broadcastLogArea.setText(""));
+
+        block.add(new JLabel("TCP value change broadcasts:"));
+        block.add(logScrollPane);
+        block.add(clearButton);
+        return block;
     }
 
     private JPanel buildChangeAccountBlock() {

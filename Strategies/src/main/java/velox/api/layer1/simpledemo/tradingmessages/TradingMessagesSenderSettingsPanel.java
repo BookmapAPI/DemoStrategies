@@ -1,7 +1,11 @@
 package velox.api.layer1.simpledemo.tradingmessages;
 
+ import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -35,7 +39,9 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSpinner;
 import javax.swing.JTextArea;
+import javax.swing.Scrollable;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 
@@ -62,6 +68,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private static final String REVERSE_POSITION_TITLE = "Reverse Position";
     private static final String GET_TCP_STATE_TITLE = "Get TCP State";
     private static final String BROADCAST_LOG_TITLE = "TCP Broadcasts";
+    private static final String CARD_WORKING = "working";
+    private static final String CARD_DISABLED = "disabled";
     /** Sentinel entry in the target combo representing "stop cross trading" (maps to a {@code null} target). */
     private static final InstrumentCoreInfo STOP_CROSS_TRADING =
             new InstrumentCoreInfo("None (stop cross trading)", "", "");
@@ -88,8 +96,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     private final JComboBox<String> comboBoxAliasesGetState;
     private final JTextArea broadcastLogArea;
     private final Consumer<Object> messageConsumer;
-    private final JComponent workingPanel;
-    private final JComponent disabledPanel;
+    private final CardLayout cardLayout;
+    private final JPanel cardPanel;
     private final AtomicBoolean isWorking;
     
     private final Function<String, Set<AccountInfo>> accountsPerAliasProvider;
@@ -126,10 +134,16 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         broadcastLogArea.setEditable(false);
         broadcastLogArea.setLineWrap(true);
         broadcastLogArea.setWrapStyleWord(true);
-        workingPanel = getMainPanel();
-        disabledPanel = getDisabledPanel();
-        this.add(disabledPanel);
-        this.add(workingPanel);
+        setLayout(new BorderLayout());
+        JComponent workingPanel = getMainPanel();
+        JComponent disabledPanel = getDisabledPanel();
+        cardLayout = new CardLayout();
+        cardPanel = new JPanel(cardLayout);
+        cardPanel.add(disabledPanel, CARD_DISABLED);
+        cardPanel.add(workingPanel, CARD_WORKING);
+        cardPanel.setPreferredSize(new Dimension(360, 600));
+        this.add(cardPanel, BorderLayout.CENTER);
+        updateIfNeeded();
 
         comboBoxAliasesChangeAccount.addActionListener(e -> updateAccounts());
 
@@ -192,8 +206,7 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     }
     
     public void updateIfNeeded() {
-        workingPanel.setVisible(isWorking.get());
-        disabledPanel.setVisible(!isWorking.get());
+        cardLayout.show(cardPanel, isWorking.get() ? CARD_WORKING : CARD_DISABLED);
     }
 
     /** Appends a Trading Control Panel broadcast to the on-screen log. */
@@ -204,8 +217,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         });
     }
     
-    private JPanel getMainPanel() {
-        JPanel panel = new JPanel();
+    private JComponent getMainPanel() {
+        JPanel panel = new ScrollableWidthPanel();
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
 
         panel.add(buildBroadcastLogBlock());
@@ -231,12 +244,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setBorder(BorderFactory.createEmptyBorder());
-
-        JPanel wrapper = new JPanel();
-        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
-        wrapper.add(scrollPane);
-        wrapper.setVisible(isWorking.get());
-        return wrapper;
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        return scrollPane;
     }
 
     private JPanel buildBroadcastLogBlock() {
@@ -865,5 +874,40 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
     
     private void showMessageDialog(String message) {
         SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(null, message));
+    }
+
+    /**
+     * A vertically-stacked panel whose width always follows the scroll pane viewport.
+     * This makes the blocks wrap/shrink to the available width instead of extending past the
+     * right edge of the add-on window (which would otherwise be clipped, since the horizontal
+     * scrollbar is disabled).
+     */
+    private static class ScrollableWidthPanel extends JPanel implements Scrollable {
+        @Override
+        public Dimension getPreferredScrollableViewportSize() {
+            return getPreferredSize();
+        }
+
+        @Override
+        public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return 16;
+        }
+
+        @Override
+        public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+            return orientation == SwingConstants.VERTICAL ? visibleRect.height : visibleRect.width;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportWidth() {
+            // Never grow wider than the viewport, so nothing gets cut off on the right.
+            return true;
+        }
+
+        @Override
+        public boolean getScrollableTracksViewportHeight() {
+            // Allow the content to be taller than the viewport so the vertical scrollbar can appear.
+            return false;
+        }
     }
 }

@@ -400,7 +400,7 @@ public class MultipleAccountSupportDemoBase implements
     @Override
     public void onOrderExecuted(ExecutionInfo executionInfo) {
         // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-        boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderId(executionInfo.orderId);
+        boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderIdStrict(executionInfo.orderId);
         Log.info("[isSelectedAccount=" + isSelectedAccount + "] MultipleAccountSupportDemoBase#onOrderExecuted: " + executionInfo);
     }
     
@@ -457,7 +457,7 @@ public class MultipleAccountSupportDemoBase implements
             @Override
             public void onOrderExecuted(ExecutionInfo executionInfo) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderId(executionInfo.orderId);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderIdStrict(executionInfo.orderId);
                 Log.info("[isSelectedAccount=" + isSelectedAccount + "] OnlineValueCalculatorAdapter#onOrderExecuted: " + executionInfo);
             }
             
@@ -506,7 +506,7 @@ public class MultipleAccountSupportDemoBase implements
             @Override
             public void onOrderExecuted(ExecutionInfo executionInfo) {
                 // Multi-account data should be available here if Strategy is annotated with @Layer1MultiAccountTradingSupported.
-                Boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderId(executionInfo.orderId);
+                Boolean isSelectedAccount = accountListManager.isAccountSelectedForOrderIdStrict(executionInfo.orderId);
                 Log.info("[isSelectedAccount=" + isSelectedAccount + "] Layer1ApiUserMessageAddStrategyUpdateGenerator#onOrderExecuted: " + executionInfo);
             }
             

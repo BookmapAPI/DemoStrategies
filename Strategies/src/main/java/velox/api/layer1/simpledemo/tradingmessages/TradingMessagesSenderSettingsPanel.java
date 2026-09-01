@@ -178,8 +178,8 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
         if (alias != null && !alias.isEmpty()) {
             List<AccountInfo> accounts = new ArrayList<>(accountsPerAliasProvider.apply(alias));
             accounts.sort(Comparator.comparing(account -> account.summary));
-            accounts.add(0, new AccountInfoBuilder(null, "None").build());
-            
+            accounts.add(0, new AccountInfoBuilder("", "None").build());
+
             Log.info("TradingMessagesSenderSettingsPanel", "Updating accounts for alias: " + alias + ", accounts: " + accounts);
             updateComboBox(comboBoxAccounts, accounts);
         }
@@ -280,12 +280,12 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
             if (alias == null) return;
 
             String accountId;
-            try {
-                accountId = ((AccountInfo) comboBoxAccounts.getSelectedItem()).id;
-            } catch (ClassCastException exception) {
+            AccountInfo selectedAccount = (AccountInfo) comboBoxAccounts.getSelectedItem();
+            if (selectedAccount == null || selectedAccount.id == null || selectedAccount.id.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Selected Account cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
+            accountId = selectedAccount.id;
 
             String messageText = "Layer1ApiChangeSelectedAccountMessage with alias: " + alias + ", accountId: " + accountId;
             messageConsumer.accept(new Layer1ApiChangeSelectedAccountMessage(alias, accountId, getResponseListener(messageText)));

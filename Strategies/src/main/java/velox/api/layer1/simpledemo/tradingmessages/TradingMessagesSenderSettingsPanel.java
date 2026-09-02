@@ -279,13 +279,13 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
             String alias = getSelectedAlias(comboBoxAliasesChangeAccount);
             if (alias == null) return;
 
-            String accountId;
             AccountInfo selectedAccount = (AccountInfo) comboBoxAccounts.getSelectedItem();
-            if (selectedAccount == null || selectedAccount.id == null || selectedAccount.id.isEmpty()) {
+            if (selectedAccount == null) {
                 JOptionPane.showMessageDialog(null, "Selected Account cannot be empty!", "Error", JOptionPane.ERROR_MESSAGE);
                 return;
             }
-            accountId = selectedAccount.id;
+            // The "None" entry has an empty id and is sent as a null accountId, which disables trading.
+            String accountId = (selectedAccount.id == null || selectedAccount.id.isEmpty()) ? null : selectedAccount.id;
 
             String messageText = "Layer1ApiChangeSelectedAccountMessage with alias: " + alias + ", accountId: " + accountId;
             messageConsumer.accept(new Layer1ApiChangeSelectedAccountMessage(alias, accountId, getResponseListener(messageText)));

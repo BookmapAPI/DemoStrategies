@@ -9,7 +9,6 @@ import velox.api.layer1.common.ListenableHelper;
 import velox.api.layer1.common.Log;
 import velox.api.layer1.common.helper.AccountListManager;
 import velox.api.layer1.data.AccountInfo;
-import velox.api.layer1.data.AccountInfoBuilder;
 import velox.api.layer1.data.BalanceInfo;
 import velox.api.layer1.data.ExecutionInfo;
 import velox.api.layer1.data.InstrumentInfo;
@@ -51,7 +50,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 
@@ -165,28 +164,9 @@ public class MultipleAccountSupportDemoBase implements
         
         comboBoxAliases.addItem(null);
         
-        comboBoxAliases.addActionListener(e -> {
-            String selectedAlias = (String) comboBoxAliases.getSelectedItem();
-            boolean hasSelectedAlias = selectedAlias != null;
-            comboBoxAccounts.setEnabled(hasSelectedAlias);
-            
-            if (hasSelectedAlias) {
-                Set<AccountInfo> accountsByAlias = accountListManager.getAccountsByAlias(selectedAlias);
-                comboBoxAccounts.removeAllItems();
-                if (accountsByAlias.isEmpty()) {
-                    // if provider does not support multiple accounts, add a default account with id null
-                    comboBoxAccounts.addItem(new AccountItem(
-                            new AccountInfoBuilder(null, "Default account (accountId=null)", false)
-                                    .build()
-                    ));
-                } else {
-                    accountsByAlias.forEach(account -> comboBoxAccounts.addItem(new AccountItem(account)));
-                }
-            }
-            
-            comboBoxAccounts.setSelectedItem(null);
-        });
-        
+        // Instrument change => rebuild the account list from scratch, resetting the account selection.
+        comboBoxAliases.addActionListener(e -> populateAccountsComboBox(false));
+
         comboBoxAliases.setSelectedItem(null);
         
         // Accounts combo box:
@@ -289,6 +269,53 @@ public class MultipleAccountSupportDemoBase implements
         strategyPanel.setSize(600, 400);
     }
     
+    /**
+     * Rebuilds the account combo box for the currently selected alias from {@link AccountListManager#getAccountsByAlias(String)}.
+     * Called on instrument change and whenever the account list changes. Must be called on the EDT.
+     *
+     * @param preserveSelection keep the previously selected account (by id) when it is still available;
+     *                          otherwise reset the selection (used on instrument change)
+     */
+    private void populateAccountsComboBox(boolean preserveSelection) {
+        String selectedAlias = (String) comboBoxAliases.getSelectedItem();
+        boolean hasSelectedAlias = selectedAlias != null;
+        comboBoxAccounts.setEnabled(hasSelectedAlias);
+        
+        String previouslySelectedAccountId = null;
+        if (preserveSelection) {
+            AccountItem previouslySelected = (AccountItem) comboBoxAccounts.getSelectedItem();
+            previouslySelectedAccountId = previouslySelected == null ? null : previouslySelected.accountInfo().id;
+        }
+        
+        comboBoxAccounts.removeAllItems();
+        
+        if (hasSelectedAlias) {
+            accountListManager.getAccountsByAlias(selectedAlias)
+                    .forEach(account -> comboBoxAccounts.addItem(new AccountItem(account)));
+        }
+        
+        if (preserveSelection && previouslySelectedAccountId != null) {
+            selectAccountById(previouslySelectedAccountId);
+        } else {
+            comboBoxAccounts.setSelectedItem(null);
+        }
+    }
+    
+    /**
+     * Selects the account with the given id in the account combo box if it is present, otherwise clears the selection.
+     * Must be called on the EDT.
+     */
+    private void selectAccountById(String accountId) {
+        for (int i = 0; i < comboBoxAccounts.getItemCount(); i++) {
+            AccountItem item = comboBoxAccounts.getItemAt(i);
+            if (item != null && Objects.equals(item.accountInfo().id, accountId)) {
+                comboBoxAccounts.setSelectedItem(item);
+                return;
+            }
+        }
+        comboBoxAccounts.setSelectedItem(null);
+    }
+    
     private void updateOrdersTable() {
         SwingUtilities.invokeLater(() -> {
             ordersTableModel.setRowCount(0);
@@ -359,6 +386,7 @@ public class MultipleAccountSupportDemoBase implements
         
         if (accountListChanged) {
             Log.info("Account list changed (accounts count = " + accountListManager.getAccounts().size() + ")");
+            SwingUtilities.invokeLater(() -> populateAccountsComboBox(true));
         }
         
         if (data instanceof TradingAccountsInfoMessage message) {

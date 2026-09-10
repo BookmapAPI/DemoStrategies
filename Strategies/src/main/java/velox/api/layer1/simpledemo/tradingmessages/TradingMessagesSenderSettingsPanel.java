@@ -285,7 +285,7 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
                 return;
             }
             // The "None" entry has an empty id and is sent as a null accountId, which disables trading.
-            String accountId = (selectedAccount.id == null || selectedAccount.id.isEmpty()) ? null : selectedAccount.id;
+            String accountId = selectedAccount.id.isEmpty() ? null : selectedAccount.id;
 
             String messageText = "Layer1ApiChangeSelectedAccountMessage with alias: " + alias + ", accountId: " + accountId;
             messageConsumer.accept(new Layer1ApiChangeSelectedAccountMessage(alias, accountId, getResponseListener(messageText)));

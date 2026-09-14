@@ -855,7 +855,9 @@ public class TradingMessagesSenderSettingsPanel extends StrategyPanel {
             @SuppressWarnings("unchecked") final T item = (T) comboBox.getModel().getSelectedItem();
             final ComboBoxModel<T> model = new DefaultComboBoxModel<>(new Vector<>(items));
             comboBox.setModel(model);
-            model.setSelectedItem(item);
+            if (item != null && items.contains(item)) {
+                model.setSelectedItem(item);
+            }
         });
     }
     

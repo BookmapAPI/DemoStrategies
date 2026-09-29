@@ -21,6 +21,9 @@ repositories {
     maven {
         url "https://maven.bookmap.com/maven2/releases/"
     }
+    maven {
+        url "https://maven.bookmap.com/maven2/develop/"
+    }
 }
 
 dependencies {
@@ -34,6 +37,11 @@ dependencies {
 
         compileOnly group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
     }
+
+    // TreeId / DataSource of the zoom-out history API (com.bookmap.api.treestructure.*), used by
+    // simpledemo/dynamichistory. compileOnly: at runtime these
+    // classes come from Bookmap itself.
+    compileOnly group: 'com.bookmap', name: 'zoomout-api', version: '0.1.27-alpha'
 
     compileOnly group: 'com.ibm.icu', name: 'icu4j', version: '71.1'
 }
